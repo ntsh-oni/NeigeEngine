@@ -86,16 +86,24 @@ void Renderer::init() {
 	}
 
 	// Depth prepass
+	NEIGE_INFO("Depth prepass init start.");
 	depthPrepass.init(fullscreenViewport);
+	NEIGE_INFO("Depth prepass init end.");
 
 	// SSAO
+	NEIGE_INFO("SSAO init start.");
 	ssao.init(fullscreenViewport);
+	NEIGE_INFO("SSAO init end.");
 
 	// Shadow
+	NEIGE_INFO("Shadowmapping init start.");
 	shadow.init();
+	NEIGE_INFO("Shadowmapping init end.");
 
 	// Envmap
+	NEIGE_INFO("Environment map init start.");
 	envmap.init(cameraCamera.envmapPath);
+	NEIGE_INFO("Environment map init end.");
 
 	skyboxGraphicsPipeline.vertexShaderPath = "../shaders/skybox.vert";
 	skyboxGraphicsPipeline.fragmentShaderPath = "../shaders/skybox.frag";

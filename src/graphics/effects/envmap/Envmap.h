@@ -82,7 +82,7 @@ struct Envmap {
 	void init(std::string filePath);
 	void destroy();
 	void draw(CommandBuffer* commandBuffer);
-	void equilateralRectangleToCubemap();
+	void equiRectangleToCubemap();
 	void createDiffuseIradiance();
 	void createPrefilter();
 	void createBRDFConvolution();

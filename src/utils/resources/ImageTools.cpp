@@ -313,6 +313,12 @@ void ImageTools::transitionLayout(VkImage image,
 		srcPipelineStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		dstPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		srcPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dstPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
 	else {
 		NEIGE_ERROR("Unsupported image layout transition.");
 	}
