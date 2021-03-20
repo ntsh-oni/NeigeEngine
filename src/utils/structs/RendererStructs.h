@@ -3,13 +3,15 @@
 #include "../NeigeDefines.h"
 #include <optional>
 
-#define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_FRAMES_IN_FLIGHT 3
 
 #define SHADOWMAP_WIDTH 2048
 #define SHADOWMAP_HEIGHT 2048
 
 #define ENVMAP_WIDTH 2048
 #define ENVMAP_HEIGHT 2048
+
+inline uint32_t framesInFlight;
 
 // Layers
 const std::vector<const char*> explicitLayers = {

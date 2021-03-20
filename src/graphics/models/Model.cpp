@@ -31,7 +31,7 @@ void Model::init(std::string filePath) {
 	stagingIndexBuffer.destroy();
 
 	for (Mesh& mesh : meshes) {
-		mesh.boneBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+		mesh.boneBuffers.resize(framesInFlight);
 
 		for (Buffer& buffer : mesh.boneBuffers) {
 			NEIGE_ASSERT(mesh.boneList.size() <= MAX_BONES, "A mesh has more than " + std::to_string(MAX_BONES) + " bones.");
@@ -82,8 +82,8 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 		std::vector<std::vector<DescriptorSet>> descriptorSets;
 		descriptorSets.resize(mesh.primitives.size());
 		for (size_t i = 0; i < mesh.primitives.size(); i++) {
-			descriptorSets.at(i).resize(MAX_FRAMES_IN_FLIGHT);
-			for (int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+			descriptorSets.at(i).resize(framesInFlight);
+			for (uint32_t j = 0; j < framesInFlight; j++) {
 				descriptorSets.at(i).at(j).init(graphicsPipeline, 1);
 
 				std::vector<VkWriteDescriptorSet> writesDescriptorSet;

@@ -43,6 +43,7 @@ void Swapchain::init(const Window* window, uint32_t* swapchainSize) {
 
 	NEIGE_VK_CHECK(vkGetSwapchainImagesKHR(logicalDevice.device, swapchain, &imageNumber, nullptr));
 	*swapchainSize = imageNumber;
+	framesInFlight = *swapchainSize < MAX_FRAMES_IN_FLIGHT ? *swapchainSize : MAX_FRAMES_IN_FLIGHT;
 	images.resize(imageNumber);
 	imageViews.resize(imageNumber);
 	NEIGE_VK_CHECK(vkGetSwapchainImagesKHR(logicalDevice.device, swapchain, &imageNumber, images.data()));

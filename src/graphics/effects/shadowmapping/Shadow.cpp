@@ -4,7 +4,7 @@
 void Shadow::init() {
 	viewport.init(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 
-	buffers.resize(MAX_FRAMES_IN_FLIGHT);
+	buffers.resize(framesInFlight);
 	for (Buffer& buffer : buffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(ShadowUniformBufferObject));
 	}
