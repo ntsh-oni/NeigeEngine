@@ -26,6 +26,7 @@ void Renderer::init() {
 	swapchain.init(window, &swapchainSize);
 
 	NEIGE_INFO("Max frames in flight : " + std::to_string(MAX_FRAMES_IN_FLIGHT));
+	NEIGE_INFO("Actual frames in flight : " + std::to_string(framesInFlight));
 	NEIGE_INFO("Swapchain size : " + std::to_string(swapchainSize));
 	NEIGE_INFO("Swapchain format : " + NeigeVKTranslate::vkFormatToString(swapchain.surfaceFormat.format));
 	NEIGE_INFO("Swapchain color space : " + NeigeVKTranslate::vkColorSpaceToString(swapchain.surfaceFormat.colorSpace));
@@ -68,19 +69,19 @@ void Renderer::init() {
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
 	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window->extent.width / static_cast<float>(window->extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
 
-	cameraBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	cameraBuffers.resize(framesInFlight);
 	for (Buffer& buffer : cameraBuffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(CameraUniformBufferObject));
 	}
 
 	// Lights
-	lightingBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	lightingBuffers.resize(framesInFlight);
 	for (Buffer& buffer : lightingBuffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(LightingUniformBufferObject));
 	}
 
 	// Time
-	timeBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	timeBuffers.resize(framesInFlight);
 	for (Buffer& buffer : timeBuffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(double));
 	}
@@ -114,8 +115,8 @@ void Renderer::init() {
 	skyboxGraphicsPipeline.depthCompare = Compare::LESS_OR_EQUAL;
 	skyboxGraphicsPipeline.init();
 
-	skyboxDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	skyboxDescriptorSets.resize(framesInFlight);
+	for (uint32_t i = 0; i < framesInFlight; i++) {
 		skyboxDescriptorSets[i].init(&skyboxGraphicsPipeline, 0);
 
 		VkDescriptorBufferInfo cameraInfo = {};
@@ -168,7 +169,7 @@ void Renderer::init() {
 
 			if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
 				std::vector<Framebuffer> lightFramebuffers;
-				lightFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
+				lightFramebuffers.resize(framesInFlight);
 
 				Image depthAttachment;
 				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.allocationId);
@@ -176,8 +177,8 @@ void Renderer::init() {
 				shadow.images.push_back(depthAttachment);
 
 				std::vector<std::vector<VkImageView>> framebufferAttachments;
-				framebufferAttachments.resize(MAX_FRAMES_IN_FLIGHT);
-				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+				framebufferAttachments.resize(framesInFlight);
+				for (size_t i = 0; i < framesInFlight; i++) {
 					framebufferAttachments[i].push_back(depthAttachment.imageView);
 					lightFramebuffers[i].init(&shadow.renderPass, framebufferAttachments[i], SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1);
 				}
@@ -248,17 +249,17 @@ void Renderer::init() {
 	}
 
 	// Command pools and buffers
-	renderingCommandPools.resize(MAX_FRAMES_IN_FLIGHT);
-	renderingCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	renderingCommandPools.resize(framesInFlight);
+	renderingCommandBuffers.resize(framesInFlight);
+	for (uint32_t i = 0; i < framesInFlight; i++) {
 		renderingCommandPools[i].init();
 		renderingCommandBuffers[i].init(&renderingCommandPools[i]);
 	}
 
 	// Sync objects
-	fences.resize(MAX_FRAMES_IN_FLIGHT);
-	IAsemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	fences.resize(framesInFlight);
+	IAsemaphores.resize(framesInFlight);
+	for (uint32_t i = 0; i < framesInFlight; i++) {
 		fences[i].init();
 		IAsemaphores[i].init();
 	}
@@ -343,7 +344,7 @@ void Renderer::update() {
 		NEIGE_ERROR("Unable to present image.");
 	}
 
-	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	currentFrame = (currentFrame + 1) % framesInFlight;
 }
 
 void Renderer::destroy() {
@@ -434,13 +435,13 @@ void Renderer::loadObject(Entity object) {
 
 	objectRenderable.graphicsPipeline = &graphicsPipelines.at(objectRenderable.lookupString);
 
-	objectRenderable.buffers.resize(MAX_FRAMES_IN_FLIGHT);
-	objectRenderable.descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	objectRenderable.depthPrepassDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-	objectRenderable.shadowDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+	objectRenderable.buffers.resize(framesInFlight);
+	objectRenderable.descriptorSets.resize(framesInFlight);
+	objectRenderable.depthPrepassDescriptorSets.resize(framesInFlight);
+	objectRenderable.shadowDescriptorSets.resize(framesInFlight);
 
 	if (objectRenderable.graphicsPipeline->sets.size() != 0) {
-		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Buffers
 			BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, objectRenderable.buffers.at(i).deviceMemory, sizeof(ObjectUniformBufferObject));
 
@@ -662,7 +663,6 @@ void Renderer::createResources() {
 		ImageTools::createImage(&colorImage.image, 1, window->extent.width, window->extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.allocationId);
 		ImageTools::createImageView(&colorImage.imageView, colorImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 		ImageTools::createImageSampler(&colorImage.imageSampler, 2, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-		ImageTools::transitionLayout(colorImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 1);
 	
 		std::vector<std::vector<VkImageView>> framebufferAttachments;
 		framebufferAttachments.resize(swapchainSize);
@@ -773,7 +773,7 @@ void Renderer::reloadOnResize() {
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
 	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window->extent.width / static_cast<float>(window->extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
 
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	for (uint32_t i = 0; i < framesInFlight; i++) {
 		for (Entity entity : entities) {
 			auto& entityRenderable = ecs.getComponent<Renderable>(entity);
 

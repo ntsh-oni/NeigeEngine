@@ -96,15 +96,15 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 	ImageTools::transitionLayout(ssaoBlurredImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 1);
 
 	// Framebuffers
-	depthToPositionsFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	depthToNormalsFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	ssaoFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	ssaoBlurredFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	depthToPositionsFramebuffers.resize(framesInFlight);
+	depthToNormalsFramebuffers.resize(framesInFlight);
+	ssaoFramebuffers.resize(framesInFlight);
+	ssaoBlurredFramebuffers.resize(framesInFlight);
 
 	{
 		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(MAX_FRAMES_IN_FLIGHT);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		framebufferAttachements.resize(framesInFlight);
+		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(depthToPositionsImage.imageView);
 			depthToPositionsFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
@@ -112,8 +112,8 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 
 	{
 		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(MAX_FRAMES_IN_FLIGHT);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		framebufferAttachements.resize(framesInFlight);
+		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(depthToNormalsImage.imageView);
 			depthToNormalsFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
@@ -121,8 +121,8 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 
 	{
 		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(MAX_FRAMES_IN_FLIGHT);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		framebufferAttachements.resize(framesInFlight);
+		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(ssaoImage.imageView);
 			ssaoFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
@@ -130,8 +130,8 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 
 	{
 		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(MAX_FRAMES_IN_FLIGHT);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		framebufferAttachements.resize(framesInFlight);
+		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(ssaoBlurredImage.imageView);
 			ssaoBlurredFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
@@ -139,9 +139,9 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 
 	// Descriptor sets
 	{
-		depthToPositionsAndNormalsDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+		depthToPositionsAndNormalsDescriptorSets.resize(framesInFlight);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < framesInFlight; i++) {
 			depthToPositionsAndNormalsDescriptorSets[i].init(&depthToNormalsGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo depthPrepassInfo = {};
@@ -187,9 +187,9 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 	}
 
 	{
-		ssaoDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+		ssaoDescriptorSets.resize(framesInFlight);
 
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		for (size_t i = 0; i < framesInFlight; i++) {
 			ssaoDescriptorSets[i].init(&ssaoGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo positionInfo = {};
@@ -288,9 +288,9 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		}
 
 		{
-			ssaoBlurredDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+			ssaoBlurredDescriptorSets.resize(framesInFlight);
 
-			for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			for (size_t i = 0; i < framesInFlight; i++) {
 				ssaoBlurredDescriptorSets[i].init(&ssaoBlurredGraphicsPipeline, 0);
 
 				VkDescriptorImageInfo ssaoInfo = {};

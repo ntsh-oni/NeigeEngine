@@ -125,7 +125,7 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 
 	chunks.push_back(newChunk);
 
-	NEIGE_INFO("New memory chunk allocated.");
+	MEMORY_INFO("New memory chunk allocated.");
 	return allocationNumber - 1;
 }
 
@@ -162,7 +162,7 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 
 	chunks.push_back(newChunk);
 
-	NEIGE_INFO("New memory chunk allocated.");
+	MEMORY_INFO("New memory chunk allocated.");
 	return allocationNumber - 1;
 }
 
@@ -228,7 +228,7 @@ int32_t MemoryAllocator::findProperties(uint32_t memoryTypeBitsRequirement, VkMe
 }
 
 void MemoryAllocator::memoryAnalyzer() {
-	NEIGE_INFO("Showing all memory chunks:");
+	MEMORY_INFO("Showing all memory chunks:");
 	for (size_t i = 0; i < chunks.size(); i++) {
 		Chunk& chunk = chunks.at(i);
 		std::cout << "Chunk " << i << std::endl;

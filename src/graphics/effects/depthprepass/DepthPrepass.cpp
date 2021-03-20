@@ -44,12 +44,12 @@ void DepthPrepass::createResources(Viewport fullscreenViewport) {
 	ImageTools::transitionLayout(image.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
 	// Framebuffer
-	framebuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	framebuffers.resize(framesInFlight);
 
 	{
 		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(MAX_FRAMES_IN_FLIGHT);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		framebufferAttachements.resize(framesInFlight);
+		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(image.imageView);
 			framebuffers[i].init(&renderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
