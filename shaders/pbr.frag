@@ -198,8 +198,6 @@ void main() {
 	
 	vec3 ambient = (irradianceDiffuse * diffuse + specular) * occlusionSample;
 	tmpColor += ambient;
-
-	tmpColor = tmpColor / (tmpColor + vec3(1.0));
 	
 	tmpColor += emissiveSample;
 
