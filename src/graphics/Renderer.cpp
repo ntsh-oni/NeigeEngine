@@ -10,6 +10,8 @@
 extern ECS ecs;
 
 void Renderer::init() {
+	NEIGE_INFO("Renderer init start.");
+
 	// Instance
 	instance.init(VK_MAKE_VERSION(0, 0, 1), window->instanceExtensions());
 
@@ -268,6 +270,8 @@ void Renderer::init() {
 	for (uint32_t i = 0; i < swapchainSize; i++) {
 		RFsemaphores[i].init();
 	}
+
+	NEIGE_INFO("Renderer init end.");
 }
 
 void Renderer::update() {
@@ -629,7 +633,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			currentPipeline = objectRenderable.graphicsPipeline;
 		}
 
-		if (objectRenderable.graphicsPipeline->sets.size() != 0) {
+		if (currentPipeline->sets.size() != 0) {
 			objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 		}
 
