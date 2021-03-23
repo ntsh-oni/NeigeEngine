@@ -64,7 +64,7 @@ int main(void) {
 		Topology::TRIANGLE_LIST
 		});
 	ecs.addComponent(skinningTest, Transform{
-		glm::vec3(3.0f, -1.0f, 0.0f),
+		glm::vec3(3.0f, 2.0f, 0.0f),
 		glm::vec3(180.0f, 0.0f, 0.0f),
 		glm::vec3(100.0f, 100.0f, 100.0f)
 		});
@@ -112,7 +112,7 @@ int main(void) {
 		Topology::TRIANGLE_LIST
 		});
 	ecs.addComponent(entity3, Transform{
-		glm::vec3(4.0f, 1.0f, -2.0f),
+		glm::vec3(0.0f, 1.5f, 0.0f),
 		glm::vec3(90.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
 		});
@@ -170,11 +170,38 @@ int main(void) {
 	Entity light3 = ecs.createEntity();
 	ecs.addComponent(light3, Light{
 		LightType::POINT,
-		glm::vec3(2.0f, 0.0f, 2.0f),
-		glm::vec3(0.0f),
 		glm::vec3(1.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec2(0.0f)
 		});
+
+	/*Entity light4 = ecs.createEntity();
+	ecs.addComponent(light4, Light{
+		LightType::POINT,
+		glm::vec3(-1.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light5 = ecs.createEntity();
+	ecs.addComponent(light5, Light{
+		LightType::POINT,
+		glm::vec3(1.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light6 = ecs.createEntity();
+	ecs.addComponent(light6, Light{
+		LightType::POINT,
+		glm::vec3(-1.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec2(0.0f)
+		});*/
 
 	g.launch();
 }
