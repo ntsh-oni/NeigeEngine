@@ -40,8 +40,8 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 	std::vector<VkSubpassDependency> dependencies;
 	for (size_t i = 0; i < subpassDependencies.size(); i++) {
 		VkSubpassDependency subpassDepedency = {};
-		subpassDepedency.srcSubpass = i == 0 ? VK_SUBPASS_EXTERNAL : 0;
-		subpassDepedency.dstSubpass = i == 0 ? 0 : VK_SUBPASS_EXTERNAL;
+		subpassDepedency.srcSubpass = subpassDependencies[i].srcSubpass;
+		subpassDepedency.dstSubpass = subpassDependencies[i].dstSubpass;
 		subpassDepedency.srcStageMask = subpassDependencies[i].srcStageMask;
 		subpassDepedency.dstStageMask = subpassDependencies[i].dstStageMask;
 		subpassDepedency.srcAccessMask = subpassDependencies[i].srcAccessMask;
