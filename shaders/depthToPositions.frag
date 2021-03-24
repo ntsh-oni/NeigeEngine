@@ -1,6 +1,6 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform sampler2D depthMap;
+layout(set = 0, binding = 0) uniform sampler2D depthPrepass;
 
 layout(set = 0, binding = 1) uniform Camera {
 	mat4 view;
@@ -13,7 +13,7 @@ layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	float depth = texture(depthMap, uv).x;
+	float depth = texture(depthPrepass, uv).x;
 	
 	float x = uv.x * 2.0 - 1.0;
 	float y = uv.y * 2.0 - 1.0;
