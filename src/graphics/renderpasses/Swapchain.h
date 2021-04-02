@@ -1,7 +1,6 @@
 #pragma once
 #include "vulkan/vulkan.hpp"
 #include "../../utils/structs/RendererStructs.h"
-#include "../../window/Window.h"
 #include "../sync/Semaphore.h"
 
 struct Swapchain {
@@ -14,7 +13,7 @@ struct Swapchain {
 	std::vector<VkImage> images;
 	std::vector<VkImageView> imageViews;
 
-	void init(const Window* window, uint32_t* swapchainSize);
+	void init(uint32_t* swapchainSize);
 	void destroy();
 	VkResult acquireNextImage(Semaphore* imageAvailableSemaphore, uint32_t* index);
 };

@@ -13,12 +13,11 @@ int main(void) {
 	ecs.init();
 
 	Game g;
+	g.applicationName = "NeigeEngine Test";
 
-	Window w;
-	w.extent.width = 720;
-	w.extent.height = 480;
+	window.extent.width = 720;
+	window.extent.height = 480;
 
-	g.window = &w;
 	g.init();
 
 	Entity sceneCamera = ecs.createEntity();
@@ -28,7 +27,7 @@ int main(void) {
 		45.0f,
 		0.3f,
 		1000.0f,
-		"../modelfiles/sunset_forest_8k.hdr"
+		"../modelfiles/whitepixel.hdr"
 		});
 
 	/*std::default_random_engine generator;
@@ -200,6 +199,42 @@ int main(void) {
 		glm::vec3(-1.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f),
 		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light7 = ecs.createEntity();
+	ecs.addComponent(light7, Light{
+		LightType::POINT,
+		glm::vec3(1.0f, 2.0f, 1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light8 = ecs.createEntity();
+	ecs.addComponent(light8, Light{
+		LightType::POINT,
+		glm::vec3(1.0f, 2.0f, -1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(0.5f, 1.0f, 0.0f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light9 = ecs.createEntity();
+	ecs.addComponent(light9, Light{
+		LightType::POINT,
+		glm::vec3(-1.0f, 2.0f, 1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(1.0f, 0.0f, 0.5f),
+		glm::vec2(0.0f)
+		});
+
+	Entity light10 = ecs.createEntity();
+	ecs.addComponent(light10, Light{
+		LightType::POINT,
+		glm::vec3(-1.0f, 2.0f, -1.0f),
+		glm::vec3(0.0f),
+		glm::vec3(1.0f, 1.0f, 0.0f),
 		glm::vec2(0.0f)
 		});
 

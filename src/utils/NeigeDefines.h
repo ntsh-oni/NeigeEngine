@@ -56,7 +56,7 @@
 			std::cerr << "\033[1m\033[95mMEMORY INFO : \033[39m\033[0m" << m << std::endl; \
 		} while(0)
 #else
-#define NEIGE_SHADER_ERROR(m)
+#define MEMORY_INFO(m)
 #endif
 
 #ifndef NDEBUG

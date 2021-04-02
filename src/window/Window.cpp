@@ -2,13 +2,15 @@
 #include "../graphics/resources/RendererResources.h"
 #include "../inputs/Inputs.h"
 
-void Window::init() {
+void Window::init(const std::string applicationName) {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	window = glfwCreateWindow(extent.width, extent.height, "", nullptr, nullptr);
+	window = glfwCreateWindow(extent.width, extent.height, applicationName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
+	glfwSetCursorPosCallback(window, mousePositionCallback);
 }
 
 void Window::destroy() {
@@ -317,12 +319,95 @@ void Window::keyAction(int key, int action) {
 	}
 }
 
+void Window::mouseButtonAction(int button, int action) {
+	switch (button) {
+	case GLFW_MOUSE_BUTTON_LEFT:
+		if (mouseInputs.leftButton == ButtonState::NONE) {
+			mouseInputs.leftButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.leftButton == ButtonState::PRESSED || mouseInputs.leftButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.leftButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		if (mouseInputs.rightButton == ButtonState::NONE) {
+			mouseInputs.rightButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.rightButton == ButtonState::PRESSED || mouseInputs.rightButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.rightButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_MIDDLE:
+		if (mouseInputs.middleButton == ButtonState::NONE) {
+			mouseInputs.middleButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.middleButton == ButtonState::PRESSED || mouseInputs.middleButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.middleButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_4:
+		if (mouseInputs.fourButton == ButtonState::NONE) {
+			mouseInputs.fourButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.fourButton == ButtonState::PRESSED || mouseInputs.fourButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.fourButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_5:
+		if (mouseInputs.fiveButton == ButtonState::NONE) {
+			mouseInputs.fiveButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.fiveButton == ButtonState::PRESSED || mouseInputs.fiveButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.fiveButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_6:
+		if (mouseInputs.sixButton == ButtonState::NONE) {
+			mouseInputs.sixButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.sixButton == ButtonState::PRESSED || mouseInputs.sixButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.sixButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_7:
+		if (mouseInputs.sevenButton == ButtonState::NONE) {
+			mouseInputs.sevenButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.sevenButton == ButtonState::PRESSED || mouseInputs.sevenButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.sevenButton = ButtonState::RELEASED;
+		}
+		break;
+	case GLFW_MOUSE_BUTTON_8:
+		if (mouseInputs.eightButton == ButtonState::NONE) {
+			mouseInputs.eightButton = ButtonState::PRESSED;
+		}
+		else if ((mouseInputs.eightButton == ButtonState::PRESSED || mouseInputs.eightButton == ButtonState::HELD) && action == GLFW_RELEASE) {
+			mouseInputs.eightButton = ButtonState::RELEASED;
+		}
+		break;
+	}
+}
+
+void Window::mousePositionAction(double x, double y) {
+	mouseInputs.setPosition(x, y);
+}
+
+void Window::showCursor(bool show) {
+	if (show) {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	else {
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+}
+
 bool Window::windowGotClosed() {
 	return glfwWindowShouldClose(window);
 }
 
 void Window::pollEvents() {
 	keyboardInputs.update();
+	mouseInputs.update();
 	glfwPollEvents();
 }
 

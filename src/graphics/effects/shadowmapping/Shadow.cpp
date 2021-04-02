@@ -23,7 +23,6 @@ void Shadow::init() {
 	ImageTools::createImageSampler(&defaultShadow.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_LESS);
 	ImageTools::transitionLayout(defaultShadow.image, physicalDevice.depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
-
 	graphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
 	graphicsPipeline.renderPass = &renderPass;
 	graphicsPipeline.viewport = &viewport;

@@ -16,7 +16,6 @@ void Game::init() {
 	rendererMask.set(ecs.getComponentId<Renderable>());
 	rendererMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Renderer>(rendererMask);
-	renderer->window = window;
 
 	lighting = ecs.registerSystem<Lighting>();
 	ComponentMask lightingMask;
@@ -40,12 +39,13 @@ void Game::init() {
 }
 
 void Game::launch() {
-	window->init();
+	window.init(applicationName);
+	cameraControls->init();
 	lighting->init();
-	renderer->init();
+	renderer->init(applicationName);
 
-	while (!window->windowGotClosed()) {
-		window->pollEvents();
+	while (!window.windowGotClosed()) {
+		window.pollEvents();
 
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - lastFrame;
@@ -62,5 +62,5 @@ void Game::launch() {
 	}
 
 	renderer->destroy();
-	window->destroy();
+	window.destroy();
 }

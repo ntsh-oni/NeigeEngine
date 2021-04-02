@@ -1,10 +1,11 @@
 #include "Swapchain.h"
 #include "../../utils/resources/ImageTools.h"
 #include "../resources/RendererResources.h"
+#include "../../window/WindowResources.h"
 
-void Swapchain::init(const Window* window, uint32_t* swapchainSize) {
-	swapchainSupport = physicalDevice.swapchainSupport(window->surface.surface);
-	extent = swapchainSupport.extent(window->extent);
+void Swapchain::init(uint32_t* swapchainSize) {
+	swapchainSupport = physicalDevice.swapchainSupport(window.surface.surface);
+	extent = swapchainSupport.extent(window.extent);
 	surfaceFormat = swapchainSupport.surfaceFormat();
 	presentMode = swapchainSupport.presentMode();
 	uint32_t minImageCount = swapchainSupport.capabilities.minImageCount + 1;
@@ -16,7 +17,7 @@ void Swapchain::init(const Window* window, uint32_t* swapchainSize) {
 	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchainCreateInfo.pNext = nullptr;
 	swapchainCreateInfo.flags = 0;
-	swapchainCreateInfo.surface = window->surface.surface;
+	swapchainCreateInfo.surface = window.surface.surface;
 	swapchainCreateInfo.minImageCount = minImageCount;
 	swapchainCreateInfo.imageFormat = surfaceFormat.format;
 	swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
