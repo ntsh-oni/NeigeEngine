@@ -1,7 +1,8 @@
 #include "PhysicalDevicePicker.h"
 #include "../resources/RendererResources.h"
+#include "../../window/WindowResources.h"
 
-void PhysicalDevicePicker::pick(Window* window) {
+void PhysicalDevicePicker::pick() {
 	PhysicalDevice preferredDevice;
 	VkPhysicalDeviceType preferredDeviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
 	uint32_t deviceCount = 0;
@@ -18,7 +19,7 @@ void PhysicalDevicePicker::pick(Window* window) {
 		devices.push_back(tmpPhysicalDevice);
 	}
 	for (PhysicalDevice device : devices) {
-		if (device.isSuitable(&window->surface)) {
+		if (device.isSuitable(&window.surface)) {
 			if (device.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 				// GPU
 				preferredDevice = device;

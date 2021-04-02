@@ -4,6 +4,7 @@
 #include "../utils/NeigeDefines.h"
 #include "../utils/structs/RendererStructs.h"
 #include "Surface.h"
+#include <string>
 #include <vector>
 
 struct Window {
@@ -13,10 +14,22 @@ struct Window {
 		pointer->windowGotResized();
 	}
 
-	// Callback for keys
-	static void keyCallback(GLFWwindow* window, int key, [[maybe_unused]]  int scancode, int action, [[maybe_unused]]  int mods) {
+	// Callback for keyboard keys
+	static void keyCallback(GLFWwindow* window, int key, [[maybe_unused]]  int scancode, int action, [[maybe_unused]] int mods) {
 		auto pointer = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
 		pointer->keyAction(key, action);
+	}
+
+	// Callback for mouse buttons
+	static void mouseButtonCallback(GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {
+		auto pointer = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));;
+		pointer->mouseButtonAction(button, action);
+	}
+
+	// Callback for mouse position
+	static void mousePositionCallback(GLFWwindow* window, double x, double y) {
+		auto pointer = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+		pointer->mousePositionAction(x, y);
 	}
 
 	GLFWwindow* window;
@@ -24,13 +37,16 @@ struct Window {
 	VkExtent2D extent;
 	bool gotResized = false;
 
-	void init();
+	void init(const std::string applicationName);
 	void destroy();
 	void updateExtent();
 	std::vector<const char*> instanceExtensions();
 	void createSurface();
 	void windowGotResized();
 	void keyAction(int key, int action);
+	void mouseButtonAction(int button, int action);
+	void mousePositionAction(double x, double y);
+	void showCursor(bool show);
 	bool windowGotClosed();
 	void pollEvents();
 	void waitEvents();

@@ -9,12 +9,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback([[maybe_unused]] VkDebugUtilsMessag
 	return VK_FALSE;
 }
 
-void Instance::init(uint32_t engineVersion, const std::vector<const char*> windowExtensions) {
+void Instance::init(const std::string applicationName, uint32_t engineVersion, const std::vector<const char*> windowExtensions) {
 	// Application
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo.pNext = 0;
-	applicationInfo.pApplicationName = "";
+	applicationInfo.pApplicationName = applicationName.c_str();
 	applicationInfo.pEngineName = "NeigeEngine";
 	applicationInfo.engineVersion = engineVersion;
 	applicationInfo.apiVersion = VK_VERSION_1_2;

@@ -27,13 +27,15 @@ struct GraphicsPipeline {
 	RenderPass* renderPass;
 	Viewport* viewport;
 	Topology topology = Topology::TRIANGLE_LIST;
+	std::vector<Set> sets;
+	std::vector<VkPushConstantRange> pushConstantRanges;
+
+	// Parameters
 	bool colorBlend = true;
 	bool multiSample = false;
 	bool depthWrite = true;
 	Compare depthCompare = LESS_OR_EQUAL;
 	bool backfaceCulling = true;
-	std::vector<Set> sets;
-	std::vector<VkPushConstantRange> pushConstantRanges;
 
 	void init();
 	void destroy();

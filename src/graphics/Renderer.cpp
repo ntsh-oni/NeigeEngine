@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "resources/RendererResources.h"
 #include "resources/ShaderResources.h"
+#include "../window/WindowResources.h"
 #include "../inputs/Inputs.h"
 #include "../ecs/components/Transform.h"
 #include "../ecs/components/Light.h"
@@ -9,23 +10,23 @@
 
 extern ECS ecs;
 
-void Renderer::init() {
+void Renderer::init(const std::string applicationName) {
 	NEIGE_INFO("Renderer init start.");
 
 	// Instance
-	instance.init(VK_MAKE_VERSION(0, 0, 1), window->instanceExtensions());
+	instance.init(applicationName, VK_MAKE_VERSION(0, 0, 1), window.instanceExtensions());
 
 	// Surface
-	window->createSurface();
+	window.createSurface();
 
 	// Pick physical device
-	PhysicalDevicePicker::pick(window);
+	PhysicalDevicePicker::pick();
 
 	// Logical device
 	logicalDevice.init();
 
 	// Swapchain
-	swapchain.init(window, &swapchainSize);
+	swapchain.init(&swapchainSize);
 
 	NEIGE_INFO("Max frames in flight : " + std::to_string(MAX_FRAMES_IN_FLIGHT));
 	NEIGE_INFO("Actual frames in flight : " + std::to_string(framesInFlight));
@@ -37,7 +38,7 @@ void Renderer::init() {
 	NEIGE_INFO("Depth format : " + NeigeVKTranslate::vkFormatToString(physicalDevice.depthFormat));
 
 	// Viewports
-	fullscreenViewport.init(window->extent.width, window->extent.height);
+	fullscreenViewport.init(window.extent.width, window.extent.height);
 
 	// Render passes
 	{
@@ -68,7 +69,7 @@ void Renderer::init() {
 
 	// Camera
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
-	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window->extent.width / static_cast<float>(window->extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
+	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
 
 	cameraBuffers.resize(framesInFlight);
 	for (Buffer& buffer : cameraBuffers) {
@@ -295,8 +296,8 @@ void Renderer::update() {
 		}
 	}
 
-	if (window->gotResized) {
-		window->gotResized = false;
+	if (window.gotResized) {
+		window.gotResized = false;
 		reloadOnResize();
 	}
 
@@ -340,8 +341,8 @@ void Renderer::update() {
 	presentInfo.pImageIndices = &swapchainImage;
 	presentInfo.pResults = nullptr;
 	result = vkQueuePresentKHR(logicalDevice.queues.presentQueue, &presentInfo);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->gotResized) {
-		window->gotResized = false;
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.gotResized) {
+		window.gotResized = false;
 		reloadOnResize();
 	}
 	else if (result != VK_SUCCESS) {
@@ -408,7 +409,7 @@ void Renderer::destroy() {
 		RFsemaphore.destroy();
 	}
 	memoryAllocator.destroy();
-	window->surface.destroy();
+	window.surface.destroy();
 	logicalDevice.destroy();
 	instance.destroy();
 }
@@ -584,7 +585,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	renderingCommandBuffers[frameInFlightIndex].begin();
 
 	// Depth prepass
-	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffers[frameInFlightIndex].framebuffer, window->extent);
+	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffers[frameInFlightIndex].framebuffer, window.extent);
 	depthPrepass.graphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 
 	for (Entity object : entities) {
@@ -623,7 +624,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	}
 
 	// Scene
-	sceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], sceneFramebuffers[frameInFlightIndex].framebuffer, window->extent);
+	sceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], sceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
@@ -650,7 +651,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	ssao.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 
 	// Post-processing
-	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postFramebuffers[framebufferIndex].framebuffer, window->extent);
+	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postFramebuffers[framebufferIndex].framebuffer, window.extent);
 	graphicsPipelines.at("post").bind(&renderingCommandBuffers[frameInFlightIndex]);
 	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 
@@ -664,7 +665,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 void Renderer::createResources() {
 	// Framebuffers
 	{
-		ImageTools::createImage(&colorImage.image, 1, window->extent.width, window->extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.allocationId);
+		ImageTools::createImage(&colorImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.allocationId);
 		ImageTools::createImageView(&colorImage.imageView, colorImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 		ImageTools::createImageSampler(&colorImage.imageSampler, 2, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	
@@ -674,7 +675,7 @@ void Renderer::createResources() {
 		for (uint32_t i = 0; i < swapchainSize; i++) {
 			framebufferAttachments[i].push_back(colorImage.imageView);
 			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
-			sceneFramebuffers[i].init(&renderPasses.at("scene"), framebufferAttachments[i], window->extent.width, window->extent.height, 1);
+			sceneFramebuffers[i].init(&renderPasses.at("scene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
 	}
 
@@ -684,7 +685,7 @@ void Renderer::createResources() {
 		postFramebuffers.resize(swapchainSize);
 		for (uint32_t i = 0; i < swapchainSize; i++) {
 			framebufferAttachments[i].push_back(swapchain.imageViews[i]);
-			postFramebuffers[i].init(&renderPasses.at("post"), framebufferAttachments[i], window->extent.width, window->extent.height, 1);
+			postFramebuffers[i].init(&renderPasses.at("post"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
 	}
 }
@@ -749,20 +750,20 @@ void Renderer::createPostProcessDescriptorSet() {
 }
 
 void Renderer::reloadOnResize() {
-	while (window->extent.width == 0 || window->extent.height == 0) {
-		window->waitEvents();
+	while (window.extent.width == 0 || window.extent.height == 0) {
+		window.waitEvents();
 	}
 	logicalDevice.wait();
 
 	destroyResources();
 
 	// Swapchain
-	swapchain.init(window, &swapchainSize);
+	swapchain.init(&swapchainSize);
 
-	fullscreenViewport.viewport.width = static_cast<float>(window->extent.width);
-	fullscreenViewport.viewport.height = static_cast<float>(window->extent.height);
-	fullscreenViewport.scissor.extent.width = window->extent.width;
-	fullscreenViewport.scissor.extent.height = window->extent.height;
+	fullscreenViewport.viewport.width = static_cast<float>(window.extent.width);
+	fullscreenViewport.viewport.height = static_cast<float>(window.extent.height);
+	fullscreenViewport.scissor.extent.width = window.extent.width;
+	fullscreenViewport.scissor.extent.height = window.extent.height;
 
 	// Depth prepass
 	depthPrepass.createResources(fullscreenViewport);
@@ -775,7 +776,7 @@ void Renderer::reloadOnResize() {
 	createPostProcessDescriptorSet();
 
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
-	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window->extent.width / static_cast<float>(window->extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
+	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
 
 	for (uint32_t i = 0; i < framesInFlight; i++) {
 		for (Entity entity : entities) {

@@ -22,7 +22,6 @@
 #include "effects/envmap/Envmap.h"
 #include "effects/shadowmapping/Shadow.h"
 #include "effects/ssao/SSAO.h"
-#include "../window/Window.h"
 #include "../ecs/ECS.h"
 #include <iostream>
 #include <vector>
@@ -30,8 +29,6 @@
 #include <map>
 
 struct Renderer : public System {
-	Window* window;
-
 	// Envmap
 	GraphicsPipeline skyboxGraphicsPipeline;
 	std::vector<DescriptorSet> skyboxDescriptorSets;
@@ -63,7 +60,7 @@ struct Renderer : public System {
 
 	bool pressed = false;
 
-	void init();
+	void init(const std::string applicationName);
 	void update();
 	void destroy();
 	void loadObject(Entity object);
