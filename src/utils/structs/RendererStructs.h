@@ -92,3 +92,10 @@ struct SubpassDependency {
 	VkAccessFlags dstAccessMask;
 	VkDependencyFlags dependencyFlags;
 };
+
+// Memory Info
+struct MemoryInfo {
+	VkDeviceSize chunkId;
+	VkDeviceSize offset;
+	VkDeviceSize allocationId;
+};

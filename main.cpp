@@ -207,7 +207,7 @@ int main(void) {
 		LightType::POINT,
 		glm::vec3(1.0f, 2.0f, 1.0f),
 		glm::vec3(0.0f),
-		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(1.0f, 0.25f, 0.75f),
 		glm::vec2(0.0f)
 		});
 
@@ -216,7 +216,7 @@ int main(void) {
 		LightType::POINT,
 		glm::vec3(1.0f, 2.0f, -1.0f),
 		glm::vec3(0.0f),
-		glm::vec3(0.5f, 1.0f, 0.0f),
+		glm::vec3(0.5f, 1.0f, 0.75f),
 		glm::vec2(0.0f)
 		});
 
@@ -225,7 +225,7 @@ int main(void) {
 		LightType::POINT,
 		glm::vec3(-1.0f, 2.0f, 1.0f),
 		glm::vec3(0.0f),
-		glm::vec3(1.0f, 0.0f, 0.5f),
+		glm::vec3(1.0f, 0.5f, 0.5f),
 		glm::vec2(0.0f)
 		});
 
@@ -234,7 +234,7 @@ int main(void) {
 		LightType::POINT,
 		glm::vec3(-1.0f, 2.0f, -1.0f),
 		glm::vec3(0.0f),
-		glm::vec3(1.0f, 1.0f, 0.0f),
+		glm::vec3(0.5f, 0.0f, 0.5f),
 		glm::vec2(0.0f)
 		});
 

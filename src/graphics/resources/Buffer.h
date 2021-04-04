@@ -1,11 +1,11 @@
 #pragma once
 #include "vulkan/vulkan.hpp"
+#include "../../utils/structs/RendererStructs.h"
 
 struct Buffer {
 	VkBuffer buffer = VK_NULL_HANDLE;
-	VkDeviceMemory deviceMemory = VK_NULL_HANDLE;
 
-	VkDeviceSize allocationId;
+	MemoryInfo memoryInfo = {};
 
 	void destroy();
 	void map(VkDeviceSize offset, VkDeviceSize size, void** data);

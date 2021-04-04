@@ -11,7 +11,7 @@ struct Image {
 	uint32_t height;
 	uint32_t mipmapLevels;
 
-	VkDeviceSize allocationId;
+	MemoryInfo memoryInfo = {};
 
 	void destroy();
 };

@@ -1,7 +1,8 @@
 #include "MemoryAllocator.h"
 #include "../../graphics/resources/RendererResources.h"
 
-Chunk::Chunk(int32_t memoryType, VkDeviceSize size) {
+Chunk::Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size) {
+	id = chunkId;
 	type = memoryType;
 
 	VkMemoryAllocateInfo allocInfo = {};
@@ -21,7 +22,7 @@ Chunk::Chunk(int32_t memoryType, VkDeviceSize size) {
 	head = block;
 }
 
-VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize* allocationNumber) {
+VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize* allocationNumber, MemoryInfo* memoryInfo) {
 	Block* curr = head;
 	while (curr) {
 		if (!curr->inUse) {
@@ -46,6 +47,11 @@ VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize*
 				if (curr->size == memRequirements.size) {
 					curr->inUse = true;
 					curr->allocationId = (*allocationNumber)++;
+
+					memoryInfo->chunkId = id;
+					memoryInfo->offset = curr->offset;
+					memoryInfo->allocationId = (*allocationNumber) - 1;
+
 					return curr->offset;
 				}
 
@@ -66,6 +72,10 @@ VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize*
 				}
 				curr->next = newBlock;
 				curr->allocationId = (*allocationNumber)++;
+
+				memoryInfo->chunkId = id;
+				memoryInfo->offset = curr->offset;
+				memoryInfo->allocationId = (*allocationNumber) - 1;
 
 				return curr->offset;
 			}
@@ -92,7 +102,7 @@ void MemoryAllocator::destroy() {
 	}
 }
 
-VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPropertyFlags flags) {
+VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPropertyFlags flags, MemoryInfo* memoryInfo) {
 	VkMemoryRequirements memRequirements;
 	vkGetBufferMemoryRequirements(logicalDevice.device, *bufferToAllocate, &memRequirements);
 	int32_t properties = findProperties(memRequirements.memoryTypeBits, flags);
@@ -101,7 +111,7 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 	for (Chunk& chunk : chunks) {
 		if (chunk.type == properties) {
 			VkDeviceSize offset;
-			offset = chunk.allocate(memRequirements, &allocationNumber);
+			offset = chunk.allocate(memRequirements, &allocationNumber, memoryInfo);
 
 			if (offset != -1) {
 				vkBindBufferMemory(logicalDevice.device, *bufferToAllocate, chunk.memory, offset);
@@ -111,11 +121,11 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
 
 	// Add to this chunk
 	VkDeviceSize offset;
-	offset = newChunk.allocate(memRequirements, &allocationNumber);
+	offset = newChunk.allocate(memRequirements, &allocationNumber, memoryInfo);
 
 	if (offset == -1) {
 		NEIGE_ERROR("Unable to allocate memory (buffer).");
@@ -129,7 +139,7 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 	return allocationNumber - 1;
 }
 
-VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropertyFlags flags) {
+VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropertyFlags flags, MemoryInfo* memoryInfo) {
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(logicalDevice.device, *imageToAllocate, &memRequirements);
 	int32_t properties = findProperties(memRequirements.memoryTypeBits, flags);
@@ -138,7 +148,7 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 	for (Chunk& chunk : chunks) {
 		if (chunk.type == properties) {
 			VkDeviceSize offset;
-			offset = chunk.allocate(memRequirements, &allocationNumber);
+			offset = chunk.allocate(memRequirements, &allocationNumber, memoryInfo);
 
 			if (offset != -1) {
 				vkBindImageMemory(logicalDevice.device, *imageToAllocate, chunk.memory, offset);
@@ -148,11 +158,11 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
 
 	// Add to this chunk
 	VkDeviceSize offset;
-	offset = newChunk.allocate(memRequirements, &allocationNumber);
+	offset = newChunk.allocate(memRequirements, &allocationNumber, memoryInfo);
 
 	if (offset == -1) {
 		NEIGE_ERROR("Unable to allocate memory (image).");
@@ -166,47 +176,46 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 	return allocationNumber - 1;
 }
 
-void MemoryAllocator::deallocate(VkDeviceSize allocationId) {
-	for (Chunk& chunk : chunks) {
-		Block* curr = chunk.head;
-		while (curr) {
-			if (curr->inUse && curr->allocationId == allocationId) {
-				curr->inUse = false;
-				curr->allocationId = 0;
+void MemoryAllocator::deallocate(VkDeviceSize chunkId, VkDeviceSize allocationId) {
+	Chunk* chunk = &chunks[chunkId];
+	Block* curr = chunk->head;
+	while (curr) {
+		if (curr->inUse && curr->allocationId == allocationId) {
+			curr->inUse = false;
+			curr->allocationId = 0;
 
-				// Blocks fusion
-				// Fusion with previous block
-				if (curr->prev && !curr->prev->inUse) {
-					Block* prev = curr->prev;
-					if (prev->prev) {
-						prev->prev->next = curr;
-						curr->prev = prev->prev;
-					}
-					else {
-						curr->prev = nullptr;
-						chunk.head = curr;
-					}
-					curr->offset = prev->offset;
-					curr->size += prev->size;
-					delete prev;
+			// Blocks fusion
+			// Fusion with previous block
+			if (curr->prev && !curr->prev->inUse) {
+				Block* prev = curr->prev;
+				if (prev->prev) {
+					prev->prev->next = curr;
+					curr->prev = prev->prev;
 				}
-				// Fusion with next block
-				if (curr->next && !curr->next->inUse) {
-					Block* next = curr->next;
-					if (next->next) {
-						next->next->prev = curr;
-						curr->next = next->next;
-					}
-					else {
-						curr->next = nullptr;
-					}
-					curr->size += next->size;
-					delete next;
+				else {
+					curr->prev = nullptr;
+					chunk->head = curr;
 				}
-				return;
+				curr->offset = prev->offset;
+				curr->size += prev->size;
+				delete prev;
 			}
-			curr = curr->next;
+			// Fusion with next block
+			if (curr->next && !curr->next->inUse) {
+				Block* next = curr->next;
+				if (next->next) {
+					next->next->prev = curr;
+					curr->next = next->next;
+				}
+				else {
+					curr->next = nullptr;
+				}
+				curr->size += next->size;
+				delete next;
+			}
+			return;
 		}
+		curr = curr->next;
 	}
 	NEIGE_WARNING("Could not deallocate.");
 }
@@ -231,7 +240,7 @@ void MemoryAllocator::memoryAnalyzer() {
 	MEMORY_INFO("Showing all memory chunks:");
 	for (size_t i = 0; i < chunks.size(); i++) {
 		Chunk& chunk = chunks.at(i);
-		std::cout << "Chunk " << i << std::endl;
+		std::cout << "Chunk " << chunk.id << std::endl;
 		Block* curr = chunk.head;
 		std::cout << "[";
 		while (curr) {

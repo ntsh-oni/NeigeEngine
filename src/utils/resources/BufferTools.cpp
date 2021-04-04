@@ -5,7 +5,7 @@ void BufferTools::createBuffer(VkBuffer& buffer,
 	VkDeviceSize size,
 	VkBufferUsageFlags usage,
 	VkMemoryPropertyFlags memoryProperties,
-	VkDeviceSize* allocationId) {
+	MemoryInfo* memoryInfo) {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.pNext = nullptr;
@@ -15,12 +15,12 @@ void BufferTools::createBuffer(VkBuffer& buffer,
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	NEIGE_VK_CHECK(vkCreateBuffer(logicalDevice.device, &bufferCreateInfo, nullptr, &buffer));
 
-	*allocationId = memoryAllocator.allocate(&buffer, memoryProperties);
+	memoryAllocator.allocate(&buffer, memoryProperties, memoryInfo);
 }
 
 void BufferTools::createStagingBuffer(VkBuffer& buffer,
-	VkDeviceMemory& deviceMemory,
-	VkDeviceSize size) {
+	VkDeviceSize size,
+	MemoryInfo* memoryInfo) {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.pNext = nullptr;
@@ -30,21 +30,12 @@ void BufferTools::createStagingBuffer(VkBuffer& buffer,
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	NEIGE_VK_CHECK(vkCreateBuffer(logicalDevice.device, &bufferCreateInfo, nullptr, &buffer));
 
-	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(logicalDevice.device, buffer, &memoryRequirements);
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.pNext = nullptr;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-	memoryAllocateInfo.memoryTypeIndex = memoryAllocator.findProperties(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	NEIGE_VK_CHECK(vkAllocateMemory(logicalDevice.device, &memoryAllocateInfo, nullptr, &deviceMemory));
-
-	vkBindBufferMemory(logicalDevice.device, buffer, deviceMemory, 0);
+	memoryAllocator.allocate(&buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryInfo);
 }
 
 void BufferTools::createUniformBuffer(VkBuffer& buffer,
-	VkDeviceMemory& deviceMemory,
-	VkDeviceSize size) {
+	VkDeviceSize size,
+	MemoryInfo* memoryInfo) {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.pNext = nullptr;
@@ -54,16 +45,7 @@ void BufferTools::createUniformBuffer(VkBuffer& buffer,
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	NEIGE_VK_CHECK(vkCreateBuffer(logicalDevice.device, &bufferCreateInfo, nullptr, &buffer));
 
-	VkMemoryRequirements memoryRequirements;
-	vkGetBufferMemoryRequirements(logicalDevice.device, buffer, &memoryRequirements);
-	VkMemoryAllocateInfo memoryAllocateInfo = {};
-	memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memoryAllocateInfo.pNext = nullptr;
-	memoryAllocateInfo.allocationSize = memoryRequirements.size;
-	memoryAllocateInfo.memoryTypeIndex = memoryAllocator.findProperties(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	NEIGE_VK_CHECK(vkAllocateMemory(logicalDevice.device, &memoryAllocateInfo, nullptr, &deviceMemory));
-
-	vkBindBufferMemory(logicalDevice.device, buffer, deviceMemory, 0);
+	memoryAllocator.allocate(&buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryInfo);
 }
 
 void BufferTools::copyBuffer(VkBuffer srcBuffer,
