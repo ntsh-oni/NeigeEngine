@@ -1,6 +1,7 @@
 #pragma once
 #include "vulkan/vulkan.hpp"
 #include "../NeigeDefines.h"
+#include "../structs/RendererStructs.h"
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -19,12 +20,13 @@ struct Block {
 };
 
 struct Chunk {
+	VkDeviceSize id;
 	VkDeviceMemory memory;
 	int32_t type;
 	Block* head;
 
-	Chunk(int32_t memoryType, VkDeviceSize size);
-	VkDeviceSize allocate(VkMemoryRequirements memRequirements, VkDeviceSize* allocationNumber);
+	Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size);
+	VkDeviceSize allocate(VkMemoryRequirements memRequirements, VkDeviceSize* allocationNumber, MemoryInfo* memoryInfo);
 	void freeBlocks();
 };
 
@@ -33,9 +35,9 @@ struct MemoryAllocator {
 	VkDeviceSize allocationNumber = 1;
 
 	void destroy();
-	VkDeviceSize allocate(VkBuffer* bufferToAllocate, VkMemoryPropertyFlags flags);
-	VkDeviceSize allocate(VkImage* imageToAllocate, VkMemoryPropertyFlags flags);
-	void deallocate(VkDeviceSize allocationId);
+	VkDeviceSize allocate(VkBuffer* bufferToAllocate, VkMemoryPropertyFlags flags, MemoryInfo* memoryInfo);
+	VkDeviceSize allocate(VkImage* imageToAllocate, VkMemoryPropertyFlags flags, MemoryInfo* memoryInfo);
+	void deallocate(VkDeviceSize chunkId, VkDeviceSize allocationId);
 	int32_t findProperties(uint32_t memoryTypeBitsRequirement, VkMemoryPropertyFlags requiredProperties);
 	void memoryAnalyzer();
 };

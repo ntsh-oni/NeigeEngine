@@ -10,23 +10,23 @@ void Model::init(std::string filePath) {
 
 	Buffer stagingVertexBuffer;
 	VkDeviceSize size = vertices.size() * sizeof(Vertex);
-	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, stagingVertexBuffer.deviceMemory, size);
+	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, size, &stagingVertexBuffer.memoryInfo);
 	void* vertexData;
 	stagingVertexBuffer.map(0, size, &vertexData);
 	memcpy(vertexData, vertices.data(), static_cast<size_t>(size));
 	stagingVertexBuffer.unmap();
-	BufferTools::createBuffer(vertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer.allocationId);
+	BufferTools::createBuffer(vertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingVertexBuffer.buffer, vertexBuffer.buffer, size);
 	stagingVertexBuffer.destroy();
 
 	Buffer stagingIndexBuffer;
 	size = indices.size() * sizeof(uint32_t);
-	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, stagingIndexBuffer.deviceMemory, size);
+	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, size, &stagingIndexBuffer.memoryInfo);
 	void* indexData;
 	stagingIndexBuffer.map(0, size, &indexData);
 	memcpy(indexData, indices.data(), static_cast<size_t>(size));
 	stagingIndexBuffer.unmap();
-	BufferTools::createBuffer(indexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer.allocationId);
+	BufferTools::createBuffer(indexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingIndexBuffer.buffer, indexBuffer.buffer, size);
 	stagingIndexBuffer.destroy();
 
@@ -36,7 +36,7 @@ void Model::init(std::string filePath) {
 		for (Buffer& buffer : mesh.boneBuffers) {
 			NEIGE_ASSERT(mesh.boneList.size() <= MAX_BONES, "A mesh has more than " + std::to_string(MAX_BONES) + " bones.");
 
-			BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(BoneUniformBufferObject));
+			BufferTools::createUniformBuffer(buffer.buffer, sizeof(BoneUniformBufferObject), &buffer.memoryInfo);
 
 			BoneUniformBufferObject bubo = {};
 			for (size_t i = 0; i < mesh.boneList.size(); i++) {

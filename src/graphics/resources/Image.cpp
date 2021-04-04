@@ -12,7 +12,7 @@ void Image::destroy() {
 		imageView = VK_NULL_HANDLE;
 	}
 	if (image != VK_NULL_HANDLE) {
-		memoryAllocator.deallocate(allocationId);
+		memoryAllocator.deallocate(memoryInfo.chunkId, memoryInfo.allocationId);
 		vkDestroyImage(logicalDevice.device, image, nullptr);
 		image = VK_NULL_HANDLE;
 	}

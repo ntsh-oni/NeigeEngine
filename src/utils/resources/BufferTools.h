@@ -1,6 +1,7 @@
 #pragma once
 #include "vulkan/vulkan.hpp"
 #include "../NeigeDefines.h"
+#include "../structs/RendererStructs.h"
 #include "../../graphics/commands/CommandBuffer.h"
 #include "../../graphics/commands/CommandPool.h"
 
@@ -9,13 +10,13 @@ struct BufferTools {
 		VkDeviceSize size,
 		VkBufferUsageFlags usage,
 		VkMemoryPropertyFlags memoryProperties,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void createStagingBuffer(VkBuffer& buffer,
-		VkDeviceMemory& deviceMemory,
-		VkDeviceSize size);
+		VkDeviceSize size,
+		MemoryInfo* memoryInfo);
 	static void createUniformBuffer(VkBuffer& buffer,
-		VkDeviceMemory& deviceMemory,
-		VkDeviceSize size);
+		VkDeviceSize size,
+		MemoryInfo* memoryInfo);
 	static void copyBuffer(VkBuffer srcBuffer,
 		VkBuffer dstBuffer,
 		VkDeviceSize size);

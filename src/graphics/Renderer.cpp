@@ -73,19 +73,19 @@ void Renderer::init(const std::string applicationName) {
 
 	cameraBuffers.resize(framesInFlight);
 	for (Buffer& buffer : cameraBuffers) {
-		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(CameraUniformBufferObject));
+		BufferTools::createUniformBuffer(buffer.buffer, sizeof(CameraUniformBufferObject), &buffer.memoryInfo);
 	}
 
 	// Lights
 	lightingBuffers.resize(framesInFlight);
 	for (Buffer& buffer : lightingBuffers) {
-		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(LightingUniformBufferObject));
+		BufferTools::createUniformBuffer(buffer.buffer, sizeof(LightingUniformBufferObject), &buffer.memoryInfo);
 	}
 
 	// Time
 	timeBuffers.resize(framesInFlight);
 	for (Buffer& buffer : timeBuffers) {
-		BufferTools::createUniformBuffer(buffer.buffer, buffer.deviceMemory, sizeof(double));
+		BufferTools::createUniformBuffer(buffer.buffer, sizeof(double), &buffer.memoryInfo);
 	}
 
 	// Depth prepass
@@ -175,7 +175,7 @@ void Renderer::init(const std::string applicationName) {
 				lightFramebuffers.resize(framesInFlight);
 
 				Image depthAttachment;
-				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.allocationId);
+				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.memoryInfo);
 				ImageTools::createImageView(&depthAttachment.imageView, depthAttachment.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 				shadow.images.push_back(depthAttachment);
 
@@ -210,35 +210,35 @@ void Renderer::init(const std::string applicationName) {
 	// Default textures
 	float defaultDiffuse[4] = { 0.5f, 0.5f, 0.5f, 1.0f };
 	Image defaultDiffuseImage;
-	ImageTools::loadColor(defaultDiffuse, &defaultDiffuseImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultDiffuseImage.mipmapLevels, &defaultDiffuseImage.allocationId);
+	ImageTools::loadColor(defaultDiffuse, &defaultDiffuseImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultDiffuseImage.mipmapLevels, &defaultDiffuseImage.memoryInfo);
 	ImageTools::createImageView(&defaultDiffuseImage.imageView, defaultDiffuseImage.image, 0, 1, 0, defaultDiffuseImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultDiffuseImage.imageSampler, defaultDiffuseImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.emplace("defaultDiffuse", defaultDiffuseImage);
 
 	float defaultNormal[4] = { 0.5f, 0.5f, 1.0f, 0.0f };
 	Image defaultNormalImage;
-	ImageTools::loadColor(defaultNormal, &defaultNormalImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultNormalImage.mipmapLevels, &defaultNormalImage.allocationId);
+	ImageTools::loadColor(defaultNormal, &defaultNormalImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultNormalImage.mipmapLevels, &defaultNormalImage.memoryInfo);
 	ImageTools::createImageView(&defaultNormalImage.imageView, defaultNormalImage.image, 0, 1, 0, defaultNormalImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultNormalImage.imageSampler, defaultNormalImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.emplace("defaultNormal", defaultNormalImage);
 
 	float defaultMetallicRoughness[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultMetallicRoughnessImage;
-	ImageTools::loadColor(defaultMetallicRoughness, &defaultMetallicRoughnessImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultMetallicRoughnessImage.mipmapLevels, &defaultMetallicRoughnessImage.allocationId);
+	ImageTools::loadColor(defaultMetallicRoughness, &defaultMetallicRoughnessImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultMetallicRoughnessImage.mipmapLevels, &defaultMetallicRoughnessImage.memoryInfo);
 	ImageTools::createImageView(&defaultMetallicRoughnessImage.imageView, defaultMetallicRoughnessImage.image, 0, 1, 0, defaultMetallicRoughnessImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultMetallicRoughnessImage.imageSampler, defaultMetallicRoughnessImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.emplace("defaultMetallicRoughness", defaultMetallicRoughnessImage);
 
 	float defaultEmissive[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultEmissiveImage;
-	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.allocationId);
+	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.memoryInfo);
 	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultEmissiveImage.imageSampler, defaultEmissiveImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.emplace("defaultEmissive", defaultEmissiveImage);
 
 	float defaultOcclusion[4] = { 1.0, 1.0, 1.0, 0.0 };
 	Image defaultOcclusionImage;
-	ImageTools::loadColor(defaultOcclusion, &defaultOcclusionImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultOcclusionImage.mipmapLevels, &defaultOcclusionImage.allocationId);
+	ImageTools::loadColor(defaultOcclusion, &defaultOcclusionImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultOcclusionImage.mipmapLevels, &defaultOcclusionImage.memoryInfo);
 	ImageTools::createImageView(&defaultOcclusionImage.imageView, defaultOcclusionImage.image, 0, 1, 0, defaultOcclusionImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultOcclusionImage.imageSampler, defaultOcclusionImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.emplace("defaultOcclusion", defaultOcclusionImage);
@@ -448,7 +448,7 @@ void Renderer::loadObject(Entity object) {
 	if (objectRenderable.graphicsPipeline->sets.size() != 0) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Buffers
-			BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, objectRenderable.buffers.at(i).deviceMemory, sizeof(ObjectUniformBufferObject));
+			BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
 
 			// Descriptor sets
 			objectRenderable.createEntityDescriptorSet(i);
@@ -665,7 +665,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 void Renderer::createResources() {
 	// Framebuffers
 	{
-		ImageTools::createImage(&colorImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.allocationId);
+		ImageTools::createImage(&colorImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.memoryInfo);
 		ImageTools::createImageView(&colorImage.imageView, colorImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 		ImageTools::createImageSampler(&colorImage.imageSampler, 2, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	
@@ -777,12 +777,4 @@ void Renderer::reloadOnResize() {
 
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
 	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
-
-	for (uint32_t i = 0; i < framesInFlight; i++) {
-		for (Entity entity : entities) {
-			auto& entityRenderable = ecs.getComponent<Renderable>(entity);
-
-			entityRenderable.createEntityDescriptorSet(i);
-		}
-	}
 }

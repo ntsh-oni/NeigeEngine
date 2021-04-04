@@ -18,7 +18,7 @@ struct ImageTools {
 		VkFormat format,
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags memoryProperties,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void createImageView(VkImageView* imageView,
 		VkImage image,
 		uint32_t baseArrayLayer,
@@ -38,28 +38,28 @@ struct ImageTools {
 		VkImage* imageDestination,
 		VkFormat format,
 		uint32_t* mipLevels,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void loadHDREnvmap(const std::string& filePath,
 		VkImage* imageDestination,
 		VkFormat format,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void loadColor(float* color,
 		VkImage* imageDestination,
 		VkFormat format,
 		uint32_t* mipLevels,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void loadColorArray(float* colors,
 		VkImage* imageDestination,
 		uint32_t width,
 		uint32_t height,
 		VkFormat format,
 		uint32_t* mipLevels,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void loadColorForEnvmap(float* color,
 		VkImage* imageDestination,
 		VkFormat format,
 		uint32_t* mipLevels,
-		VkDeviceSize* allocationId);
+		MemoryInfo* memoryInfo);
 	static void transitionLayout(VkImage image,
 		VkFormat format,
 		VkImageLayout oldLayout,

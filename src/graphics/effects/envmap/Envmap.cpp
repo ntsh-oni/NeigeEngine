@@ -6,18 +6,18 @@
 
 void Envmap::init(std::string filePath) {
 	if (filePath != "") {
-		ImageTools::loadHDREnvmap(filePath, &envmapImage.image, physicalDevice.colorFormat, &envmapImage.allocationId);
+		ImageTools::loadHDREnvmap(filePath, &envmapImage.image, physicalDevice.colorFormat, &envmapImage.memoryInfo);
 		ImageTools::createImageView(&envmapImage.imageView, envmapImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	uint32_t skyboxMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(ENVMAP_WIDTH, ENVMAP_HEIGHT)))) + 1;
-	ImageTools::createImage(&skyboxImage.image, 6, ENVMAP_WIDTH, ENVMAP_HEIGHT, skyboxMipLevels, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &skyboxImage.allocationId);
+	ImageTools::createImage(&skyboxImage.image, 6, ENVMAP_WIDTH, ENVMAP_HEIGHT, skyboxMipLevels, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &skyboxImage.memoryInfo);
 	ImageTools::createImageView(&skyboxImage.imageView, skyboxImage.image, 0, 6, 0, skyboxMipLevels, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&skyboxImage.imageSampler, skyboxMipLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(skyboxImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, skyboxMipLevels, 6);
 
 	float defaultSkyboxColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	ImageTools::loadColorForEnvmap(defaultSkyboxColor, &defaultSkybox.image, physicalDevice.colorFormat, &defaultSkybox.mipmapLevels, &defaultSkybox.allocationId);
+	ImageTools::loadColorForEnvmap(defaultSkyboxColor, &defaultSkybox.image, physicalDevice.colorFormat, &defaultSkybox.mipmapLevels, &defaultSkybox.memoryInfo);
 	ImageTools::createImageView(&defaultSkybox.imageView, defaultSkybox.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultSkybox.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
@@ -27,23 +27,23 @@ void Envmap::init(std::string filePath) {
 
 	Buffer stagingVertexBuffer;
 	VkDeviceSize size = cubeVertices.size() * sizeof(Vertex);
-	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, stagingVertexBuffer.deviceMemory, size);
+	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, size, &stagingVertexBuffer.memoryInfo);
 	void* cubeVertexData;
 	stagingVertexBuffer.map(0, size, &cubeVertexData);
 	memcpy(cubeVertexData, cubeVertices.data(), static_cast<size_t>(size));
 	stagingVertexBuffer.unmap();
-	BufferTools::createBuffer(cubeVertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeVertexBuffer.allocationId);
+	BufferTools::createBuffer(cubeVertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeVertexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingVertexBuffer.buffer, cubeVertexBuffer.buffer, size);
 	stagingVertexBuffer.destroy();
 
 	Buffer stagingIndexBuffer;
 	size = cubeIndices.size() * sizeof(uint32_t);
-	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, stagingIndexBuffer.deviceMemory, size);
+	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, size, &stagingIndexBuffer.memoryInfo);
 	void* cubeIndexData;
 	stagingIndexBuffer.map(0, size, &cubeIndexData);
 	memcpy(cubeIndexData, cubeIndices.data(), static_cast<size_t>(size));
 	stagingIndexBuffer.unmap();
-	BufferTools::createBuffer(cubeIndexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeIndexBuffer.allocationId);
+	BufferTools::createBuffer(cubeIndexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeIndexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingIndexBuffer.buffer, cubeIndexBuffer.buffer, size);
 	stagingIndexBuffer.destroy();
 
@@ -182,7 +182,7 @@ void Envmap::equiRectangleToCubemap() {
 }
 
 void Envmap::createDiffuseIradiance() {
-	ImageTools::createImage(&diffuseIradianceImage.image, 6, CONVOLVE_WIDTH, CONVOLVE_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &diffuseIradianceImage.allocationId);
+	ImageTools::createImage(&diffuseIradianceImage.image, 6, CONVOLVE_WIDTH, CONVOLVE_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &diffuseIradianceImage.memoryInfo);
 	ImageTools::createImageView(&diffuseIradianceImage.imageView, diffuseIradianceImage.image, 0, 6, 0, 1, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&diffuseIradianceImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(diffuseIradianceImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 6);
@@ -288,7 +288,7 @@ void Envmap::createDiffuseIradiance() {
 }
 
 void Envmap::createPrefilter() {
-	ImageTools::createImage(&prefilterImage.image, 6, PREFILTER_WIDTH, PREFILTER_HEIGHT, 5, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &prefilterImage.allocationId);
+	ImageTools::createImage(&prefilterImage.image, 6, PREFILTER_WIDTH, PREFILTER_HEIGHT, 5, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &prefilterImage.memoryInfo);
 	ImageTools::createImageView(&prefilterImage.imageView, prefilterImage.image, 0, 6, 0, 5, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&prefilterImage.imageSampler, 5, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(prefilterImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 5, 6);
@@ -312,7 +312,7 @@ void Envmap::createPrefilter() {
 	std::array<VkImageView, 30> prefilterImageViews;
 
 	Buffer roughnessBuffer;
-	BufferTools::createUniformBuffer(roughnessBuffer.buffer, roughnessBuffer.deviceMemory, sizeof(float));
+	BufferTools::createUniformBuffer(roughnessBuffer.buffer, sizeof(float), &roughnessBuffer.memoryInfo);
 
 	for (int mipLevel = 0; mipLevel < 5; mipLevel++) {
 		uint32_t mipWidth = static_cast<uint32_t>(PREFILTER_WIDTH * std::pow(0.5f, mipLevel));
@@ -433,7 +433,7 @@ void Envmap::createPrefilter() {
 }
 
 void Envmap::createBRDFConvolution() {
-	ImageTools::createImage(&brdfConvolutionImage.image, 1, BRDFCONVOLUTION_WIDTH, BRDFCONVOLUTION_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &brdfConvolutionImage.allocationId);
+	ImageTools::createImage(&brdfConvolutionImage.image, 1, BRDFCONVOLUTION_WIDTH, BRDFCONVOLUTION_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &brdfConvolutionImage.memoryInfo);
 	ImageTools::createImageView(&brdfConvolutionImage.imageView, brdfConvolutionImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&brdfConvolutionImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(brdfConvolutionImage.image, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 1);
