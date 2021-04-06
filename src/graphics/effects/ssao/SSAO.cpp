@@ -13,13 +13,45 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+
+		depthToPositionsRenderPass.init(attachments, dependencies);
+	}
+
+	{
+		std::vector<RenderPassAttachment> attachments;
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+
+		std::vector<SubpassDependency> dependencies;
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+
+		depthToNormalsRenderPass.init(attachments, dependencies);
+	}
+
+	{
+		std::vector<RenderPassAttachment> attachments;
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+
+		std::vector<SubpassDependency> dependencies;
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 		
-		colorRenderPass.init(attachments, dependencies);
+		ssaoRenderPass.init(attachments, dependencies);
+	}
+
+	{
+		std::vector<RenderPassAttachment> attachments;
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+
+		std::vector<SubpassDependency> dependencies;
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		
+		ssaoBlurredRenderPass.init(attachments, dependencies);
 	}
 
 	depthToPositionsGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
 	depthToPositionsGraphicsPipeline.fragmentShaderPath = "../shaders/depthToPositions.frag";
-	depthToPositionsGraphicsPipeline.renderPass = &colorRenderPass;
+	depthToPositionsGraphicsPipeline.renderPass = &depthToPositionsRenderPass;
 	depthToPositionsGraphicsPipeline.viewport = &viewport;
 	depthToPositionsGraphicsPipeline.colorBlend = false;
 	depthToPositionsGraphicsPipeline.multiSample = false;
@@ -29,7 +61,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 	
 	depthToNormalsGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
 	depthToNormalsGraphicsPipeline.fragmentShaderPath = "../shaders/depthToNormals.frag";
-	depthToNormalsGraphicsPipeline.renderPass = &colorRenderPass;
+	depthToNormalsGraphicsPipeline.renderPass = &depthToNormalsRenderPass;
 	depthToNormalsGraphicsPipeline.viewport = &viewport;
 	depthToNormalsGraphicsPipeline.colorBlend = false;
 	depthToNormalsGraphicsPipeline.multiSample = false;
@@ -39,7 +71,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	ssaoGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
 	ssaoGraphicsPipeline.fragmentShaderPath = "../shaders/ssao.frag";
-	ssaoGraphicsPipeline.renderPass = &colorRenderPass;
+	ssaoGraphicsPipeline.renderPass = &ssaoRenderPass;
 	ssaoGraphicsPipeline.viewport = &viewport;
 	ssaoGraphicsPipeline.colorBlend = false;
 	ssaoGraphicsPipeline.multiSample = false;
@@ -49,7 +81,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	ssaoBlurredGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
 	ssaoBlurredGraphicsPipeline.fragmentShaderPath = "../shaders/ssaoBlur.frag";
-	ssaoBlurredGraphicsPipeline.renderPass = &colorRenderPass;
+	ssaoBlurredGraphicsPipeline.renderPass = &ssaoBlurredRenderPass;
 	ssaoBlurredGraphicsPipeline.viewport = &viewport;
 	ssaoBlurredGraphicsPipeline.colorBlend = false;
 	ssaoBlurredGraphicsPipeline.multiSample = false;
@@ -68,7 +100,10 @@ void SSAO::destroy() {
 	destroyResources();
 	sampleKernel.destroy();
 	randomTexture.destroy();
-	colorRenderPass.destroy();
+	depthToPositionsRenderPass.destroy();
+	depthToNormalsRenderPass.destroy();
+	ssaoRenderPass.destroy();
+	ssaoBlurredRenderPass.destroy();
 	depthToNormalsGraphicsPipeline.destroy();
 	depthToPositionsGraphicsPipeline.destroy();
 	ssaoGraphicsPipeline.destroy();
@@ -106,7 +141,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		framebufferAttachements.resize(framesInFlight);
 		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(depthToPositionsImage.imageView);
-			depthToPositionsFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
+			depthToPositionsFramebuffers[i].init(&depthToPositionsRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
 	}
 
@@ -115,7 +150,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		framebufferAttachements.resize(framesInFlight);
 		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(depthToNormalsImage.imageView);
-			depthToNormalsFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
+			depthToNormalsFramebuffers[i].init(&depthToNormalsRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
 	}
 
@@ -124,7 +159,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		framebufferAttachements.resize(framesInFlight);
 		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(ssaoImage.imageView);
-			ssaoFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
+			ssaoFramebuffers[i].init(&ssaoRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
 	}
 
@@ -133,16 +168,16 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		framebufferAttachements.resize(framesInFlight);
 		for (size_t i = 0; i < framesInFlight; i++) {
 			framebufferAttachements[i].push_back(ssaoBlurredImage.imageView);
-			ssaoBlurredFramebuffers[i].init(&colorRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
+			ssaoBlurredFramebuffers[i].init(&ssaoBlurredRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 		}
 	}
 
 	// Descriptor sets
 	{
-		depthToPositionsAndNormalsDescriptorSets.resize(framesInFlight);
+		depthToPositionsDescriptorSets.resize(framesInFlight);
 
 		for (size_t i = 0; i < framesInFlight; i++) {
-			depthToPositionsAndNormalsDescriptorSets[i].init(&depthToNormalsGraphicsPipeline, 0);
+			depthToPositionsDescriptorSets[i].init(&depthToPositionsGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo depthPrepassInfo = {};
 			depthPrepassInfo.sampler = depthPrepass.image.imageSampler;
@@ -159,7 +194,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			VkWriteDescriptorSet depthPrepassWriteDescriptorSet = {};
 			depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			depthPrepassWriteDescriptorSet.pNext = nullptr;
-			depthPrepassWriteDescriptorSet.dstSet = depthToPositionsAndNormalsDescriptorSets[i].descriptorSet;
+			depthPrepassWriteDescriptorSet.dstSet = depthToPositionsDescriptorSets[i].descriptorSet;
 			depthPrepassWriteDescriptorSet.dstBinding = 0;
 			depthPrepassWriteDescriptorSet.dstArrayElement = 0;
 			depthPrepassWriteDescriptorSet.descriptorCount = 1;
@@ -172,7 +207,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			VkWriteDescriptorSet cameraWriteDescriptorSet = {};
 			cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			cameraWriteDescriptorSet.pNext = nullptr;
-			cameraWriteDescriptorSet.dstSet = depthToPositionsAndNormalsDescriptorSets[i].descriptorSet;
+			cameraWriteDescriptorSet.dstSet = depthToPositionsDescriptorSets[i].descriptorSet;
 			cameraWriteDescriptorSet.dstBinding = 1;
 			cameraWriteDescriptorSet.dstArrayElement = 0;
 			cameraWriteDescriptorSet.descriptorCount = 1;
@@ -182,7 +217,55 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			cameraWriteDescriptorSet.pTexelBufferView = nullptr;
 			writesDescriptorSet.push_back(cameraWriteDescriptorSet);
 
-			depthToPositionsAndNormalsDescriptorSets[i].update(writesDescriptorSet);
+			depthToPositionsDescriptorSets[i].update(writesDescriptorSet);
+		}
+	}
+
+	{
+		depthToNormalsDescriptorSets.resize(framesInFlight);
+
+		for (size_t i = 0; i < framesInFlight; i++) {
+			depthToNormalsDescriptorSets[i].init(&depthToNormalsGraphicsPipeline, 0);
+
+			VkDescriptorImageInfo depthPrepassInfo = {};
+			depthPrepassInfo.sampler = depthPrepass.image.imageSampler;
+			depthPrepassInfo.imageView = depthPrepass.image.imageView;
+			depthPrepassInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+			VkDescriptorBufferInfo cameraInfo = {};
+			cameraInfo.buffer = cameraBuffers[i].buffer;
+			cameraInfo.offset = 0;
+			cameraInfo.range = sizeof(CameraUniformBufferObject);
+
+			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+			VkWriteDescriptorSet depthPrepassWriteDescriptorSet = {};
+			depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			depthPrepassWriteDescriptorSet.pNext = nullptr;
+			depthPrepassWriteDescriptorSet.dstSet = depthToNormalsDescriptorSets[i].descriptorSet;
+			depthPrepassWriteDescriptorSet.dstBinding = 0;
+			depthPrepassWriteDescriptorSet.dstArrayElement = 0;
+			depthPrepassWriteDescriptorSet.descriptorCount = 1;
+			depthPrepassWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			depthPrepassWriteDescriptorSet.pImageInfo = &depthPrepassInfo;
+			depthPrepassWriteDescriptorSet.pBufferInfo = nullptr;
+			depthPrepassWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(depthPrepassWriteDescriptorSet);
+
+			VkWriteDescriptorSet cameraWriteDescriptorSet = {};
+			cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			cameraWriteDescriptorSet.pNext = nullptr;
+			cameraWriteDescriptorSet.dstSet = depthToNormalsDescriptorSets[i].descriptorSet;
+			cameraWriteDescriptorSet.dstBinding = 1;
+			cameraWriteDescriptorSet.dstArrayElement = 0;
+			cameraWriteDescriptorSet.descriptorCount = 1;
+			cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			cameraWriteDescriptorSet.pImageInfo = nullptr;
+			cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
+			cameraWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+
+			depthToNormalsDescriptorSets[i].update(writesDescriptorSet);
 		}
 	}
 
@@ -286,35 +369,35 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 
 			ssaoDescriptorSets[i].update(writesDescriptorSet);
 		}
+	}
 
-		{
-			ssaoBlurredDescriptorSets.resize(framesInFlight);
+	{
+		ssaoBlurredDescriptorSets.resize(framesInFlight);
 
-			for (size_t i = 0; i < framesInFlight; i++) {
-				ssaoBlurredDescriptorSets[i].init(&ssaoBlurredGraphicsPipeline, 0);
+		for (size_t i = 0; i < framesInFlight; i++) {
+			ssaoBlurredDescriptorSets[i].init(&ssaoBlurredGraphicsPipeline, 0);
 
-				VkDescriptorImageInfo ssaoInfo = {};
-				ssaoInfo.sampler = ssaoImage.imageSampler;
-				ssaoInfo.imageView = ssaoImage.imageView;
-				ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkDescriptorImageInfo ssaoInfo = {};
+			ssaoInfo.sampler = ssaoImage.imageSampler;
+			ssaoInfo.imageView = ssaoImage.imageView;
+			ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
-				VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
-				ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				ssaoWriteDescriptorSet.pNext = nullptr;
-				ssaoWriteDescriptorSet.dstSet = ssaoBlurredDescriptorSets[i].descriptorSet;
-				ssaoWriteDescriptorSet.dstBinding = 0;
-				ssaoWriteDescriptorSet.dstArrayElement = 0;
-				ssaoWriteDescriptorSet.descriptorCount = 1;
-				ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
-				ssaoWriteDescriptorSet.pBufferInfo = nullptr;
-				ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
-				writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
+			VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
+			ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ssaoWriteDescriptorSet.pNext = nullptr;
+			ssaoWriteDescriptorSet.dstSet = ssaoBlurredDescriptorSets[i].descriptorSet;
+			ssaoWriteDescriptorSet.dstBinding = 0;
+			ssaoWriteDescriptorSet.dstArrayElement = 0;
+			ssaoWriteDescriptorSet.descriptorCount = 1;
+			ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
+			ssaoWriteDescriptorSet.pBufferInfo = nullptr;
+			ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
 
-				ssaoBlurredDescriptorSets[i].update(writesDescriptorSet);
-			}
+			ssaoBlurredDescriptorSets[i].update(writesDescriptorSet);
 		}
 	}
 }
@@ -391,29 +474,29 @@ void SSAO::createRandomTexture() {
 
 void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	// Depth to positions
-	colorRenderPass.begin(commandBuffer, depthToPositionsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	depthToPositionsRenderPass.begin(commandBuffer, depthToPositionsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToPositionsGraphicsPipeline.bind(commandBuffer);
-	depthToPositionsAndNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
+	depthToPositionsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
-	colorRenderPass.end(commandBuffer);
+	depthToPositionsRenderPass.end(commandBuffer);
 
 	// Depth to normals
-	colorRenderPass.begin(commandBuffer, depthToNormalsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	depthToNormalsRenderPass.begin(commandBuffer, depthToNormalsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToNormalsGraphicsPipeline.bind(commandBuffer);
-	depthToPositionsAndNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
+	depthToNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
-	colorRenderPass.end(commandBuffer);
+	depthToNormalsRenderPass.end(commandBuffer);
 
 	// SSAO
 	glm::vec2 imageSize = {viewport.viewport.width, viewport.viewport.height};
 
-	colorRenderPass.begin(commandBuffer, ssaoFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	ssaoRenderPass.begin(commandBuffer, ssaoFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoGraphicsPipeline.bind(commandBuffer);
 	ssaoDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
@@ -421,15 +504,15 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
-	colorRenderPass.end(commandBuffer);
+	ssaoRenderPass.end(commandBuffer);
 
 	// SSAO blurred
-	colorRenderPass.begin(commandBuffer, ssaoBlurredFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	ssaoBlurredRenderPass.begin(commandBuffer, ssaoBlurredFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoBlurredGraphicsPipeline.bind(commandBuffer);
 	ssaoBlurredDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
-	colorRenderPass.end(commandBuffer);
+	ssaoBlurredRenderPass.end(commandBuffer);
 }
