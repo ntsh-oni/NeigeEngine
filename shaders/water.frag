@@ -40,7 +40,8 @@ layout(location = 3) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + 3) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 3) in mat3 TBN;
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out vec4 sceneColor;
+layout(location = 1) out vec4 bloomColor;
 
 #define M_PI 3.1415926535897932384626433832795
 
@@ -200,7 +201,14 @@ void main() {
 	vec3 ambient = (irradianceDiffuse * diffuse + specular) * occlusionSample;
 	tmpColor += ambient;
 
-	tmpColor = tmpColor / (tmpColor + vec3(1.0));
+	float brightness = dot(tmpColor, vec3(0.2126, 0.7152, 0.0722));
+	
+	if (brightness > 1.0) {
+		bloomColor = vec4(tmpColor, 1.0);
+	}
+	else {
+		bloomColor = vec4(0.0, 0.0, 0.0, 1.0);
+	}
 
-	outColor = vec4(vec3(tmpColor), 1.0);
+	sceneColor = vec4(tmpColor, 1.0);
 }

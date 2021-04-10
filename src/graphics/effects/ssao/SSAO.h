@@ -13,7 +13,7 @@
 #include <vector>
 #include <random>
 
-#define DOWNSCALE 4
+#define SSAODOWNSCALE 4
 #define SSAOSAMPLES 64
 
 struct SSAO {
@@ -44,7 +44,7 @@ struct SSAO {
 
 	// SSAO blurred
 	GraphicsPipeline ssaoBlurredGraphicsPipeline;
-	std::vector<DescriptorSet> ssaoBlurredDescriptorSets;
+	DescriptorSet ssaoBlurredDescriptorSet;
 	Image ssaoBlurredImage;
 	RenderPass ssaoBlurredRenderPass;
 	std::vector<Framebuffer> ssaoBlurredFramebuffers;

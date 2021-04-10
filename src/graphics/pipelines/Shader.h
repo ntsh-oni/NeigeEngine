@@ -115,14 +115,17 @@ struct Shader {
         1,
         4,
         1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
+        {
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+        }
     };
 
 	void init(const std::string& filePath);

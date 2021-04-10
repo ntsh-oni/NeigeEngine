@@ -44,11 +44,14 @@ void Renderer::init(const std::string applicationName) {
 	{
 		std::vector<RenderPassAttachment> attachments;
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
 		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL));
 		
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 
 		RenderPass renderPass;
 		renderPass.init(attachments, dependencies);
@@ -61,7 +64,6 @@ void Renderer::init(const std::string applicationName) {
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, VK_DEPENDENCY_BY_REGION_BIT });
-		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 
 		RenderPass renderPass;
 		renderPass.init(attachments, dependencies);
@@ -93,6 +95,11 @@ void Renderer::init(const std::string applicationName) {
 	NEIGE_INFO("Depth prepass init start.");
 	depthPrepass.init(fullscreenViewport);
 	NEIGE_INFO("Depth prepass init end.");
+
+	// Bloom
+	NEIGE_INFO("Bloom init start.");
+	bloom.init(fullscreenViewport);
+	NEIGE_INFO("Bloom init end.");
 
 	// SSAO
 	NEIGE_INFO("SSAO init start.");
@@ -164,7 +171,7 @@ void Renderer::init(const std::string applicationName) {
 		skyboxDescriptorSets[i].update(writesDescriptorSet);
 	}
 
-	// Framebuffers
+	// Image and famebuffers
 	createResources();
 
 	{
@@ -360,6 +367,7 @@ void Renderer::destroy() {
 	envmap.destroy();
 	shadow.destroy();
 	ssao.destroy();
+	bloom.destroy();
 	for (CommandPool& renderingCommandPool : renderingCommandPools) {
 		renderingCommandPool.destroy();
 	}
@@ -648,6 +656,9 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	sceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
+	// Bloom
+	bloom.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+
 	// SSAO
 	ssao.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 
@@ -664,7 +675,6 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 }
 
 void Renderer::createResources() {
-	// Framebuffers
 	{
 		ImageTools::createImage(&colorImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &colorImage.memoryInfo);
 		ImageTools::createImageView(&colorImage.imageView, colorImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -675,6 +685,7 @@ void Renderer::createResources() {
 		sceneFramebuffers.resize(swapchainSize);
 		for (uint32_t i = 0; i < swapchainSize; i++) {
 			framebufferAttachments[i].push_back(colorImage.imageView);
+			framebufferAttachments[i].push_back(bloom.thresholdImage.imageView);
 			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
 			sceneFramebuffers[i].init(&renderPasses.at("scene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
@@ -704,6 +715,7 @@ void Renderer::destroyResources() {
 	sceneFramebuffers.shrink_to_fit();
 	depthPrepass.destroyResources();
 	ssao.destroyResources();
+	bloom.destroyResources();
 }
 
 void Renderer::createPostProcessDescriptorSet() {
@@ -713,6 +725,11 @@ void Renderer::createPostProcessDescriptorSet() {
 	sceneInfo.sampler = colorImage.imageSampler;
 	sceneInfo.imageView = colorImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkDescriptorImageInfo bloomInfo = {};
+	bloomInfo.sampler = bloom.bloomImage.imageSampler;
+	bloomInfo.imageView = bloom.bloomImage.imageView;
+	bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo ssaoInfo = {};
 	ssaoInfo.sampler = ssao.ssaoBlurredImage.imageSampler;
@@ -734,11 +751,24 @@ void Renderer::createPostProcessDescriptorSet() {
 	sceneWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(sceneWriteDescriptorSet);
 
+	VkWriteDescriptorSet bloomWriteDescriptorSet = {};
+	bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	bloomWriteDescriptorSet.pNext = nullptr;
+	bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
+	bloomWriteDescriptorSet.dstBinding = 1;
+	bloomWriteDescriptorSet.dstArrayElement = 0;
+	bloomWriteDescriptorSet.descriptorCount = 1;
+	bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
+	bloomWriteDescriptorSet.pBufferInfo = nullptr;
+	bloomWriteDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(bloomWriteDescriptorSet);
+
 	VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
 	ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	ssaoWriteDescriptorSet.pNext = nullptr;
 	ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	ssaoWriteDescriptorSet.dstBinding = 1;
+	ssaoWriteDescriptorSet.dstBinding = 2;
 	ssaoWriteDescriptorSet.dstArrayElement = 0;
 	ssaoWriteDescriptorSet.descriptorCount = 1;
 	ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -769,9 +799,13 @@ void Renderer::reloadOnResize() {
 	// Depth prepass
 	depthPrepass.createResources(fullscreenViewport);
 
+	// Bloom
+	bloom.createResources(fullscreenViewport);
+
 	// SSAO
 	ssao.createResources(fullscreenViewport);
 
+	// Image and framebuffers
 	createResources();
 
 	createPostProcessDescriptorSet();
