@@ -2,6 +2,7 @@
 #include "../../utils/structs/ShaderStructs.h"
 #include "../models/Model.h"
 #include "../pipelines/Shader.h"
+#include "../effects/bloom/Bloom.h"
 #include "../effects/depthprepass/DepthPrepass.h"
 #include "../effects/envmap/Envmap.h"
 #include "../effects/shadowmapping/Shadow.h"
@@ -21,6 +22,7 @@ inline std::set<Entity> lights;
 inline std::vector<Buffer> lightingBuffers;
 inline std::vector<Buffer> timeBuffers;
 inline Image colorImage;
+inline Bloom bloom;
 inline DepthPrepass depthPrepass;
 inline Envmap envmap;
 inline Shadow shadow;

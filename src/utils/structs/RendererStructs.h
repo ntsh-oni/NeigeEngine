@@ -14,8 +14,12 @@
 inline uint32_t framesInFlight;
 
 // Layers
-const std::vector<const char*> explicitLayers = {
+const std::vector<const char*> debugExplicitLayers = {
 	"VK_LAYER_KHRONOS_validation",
+	"VK_LAYER_LUNARG_monitor"
+};
+
+const std::vector<const char*> releaseExplicitLayers = {
 	"VK_LAYER_LUNARG_monitor"
 };
 

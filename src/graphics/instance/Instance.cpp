@@ -27,7 +27,27 @@ void Instance::init(const std::string applicationName, uint32_t engineVersion, c
 		NEIGE_VK_CHECK(vkEnumerateInstanceLayerProperties(&propertyCount, properties.data()));
 
 		bool validationLayerFound;
-		for (const auto& layer : explicitLayers) {
+		for (const auto& layer : debugExplicitLayers) {
+			validationLayerFound = false;
+			for (const VkLayerProperties& availableLayer : properties) {
+				if (strcmp(availableLayer.layerName, layer) == 0) {
+					validationLayerFound = true;
+					break;
+				}
+			}
+			if (!validationLayerFound) {
+				NEIGE_WARNING("Layer " + std::string(layer) + " has not been found.");
+			}
+		}
+	}
+	else {
+		uint32_t propertyCount;
+		NEIGE_VK_CHECK(vkEnumerateInstanceLayerProperties(&propertyCount, nullptr));
+		std::vector<VkLayerProperties> properties(propertyCount);
+		NEIGE_VK_CHECK(vkEnumerateInstanceLayerProperties(&propertyCount, properties.data()));
+
+		bool validationLayerFound;
+		for (const auto& layer : releaseExplicitLayers) {
 			validationLayerFound = false;
 			for (const VkLayerProperties& availableLayer : properties) {
 				if (strcmp(availableLayer.layerName, layer) == 0) {
@@ -48,12 +68,12 @@ void Instance::init(const std::string applicationName, uint32_t engineVersion, c
 	instanceCreateInfo.flags = 0;
 	instanceCreateInfo.pApplicationInfo = &applicationInfo;
 	if (NEIGE_DEBUG) {
-		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(explicitLayers.size());
-		instanceCreateInfo.ppEnabledLayerNames = explicitLayers.data();
+		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(debugExplicitLayers.size());
+		instanceCreateInfo.ppEnabledLayerNames = debugExplicitLayers.data();
 	}
 	else {
-		instanceCreateInfo.enabledLayerCount = 0;
-		instanceCreateInfo.ppEnabledLayerNames = nullptr;
+		instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(releaseExplicitLayers.size());
+		instanceCreateInfo.ppEnabledLayerNames = releaseExplicitLayers.data();
 	}
 	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(windowExtensions.size());
 	instanceCreateInfo.ppEnabledExtensionNames = windowExtensions.data();

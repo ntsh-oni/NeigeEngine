@@ -33,12 +33,12 @@ void LogicalDevice::init() {
 	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 	if (NEIGE_DEBUG) {
-		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(explicitLayers.size());
-		deviceCreateInfo.ppEnabledLayerNames = explicitLayers.data();
+		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(debugExplicitLayers.size());
+		deviceCreateInfo.ppEnabledLayerNames = debugExplicitLayers.data();
 	}
 	else {
-		deviceCreateInfo.enabledLayerCount = 0;
-		deviceCreateInfo.ppEnabledLayerNames = nullptr;
+		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(releaseExplicitLayers.size());
+		deviceCreateInfo.ppEnabledLayerNames = releaseExplicitLayers.data();
 	}
 	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(vulkanExtensions.size());
 	deviceCreateInfo.ppEnabledExtensionNames = vulkanExtensions.data();
