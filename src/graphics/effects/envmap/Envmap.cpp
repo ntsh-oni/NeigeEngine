@@ -80,7 +80,7 @@ void Envmap::equiRectangleToCubemap() {
 	equiRecToCubemapViewport.init(ENVMAP_WIDTH, ENVMAP_HEIGHT);
 
 	std::vector<RenderPassAttachment> attachments;
-	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
+	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 	std::vector<SubpassDependency> dependencies;
 	
@@ -102,7 +102,6 @@ void Envmap::equiRectangleToCubemap() {
 	equiRecToCubemapGraphicsPipeline.fragmentShaderPath = "../shaders/equiRecToCubemap.frag";
 	equiRecToCubemapGraphicsPipeline.renderPass = &equiRecToCubemapRenderPass;
 	equiRecToCubemapGraphicsPipeline.viewport = &equiRecToCubemapViewport;
-	equiRecToCubemapGraphicsPipeline.colorBlend = false;
 	equiRecToCubemapGraphicsPipeline.multiSample = false;
 	equiRecToCubemapGraphicsPipeline.init();
 	
@@ -191,7 +190,7 @@ void Envmap::createDiffuseIradiance() {
 	convolveViewport.init(CONVOLVE_WIDTH, CONVOLVE_HEIGHT);
 
 	std::vector<RenderPassAttachment> attachments;
-	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 	std::vector<SubpassDependency> dependencies;
 
@@ -212,7 +211,6 @@ void Envmap::createDiffuseIradiance() {
 	convolveGraphicsPipeline.fragmentShaderPath = "../shaders/convolve.frag";
 	convolveGraphicsPipeline.renderPass = &convolveRenderPass;
 	convolveGraphicsPipeline.viewport = &convolveViewport;
-	convolveGraphicsPipeline.colorBlend = false;
 	convolveGraphicsPipeline.multiSample = false;
 	convolveGraphicsPipeline.init();
 
@@ -294,7 +292,7 @@ void Envmap::createPrefilter() {
 	ImageTools::transitionLayout(prefilterImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 5, 6);
 
 	std::vector<RenderPassAttachment> attachments;
-	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 	std::vector<SubpassDependency> dependencies;
 
@@ -305,7 +303,6 @@ void Envmap::createPrefilter() {
 	prefilterGraphicsPipeline.vertexShaderPath = "../shaders/cubemap.vert";
 	prefilterGraphicsPipeline.fragmentShaderPath = "../shaders/prefilter.frag";
 	prefilterGraphicsPipeline.renderPass = &prefilterRenderPass;
-	prefilterGraphicsPipeline.colorBlend = false;
 	prefilterGraphicsPipeline.multiSample = false;
 
 	std::array<Framebuffer, 30> prefilterFramebuffers;
@@ -442,7 +439,7 @@ void Envmap::createBRDFConvolution() {
 	brdfConvolutionViewport.init(BRDFCONVOLUTION_WIDTH, BRDFCONVOLUTION_HEIGHT);
 
 	std::vector<RenderPassAttachment> attachments;
-	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R32G32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+	attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R32G32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 	std::vector<SubpassDependency> dependencies;
 
@@ -459,7 +456,6 @@ void Envmap::createBRDFConvolution() {
 	brdfConvolutionGraphicsPipeline.fragmentShaderPath = "../shaders/brdfConvolution.frag";
 	brdfConvolutionGraphicsPipeline.renderPass = &brdfConvolutionRenderPass;
 	brdfConvolutionGraphicsPipeline.viewport = &brdfConvolutionViewport;
-	brdfConvolutionGraphicsPipeline.colorBlend = false;
 	brdfConvolutionGraphicsPipeline.multiSample = false;
 	brdfConvolutionGraphicsPipeline.backfaceCulling = false;
 	brdfConvolutionGraphicsPipeline.init();

@@ -11,13 +11,13 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 		case AttachmentType::COLOR:
 			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 			colorAttachmentReferences.push_back(reference);
-			clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			clearValue.color = { attachments[i].clearColorValue.r, attachments[i].clearColorValue.g, attachments[i].clearColorValue.b, attachments[i].clearColorValue.a };
 			clearValues.push_back(clearValue);
 			break;
 		case AttachmentType::DEPTH:
 			reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 			depthAttachmentReference = reference;
-			clearValue.depthStencil = { 1.0f, 0 };
+			clearValue.depthStencil = { attachments[i].clearDepthValue.depth, attachments[i].clearDepthValue.stencil };
 			clearValues.push_back(clearValue);
 			gotADepthAttachment = true;
 			break;

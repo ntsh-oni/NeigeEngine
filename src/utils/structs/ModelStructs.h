@@ -26,7 +26,8 @@ struct Bone {
 struct Mesh {
 	uint32_t indexOffset;
 	int32_t vertexOffset;
-	std::vector<Primitive> primitives;
+	std::vector<Primitive> opaquePrimitives;
+	std::vector<Primitive> transparentPrimitives;
 	Bone skeleton;
 	std::vector<Bone> boneList;
 	std::vector<Buffer> boneBuffers;

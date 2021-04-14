@@ -148,6 +148,17 @@ struct Vertex {
 	}
 };
 
+// Graphics pipeline blending
+struct Blending {
+	VkBool32 blendEnable;
+	VkBlendFactor srcColorBlendFactor;
+	VkBlendFactor dstColorBlendFactor;
+	VkBlendOp colorBlendOp;
+	VkBlendFactor srcAlphaBlendFactor;
+	VkBlendFactor dstAlphaBlendFactor;
+	VkBlendOp alphaBlendOp;
+};
+
 // Object Uniform Buffer Object
 struct ObjectUniformBufferObject {
 	glm::mat4 model;

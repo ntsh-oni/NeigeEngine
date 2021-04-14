@@ -7,10 +7,12 @@ void Window::init(const std::string applicationName) {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	window = glfwCreateWindow(extent.width, extent.height, applicationName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
+	monitor = glfwGetPrimaryMonitor();
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouseButtonCallback);
 	glfwSetCursorPosCallback(window, mousePositionCallback);
+	oldExtent = extent;
 }
 
 void Window::destroy() {
@@ -390,6 +392,30 @@ void Window::mouseButtonAction(int button, int action) {
 
 void Window::mousePositionAction(double x, double y) {
 	mouseInputs.setPosition(x, y);
+}
+
+bool Window::isFullscreen() {
+	return (glfwGetWindowMonitor(window) != nullptr);
+}
+
+void Window::toggleFullscreen() {
+	if (!isFullscreen()) {
+		int width;
+		int height;
+
+		glfwGetWindowPos(window, &oldXPos, &oldYPos);
+		glfwGetWindowSize(window, &width, &height);
+		oldExtent = {
+			static_cast<uint32_t>(width),
+			static_cast<uint32_t>(height),
+		};
+
+		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
+	}
+	else {
+		glfwSetWindowMonitor(window, nullptr, oldXPos, oldYPos, oldExtent.width, oldExtent.height, GLFW_DONT_CARE);
+	}
 }
 
 void Window::showCursor(bool show) {

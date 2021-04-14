@@ -66,7 +66,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 		if (node->has_rotation) {
 			cgltf_float* rotation = node->rotation;
-			glm::quat rotationQuaternion = glm::quat(rotation[0], rotation[1], rotation[2], rotation[3]);
+			glm::quat rotationQuaternion = glm::quat(rotation[3], rotation[0], rotation[1], rotation[2]);
 			glm::mat4 meshRotation = glm::toMat4(rotationQuaternion);
 			modelMatrix = modelMatrix * meshRotation;
 		}
@@ -89,12 +89,14 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 		modelMesh.indexOffset = *indexOffset;
 		modelMesh.vertexOffset = *modelVertexOffset;
 
-		std::vector<Primitive> primitives;
+		std::vector<Primitive> opaquePrimitives;
+		std::vector<Primitive> transparentPrimitives;
 
 		uint32_t firstIndex = 0;
 		uint32_t indexCount = 0;
 		int32_t vertexOffset = 0;
 		int32_t vertexCount = 0;
+		bool opaque = true;
 
 		for (size_t j = 0; j < mesh->primitives_count; j++) {
 			cgltf_primitive* primitive = &mesh->primitives[j];
@@ -106,6 +108,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			indexCount = 0;
 			vertexOffset += vertexCount;
 			vertexCount = 0;
+			opaque = true;
 
 			float* position;
 			float* normal;
@@ -301,6 +304,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 			if (primitive->material != NULL) {
 				Material primitiveMaterial;
+				opaque = primitive->material->alpha_mode == cgltf_alpha_mode_opaque || primitive->material->alpha_mode == cgltf_alpha_mode_mask;
 
 				if (primitive->material->has_pbr_metallic_roughness) {
 					cgltf_pbr_metallic_roughness pbrMetallicRoughness = primitive->material->pbr_metallic_roughness;
@@ -414,7 +418,12 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			}
 
 			// Primitive
-			primitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+			if (opaque) {
+				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+			}
+			else {
+				transparentPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+			}
 
 			vertices->insert(vertices->end(), primitiveVertices.begin(), primitiveVertices.end());
 			indices->insert(indices->end(), primitiveIndices.begin(), primitiveIndices.end());
@@ -429,7 +438,8 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			vertex->tangent = glm::normalize(vertex->tangent);
 		}
 
-		modelMesh.primitives = primitives;
+		modelMesh.opaquePrimitives = opaquePrimitives;
+		modelMesh.transparentPrimitives = transparentPrimitives;
 
 		if (node->skin != NULL) {
 			cgltf_skin* skin = node->skin;

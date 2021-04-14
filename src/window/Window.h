@@ -35,7 +35,12 @@ struct Window {
 	GLFWwindow* window;
 	Surface surface;
 	VkExtent2D extent;
+	GLFWmonitor* monitor;
 	bool gotResized = false;
+
+	int oldXPos;
+	int oldYPos;
+	VkExtent2D oldExtent;
 
 	void init(const std::string applicationName);
 	void destroy();
@@ -46,6 +51,8 @@ struct Window {
 	void keyAction(int key, int action);
 	void mouseButtonAction(int button, int action);
 	void mousePositionAction(double x, double y);
+	bool isFullscreen();
+	void toggleFullscreen();
 	void showCursor(bool show);
 	bool windowGotClosed();
 	void pollEvents();

@@ -24,6 +24,7 @@ void LogicalDevice::init() {
 	physicalDeviceFeatures.fillModeNonSolid = VK_TRUE;
 	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
 	physicalDeviceFeatures.sampleRateShading = VK_TRUE;
+	physicalDeviceFeatures.independentBlend = VK_TRUE;
 
 	// Logical device
 	VkDeviceCreateInfo deviceCreateInfo = {};

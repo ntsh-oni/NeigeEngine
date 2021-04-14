@@ -11,10 +11,10 @@ layout(location = 0) out vec4 outColor;
 void main() {
 	vec3 scene = texture(sceneSampler, uv).rgb;
 	vec3 bloom = texture(bloomSampler, uv).rgb;
-	float ssaoBlurredSampler = texture(ssaoBlurredSampler, uv).r;
+	float ssaoBlurred = texture(ssaoBlurredSampler, uv).r;
 	
 	vec3 tmpColor = scene + bloom;
 	
 	tmpColor = tmpColor / (tmpColor + vec3(1.0));
-	outColor = vec4(tmpColor * ssaoBlurredSampler, 1.0);
+	outColor = vec4(tmpColor * ssaoBlurred, 1.0);
 }

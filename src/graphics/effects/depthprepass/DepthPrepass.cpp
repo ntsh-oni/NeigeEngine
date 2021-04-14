@@ -9,7 +9,7 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ClearDepthValue(1.0f, 0)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -21,7 +21,6 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 	graphicsPipeline.vertexShaderPath = "../shaders/depthPrepass.vert";
 	graphicsPipeline.renderPass = &renderPass;
 	graphicsPipeline.viewport = &viewport;
-	graphicsPipeline.colorBlend = false;
 	graphicsPipeline.multiSample = false;
 	graphicsPipeline.backfaceCulling = true;
 	graphicsPipeline.init();

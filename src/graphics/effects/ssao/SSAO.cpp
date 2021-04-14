@@ -9,7 +9,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -21,7 +21,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -33,7 +33,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -44,7 +44,7 @@ void SSAO::init(Viewport fullscreenViewport) {
 
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, physicalDevice.colorFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -57,7 +57,6 @@ void SSAO::init(Viewport fullscreenViewport) {
 	depthToPositionsGraphicsPipeline.fragmentShaderPath = "../shaders/depthToPositions.frag";
 	depthToPositionsGraphicsPipeline.renderPass = &depthToPositionsRenderPass;
 	depthToPositionsGraphicsPipeline.viewport = &viewport;
-	depthToPositionsGraphicsPipeline.colorBlend = false;
 	depthToPositionsGraphicsPipeline.multiSample = false;
 	depthToPositionsGraphicsPipeline.backfaceCulling = false;
 	depthToPositionsGraphicsPipeline.depthWrite = false;
@@ -67,7 +66,6 @@ void SSAO::init(Viewport fullscreenViewport) {
 	depthToNormalsGraphicsPipeline.fragmentShaderPath = "../shaders/depthToNormals.frag";
 	depthToNormalsGraphicsPipeline.renderPass = &depthToNormalsRenderPass;
 	depthToNormalsGraphicsPipeline.viewport = &viewport;
-	depthToNormalsGraphicsPipeline.colorBlend = false;
 	depthToNormalsGraphicsPipeline.multiSample = false;
 	depthToNormalsGraphicsPipeline.backfaceCulling = false;
 	depthToNormalsGraphicsPipeline.depthWrite = false;
@@ -77,7 +75,6 @@ void SSAO::init(Viewport fullscreenViewport) {
 	ssaoGraphicsPipeline.fragmentShaderPath = "../shaders/ssao.frag";
 	ssaoGraphicsPipeline.renderPass = &ssaoRenderPass;
 	ssaoGraphicsPipeline.viewport = &viewport;
-	ssaoGraphicsPipeline.colorBlend = false;
 	ssaoGraphicsPipeline.multiSample = false;
 	ssaoGraphicsPipeline.backfaceCulling = false;
 	ssaoGraphicsPipeline.depthWrite = false;
@@ -87,7 +84,6 @@ void SSAO::init(Viewport fullscreenViewport) {
 	ssaoBlurredGraphicsPipeline.fragmentShaderPath = "../shaders/ssaoBlur.frag";
 	ssaoBlurredGraphicsPipeline.renderPass = &ssaoBlurredRenderPass;
 	ssaoBlurredGraphicsPipeline.viewport = &viewport;
-	ssaoBlurredGraphicsPipeline.colorBlend = false;
 	ssaoBlurredGraphicsPipeline.multiSample = false;
 	ssaoBlurredGraphicsPipeline.backfaceCulling = false;
 	ssaoBlurredGraphicsPipeline.depthWrite = false;
@@ -126,12 +122,12 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 	ImageTools::createImageView(&depthToNormalsImage.imageView, depthToNormalsImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&depthToNormalsImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
-	ImageTools::createImage(&ssaoImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &ssaoImage.memoryInfo);
-	ImageTools::createImageView(&ssaoImage.imageView, ssaoImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageTools::createImage(&ssaoImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &ssaoImage.memoryInfo);
+	ImageTools::createImageView(&ssaoImage.imageView, ssaoImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&ssaoImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
-	ImageTools::createImage(&ssaoBlurredImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &ssaoBlurredImage.memoryInfo);
-	ImageTools::createImageView(&ssaoBlurredImage.imageView, ssaoBlurredImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageTools::createImage(&ssaoBlurredImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &ssaoBlurredImage.memoryInfo);
+	ImageTools::createImageView(&ssaoBlurredImage.imageView, ssaoBlurredImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&ssaoBlurredImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Framebuffers
