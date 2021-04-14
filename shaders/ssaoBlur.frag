@@ -4,7 +4,7 @@ layout(set = 0, binding = 0) uniform sampler2D ssaoSampler;
 
 layout(location = 0) in vec2 uv;
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out float outColor;
 
 void main() {
 	vec2 texelSize = 1.0 / vec2(textureSize(ssaoSampler, 0));
@@ -17,5 +17,5 @@ void main() {
 		}
 	}
 
-	outColor = vec4(vec3(result) / (4.0 * 4.0), 1.0);
+	outColor = result / (4.0 * 4.0);
 }

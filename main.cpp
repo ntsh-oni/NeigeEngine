@@ -26,9 +26,105 @@ int main(void) {
 		glm::vec3(1.0f, 0.0f, 0.0f),
 		45.0f,
 		0.3f,
-		1000.0f,
-		"../modelfiles/whitepixel.hdr"
+		200.0f,
+		"../modelfiles/sunset_forest_8k.hdr"
 		});
+
+	/*Entity bistro = ecs.createEntity();
+	ecs.addComponent(bistro, Renderable{
+		"../modelfiles/Bistro_v5_1/bistrointe.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(bistro, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f)
+		});*/
+
+	/*Entity porsche = ecs.createEntity();
+	ecs.addComponent(porsche, Renderable{
+		"../modelfiles/free_1975_porsche_911_930_turbo/scene.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(porsche, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f)
+		});*/
+
+	/*Entity alphablendmode = ecs.createEntity();
+	ecs.addComponent(alphablendmode, Renderable{
+		"../../glTF-Sample-Models-master/2.0/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(alphablendmode, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f)
+		});*/
+
+	/*Entity sr = ecs.createEntity();
+	ecs.addComponent(sr, Renderable{
+		"../modelfiles/spherered.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(sr, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(5.0f, 5.0f, 5.0f)
+		});
+
+	Entity sb = ecs.createEntity();
+	ecs.addComponent(sb, Renderable{
+		"../modelfiles/sphereblue.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(sb, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(3.0f, 3.0f, 3.0f)
+		});
+
+	Entity sv = ecs.createEntity();
+	ecs.addComponent(sv, Renderable{
+		"../modelfiles/spheregreen.gltf",
+		"../shaders/pbr.vert",
+		"../shaders/pbr.frag",
+		"",
+		"",
+		"",
+		Topology::TRIANGLE_LIST
+		});
+	ecs.addComponent(sv, Transform{
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f)
+		});*/
 
 	/*std::default_random_engine generator;
 	std::uniform_real_distribution<float> randomPosition(-10.0f, 10.0f);
@@ -52,7 +148,7 @@ int main(void) {
 				});
 	}*/
 
-	Entity skinningTest = ecs.createEntity();
+	/*Entity skinningTest = ecs.createEntity();
 	ecs.addComponent(skinningTest, Renderable{
 		"../modelfiles/BoomBox.gltf",
 		"../shaders/pbr.vert",
@@ -130,10 +226,10 @@ int main(void) {
 		glm::vec3(5.0f, 1.0f, -4.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});
+		});*/
 
-	Entity entity5 = ecs.createEntity();
-	ecs.addComponent(entity5, Renderable{
+	Entity sponza = ecs.createEntity();
+	ecs.addComponent(sponza, Renderable{
 		"../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
 		"../shaders/pbr.vert",
 		"../shaders/pbr.frag",
@@ -142,7 +238,7 @@ int main(void) {
 		"",
 		Topology::TRIANGLE_LIST
 		});
-	ecs.addComponent(entity5, Transform{
+	ecs.addComponent(sponza, Transform{
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)

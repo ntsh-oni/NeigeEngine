@@ -62,29 +62,44 @@ void Model::destroy() {
 	}
 }
 
-void Model::draw(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures) {
+void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures) {
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(commandBuffer->commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
 	vkCmdBindIndexBuffer(commandBuffer->commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
 	for (Mesh& mesh : meshes) {
-		for (size_t i = 0; i < mesh.primitives.size(); i++) {
+		for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
 			if (bindTextures) {
 				mesh.descriptorSets.at(graphicsPipeline).at(i).at(frameInFlightIndex).bind(commandBuffer, 1);
 			}
-			vkCmdDrawIndexed(commandBuffer->commandBuffer, mesh.primitives[i].indexCount, 1, mesh.indexOffset + mesh.primitives[i].firstIndex, mesh.vertexOffset + mesh.primitives[i].vertexOffset, 0);
+			vkCmdDrawIndexed(commandBuffer->commandBuffer, mesh.opaquePrimitives[i].indexCount, 1, mesh.indexOffset + mesh.opaquePrimitives[i].firstIndex, mesh.vertexOffset + mesh.opaquePrimitives[i].vertexOffset, 0);
 		}
 	}
 }
 
-void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
+void Model::drawTransparent(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures) {
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer->commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
+	vkCmdBindIndexBuffer(commandBuffer->commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+	for (Mesh& mesh : meshes) {
+		for (size_t i = 0; i < mesh.transparentPrimitives.size(); i++) {
+			if (bindTextures) {
+				mesh.descriptorSets.at(graphicsPipeline).at(i).at(frameInFlightIndex).bind(commandBuffer, 1);
+			}
+			vkCmdDrawIndexed(commandBuffer->commandBuffer, mesh.transparentPrimitives[i].indexCount, 1, mesh.indexOffset + mesh.transparentPrimitives[i].firstIndex, mesh.vertexOffset + mesh.transparentPrimitives[i].vertexOffset, 0);
+		}
+	}
+}
+
+void Model::createOpaqueDescriptorSets(GraphicsPipeline* opaqueGraphicsPipeline) {
 	for (Mesh& mesh : meshes) {
 		std::vector<std::vector<DescriptorSet>> descriptorSets;
-		descriptorSets.resize(mesh.primitives.size());
-		for (size_t i = 0; i < mesh.primitives.size(); i++) {
+		descriptorSets.resize(mesh.opaquePrimitives.size());
+		for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
 			descriptorSets.at(i).resize(framesInFlight);
 			for (uint32_t j = 0; j < framesInFlight; j++) {
-				descriptorSets.at(i).at(j).init(graphicsPipeline, 1);
+				descriptorSets.at(i).at(j).init(opaqueGraphicsPipeline, 1);
 
 				std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 				VkDescriptorImageInfo diffuseInfo = {};
@@ -93,10 +108,10 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 				VkDescriptorImageInfo emissiveInfo = {};
 				VkDescriptorImageInfo occlusionInfo = {};
 
-				for (size_t k = 0; k < graphicsPipeline->sets[1].bindings.size(); k++) {
-					std::string bindingName = graphicsPipeline->sets[1].bindings[k].name;
+				for (size_t k = 0; k < opaqueGraphicsPipeline->sets[1].bindings.size(); k++) {
+					std::string bindingName = opaqueGraphicsPipeline->sets[1].bindings[k].name;
 					if (bindingName == "colorMap") {
-						std::string diffuseKey = materials[mesh.primitives[i].materialIndex].diffuseKey;
+						std::string diffuseKey = materials[mesh.opaquePrimitives[i].materialIndex].diffuseKey;
 						if (diffuseKey == "") {
 							diffuseKey = "defaultDiffuse";
 						}
@@ -109,7 +124,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						diffuseWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						diffuseWriteDescriptorSet.pNext = nullptr;
 						diffuseWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						diffuseWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						diffuseWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						diffuseWriteDescriptorSet.dstArrayElement = 0;
 						diffuseWriteDescriptorSet.descriptorCount = 1;
 						diffuseWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -119,7 +134,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						writesDescriptorSet.push_back(diffuseWriteDescriptorSet);
 					}
 					else if (bindingName == "normalMap") {
-						std::string normalKey = materials[mesh.primitives[i].materialIndex].normalKey;
+						std::string normalKey = materials[mesh.opaquePrimitives[i].materialIndex].normalKey;
 						if (normalKey == "") {
 							normalKey = "defaultNormal";
 						}
@@ -132,7 +147,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						normalWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						normalWriteDescriptorSet.pNext = nullptr;
 						normalWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						normalWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						normalWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						normalWriteDescriptorSet.dstArrayElement = 0;
 						normalWriteDescriptorSet.descriptorCount = 1;
 						normalWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -142,7 +157,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						writesDescriptorSet.push_back(normalWriteDescriptorSet);
 					}
 					else if (bindingName == "metallicRoughnessMap") {
-						std::string metallicRoughnessKey = materials[mesh.primitives[i].materialIndex].metallicRoughnessKey;
+						std::string metallicRoughnessKey = materials[mesh.opaquePrimitives[i].materialIndex].metallicRoughnessKey;
 						if (metallicRoughnessKey == "") {
 							metallicRoughnessKey = "defaultMetallicRoughness";
 						}
@@ -155,7 +170,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						metallicRoughnessWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						metallicRoughnessWriteDescriptorSet.pNext = nullptr;
 						metallicRoughnessWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						metallicRoughnessWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						metallicRoughnessWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						metallicRoughnessWriteDescriptorSet.dstArrayElement = 0;
 						metallicRoughnessWriteDescriptorSet.descriptorCount = 1;
 						metallicRoughnessWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -165,7 +180,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						writesDescriptorSet.push_back(metallicRoughnessWriteDescriptorSet);
 					}
 					else if (bindingName == "emissiveMap") {
-						std::string emissiveKey = materials[mesh.primitives[i].materialIndex].emissiveKey;
+						std::string emissiveKey = materials[mesh.opaquePrimitives[i].materialIndex].emissiveKey;
 						if (emissiveKey == "") {
 							emissiveKey = "defaultEmissive";
 						}
@@ -178,7 +193,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						emissiveWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						emissiveWriteDescriptorSet.pNext = nullptr;
 						emissiveWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						emissiveWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						emissiveWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						emissiveWriteDescriptorSet.dstArrayElement = 0;
 						emissiveWriteDescriptorSet.descriptorCount = 1;
 						emissiveWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -188,7 +203,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						writesDescriptorSet.push_back(emissiveWriteDescriptorSet);
 					}
 					else if (bindingName == "occlusionMap") {
-						std::string occlusionKey = materials[mesh.primitives[i].materialIndex].occlusionKey;
+						std::string occlusionKey = materials[mesh.opaquePrimitives[i].materialIndex].occlusionKey;
 						if (occlusionKey == "") {
 							occlusionKey = "defaultOcclusion";
 						}
@@ -201,7 +216,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						occlusionWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						occlusionWriteDescriptorSet.pNext = nullptr;
 						occlusionWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						occlusionWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						occlusionWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						occlusionWriteDescriptorSet.dstArrayElement = 0;
 						occlusionWriteDescriptorSet.descriptorCount = 1;
 						occlusionWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -220,7 +235,7 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 						bonesWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						bonesWriteDescriptorSet.pNext = nullptr;
 						bonesWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
-						bonesWriteDescriptorSet.dstBinding = graphicsPipeline->sets[1].bindings[k].binding.binding;
+						bonesWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[1].bindings[k].binding.binding;
 						bonesWriteDescriptorSet.dstArrayElement = 0;
 						bonesWriteDescriptorSet.descriptorCount = 1;
 						bonesWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -234,6 +249,167 @@ void Model::createDescriptorSets(GraphicsPipeline* graphicsPipeline) {
 				descriptorSets.at(i).at(j).update(writesDescriptorSet);
 			}
 		}
-		mesh.descriptorSets.emplace(graphicsPipeline, descriptorSets);
+		mesh.descriptorSets.emplace(opaqueGraphicsPipeline, descriptorSets);
+	}
+}
+
+void Model::createTransparentDescriptorSets(GraphicsPipeline* transparentGraphicsPipeline) {
+	for (Mesh& mesh : meshes) {
+		std::vector<std::vector<DescriptorSet>> descriptorSets;
+		descriptorSets.resize(mesh.transparentPrimitives.size());
+		for (size_t i = 0; i < mesh.transparentPrimitives.size(); i++) {
+			descriptorSets.at(i).resize(framesInFlight);
+			for (uint32_t j = 0; j < framesInFlight; j++) {
+				descriptorSets.at(i).at(j).init(transparentGraphicsPipeline, 1);
+
+				std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+				VkDescriptorImageInfo diffuseInfo = {};
+				VkDescriptorImageInfo normalInfo = {};
+				VkDescriptorImageInfo metallicRoughnessInfo = {};
+				VkDescriptorImageInfo emissiveInfo = {};
+				VkDescriptorImageInfo occlusionInfo = {};
+
+				for (size_t k = 0; k < transparentGraphicsPipeline->sets[1].bindings.size(); k++) {
+					std::string bindingName = transparentGraphicsPipeline->sets[1].bindings[k].name;
+					if (bindingName == "colorMap") {
+						std::string diffuseKey = materials[mesh.transparentPrimitives[i].materialIndex].diffuseKey;
+						if (diffuseKey == "") {
+							diffuseKey = "defaultDiffuse";
+						}
+
+						diffuseInfo.sampler = textures.at(diffuseKey).imageSampler;
+						diffuseInfo.imageView = textures.at(diffuseKey).imageView;
+						diffuseInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+						VkWriteDescriptorSet diffuseWriteDescriptorSet = {};
+						diffuseWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						diffuseWriteDescriptorSet.pNext = nullptr;
+						diffuseWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						diffuseWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						diffuseWriteDescriptorSet.dstArrayElement = 0;
+						diffuseWriteDescriptorSet.descriptorCount = 1;
+						diffuseWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						diffuseWriteDescriptorSet.pImageInfo = &diffuseInfo;
+						diffuseWriteDescriptorSet.pBufferInfo = nullptr;
+						diffuseWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(diffuseWriteDescriptorSet);
+					}
+					else if (bindingName == "normalMap") {
+						std::string normalKey = materials[mesh.transparentPrimitives[i].materialIndex].normalKey;
+						if (normalKey == "") {
+							normalKey = "defaultNormal";
+						}
+
+						normalInfo.sampler = textures.at(normalKey).imageSampler;
+						normalInfo.imageView = textures.at(normalKey).imageView;
+						normalInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+						VkWriteDescriptorSet normalWriteDescriptorSet = {};
+						normalWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						normalWriteDescriptorSet.pNext = nullptr;
+						normalWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						normalWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						normalWriteDescriptorSet.dstArrayElement = 0;
+						normalWriteDescriptorSet.descriptorCount = 1;
+						normalWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						normalWriteDescriptorSet.pImageInfo = &normalInfo;
+						normalWriteDescriptorSet.pBufferInfo = nullptr;
+						normalWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(normalWriteDescriptorSet);
+					}
+					else if (bindingName == "metallicRoughnessMap") {
+						std::string metallicRoughnessKey = materials[mesh.transparentPrimitives[i].materialIndex].metallicRoughnessKey;
+						if (metallicRoughnessKey == "") {
+							metallicRoughnessKey = "defaultMetallicRoughness";
+						}
+
+						metallicRoughnessInfo.sampler = textures.at(metallicRoughnessKey).imageSampler;
+						metallicRoughnessInfo.imageView = textures.at(metallicRoughnessKey).imageView;
+						metallicRoughnessInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+						VkWriteDescriptorSet metallicRoughnessWriteDescriptorSet = {};
+						metallicRoughnessWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						metallicRoughnessWriteDescriptorSet.pNext = nullptr;
+						metallicRoughnessWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						metallicRoughnessWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						metallicRoughnessWriteDescriptorSet.dstArrayElement = 0;
+						metallicRoughnessWriteDescriptorSet.descriptorCount = 1;
+						metallicRoughnessWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						metallicRoughnessWriteDescriptorSet.pImageInfo = &metallicRoughnessInfo;
+						metallicRoughnessWriteDescriptorSet.pBufferInfo = nullptr;
+						metallicRoughnessWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(metallicRoughnessWriteDescriptorSet);
+					}
+					else if (bindingName == "emissiveMap") {
+						std::string emissiveKey = materials[mesh.transparentPrimitives[i].materialIndex].emissiveKey;
+						if (emissiveKey == "") {
+							emissiveKey = "defaultEmissive";
+						}
+
+						emissiveInfo.sampler = textures.at(emissiveKey).imageSampler;
+						emissiveInfo.imageView = textures.at(emissiveKey).imageView;
+						emissiveInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+						VkWriteDescriptorSet emissiveWriteDescriptorSet = {};
+						emissiveWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						emissiveWriteDescriptorSet.pNext = nullptr;
+						emissiveWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						emissiveWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						emissiveWriteDescriptorSet.dstArrayElement = 0;
+						emissiveWriteDescriptorSet.descriptorCount = 1;
+						emissiveWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						emissiveWriteDescriptorSet.pImageInfo = &emissiveInfo;
+						emissiveWriteDescriptorSet.pBufferInfo = nullptr;
+						emissiveWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(emissiveWriteDescriptorSet);
+					}
+					else if (bindingName == "occlusionMap") {
+						std::string occlusionKey = materials[mesh.transparentPrimitives[i].materialIndex].occlusionKey;
+						if (occlusionKey == "") {
+							occlusionKey = "defaultOcclusion";
+						}
+
+						occlusionInfo.sampler = textures.at(occlusionKey).imageSampler;
+						occlusionInfo.imageView = textures.at(occlusionKey).imageView;
+						occlusionInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+						VkWriteDescriptorSet occlusionWriteDescriptorSet = {};
+						occlusionWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						occlusionWriteDescriptorSet.pNext = nullptr;
+						occlusionWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						occlusionWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						occlusionWriteDescriptorSet.dstArrayElement = 0;
+						occlusionWriteDescriptorSet.descriptorCount = 1;
+						occlusionWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						occlusionWriteDescriptorSet.pImageInfo = &occlusionInfo;
+						occlusionWriteDescriptorSet.pBufferInfo = nullptr;
+						occlusionWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(occlusionWriteDescriptorSet);
+					}
+					else if (bindingName == "bones") {
+						VkDescriptorBufferInfo bonesInfo = {};
+						bonesInfo.buffer = mesh.boneBuffers.at(j).buffer;
+						bonesInfo.offset = 0;
+						bonesInfo.range = sizeof(BoneUniformBufferObject);
+
+						VkWriteDescriptorSet bonesWriteDescriptorSet = {};
+						bonesWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						bonesWriteDescriptorSet.pNext = nullptr;
+						bonesWriteDescriptorSet.dstSet = descriptorSets.at(i).at(j).descriptorSet;
+						bonesWriteDescriptorSet.dstBinding = transparentGraphicsPipeline->sets[1].bindings[k].binding.binding;
+						bonesWriteDescriptorSet.dstArrayElement = 0;
+						bonesWriteDescriptorSet.descriptorCount = 1;
+						bonesWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+						bonesWriteDescriptorSet.pImageInfo = nullptr;
+						bonesWriteDescriptorSet.pBufferInfo = &bonesInfo;
+						bonesWriteDescriptorSet.pTexelBufferView = nullptr;
+						writesDescriptorSet.push_back(bonesWriteDescriptorSet);
+					}
+				}
+
+				descriptorSets.at(i).at(j).update(writesDescriptorSet);
+			}
+		}
+		mesh.descriptorSets.emplace(transparentGraphicsPipeline, descriptorSets);
 	}
 }

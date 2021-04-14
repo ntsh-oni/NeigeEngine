@@ -31,7 +31,7 @@ struct GraphicsPipeline {
 	std::vector<VkPushConstantRange> pushConstantRanges;
 
 	// Parameters
-	bool colorBlend = true;
+	std::vector<Blending> blendings;
 	bool multiSample = false;
 	bool depthWrite = true;
 	Compare depthCompare = LESS_OR_EQUAL;

@@ -16,6 +16,8 @@ struct Model {
 
 	void init(std::string filePath);
 	void destroy();
-	void draw(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures);
-	void createDescriptorSets(GraphicsPipeline* graphicsPipeline);
+	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures);
+	void drawTransparent(CommandBuffer* commandBuffer, GraphicsPipeline* transparentGraphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures);
+	void createOpaqueDescriptorSets(GraphicsPipeline* opaqueGraphicsPipeline);
+	void createTransparentDescriptorSets(GraphicsPipeline* transparentGraphicsPipeline);
 };

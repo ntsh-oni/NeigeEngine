@@ -47,10 +47,14 @@ struct Renderer : public System {
 
 	std::unordered_map<std::string, RenderPass> renderPasses;
 
-	std::vector<Framebuffer> sceneFramebuffers;
+	std::vector<Framebuffer> opaqueSceneFramebuffers;
+	std::vector<Framebuffer> transparentSceneFramebuffers;
+	std::vector<Framebuffer> alphaCompositingFramebuffers;
 	std::vector<Framebuffer> postFramebuffers;
 
+	DescriptorSet alphaCompositingDescriptorSet;
 	DescriptorSet postDescriptorSet;
+
 	// Command buffers
 	std::vector<CommandPool> renderingCommandPools;
 	std::vector<CommandBuffer> renderingCommandBuffers;
@@ -68,6 +72,7 @@ struct Renderer : public System {
 	void recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t framebufferIndex);
 	void createResources();
 	void destroyResources();
+	void createAlphaCompositingDescriptorSet();
 	void createPostProcessDescriptorSet();
 	void reloadOnResize();
 };

@@ -43,3 +43,8 @@ std::string FileTools::fileGetDirectory(const std::string& filePath) {
     }
     return filePath.substr(0, slashPosition + 1);
 }
+
+bool FileTools::exists(const std::string& filePath) {
+    std::ifstream file(filePath);
+    return file.good();
+}

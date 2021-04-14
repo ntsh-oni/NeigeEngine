@@ -22,8 +22,9 @@ struct Renderable {
 	// Pipeline topology
 	Topology topology = Topology::TRIANGLE_LIST;
 
-	// GraphicsPipeline
-	GraphicsPipeline* graphicsPipeline;
+	// Graphics pipelines
+	GraphicsPipeline* opaqueGraphicsPipeline;
+	GraphicsPipeline* transparentGraphicsPipeline;
 	std::string lookupString = "";
 
 	void createLookupString() {
@@ -37,7 +38,7 @@ struct Renderable {
 	std::vector<DescriptorSet> shadowDescriptorSets;
 
 	void createEntityDescriptorSet(uint32_t frameInFlightIndex) {
-		descriptorSets[frameInFlightIndex].init(graphicsPipeline, 0);
+		descriptorSets[frameInFlightIndex].init(opaqueGraphicsPipeline, 0);
 
 		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
@@ -51,8 +52,8 @@ struct Renderable {
 		std::vector<VkDescriptorImageInfo> shadowMapsInfos;
 		VkDescriptorBufferInfo timeInfo = {};
 
-		for (size_t i = 0; i < graphicsPipeline->sets[0].bindings.size(); i++) {
-			std::string bindingName = graphicsPipeline->sets[0].bindings[i].name;
+		for (size_t i = 0; i < opaqueGraphicsPipeline->sets[0].bindings.size(); i++) {
+			std::string bindingName = opaqueGraphicsPipeline->sets[0].bindings[i].name;
 			if (bindingName == "object") {
 				objectInfo.buffer = buffers.at(frameInFlightIndex).buffer;
 				objectInfo.offset = 0;
@@ -62,7 +63,7 @@ struct Renderable {
 				objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				objectWriteDescriptorSet.pNext = nullptr;
 				objectWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				objectWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				objectWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				objectWriteDescriptorSet.dstArrayElement = 0;
 				objectWriteDescriptorSet.descriptorCount = 1;
 				objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -81,7 +82,7 @@ struct Renderable {
 				cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				cameraWriteDescriptorSet.pNext = nullptr;
 				cameraWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				cameraWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				cameraWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				cameraWriteDescriptorSet.dstArrayElement = 0;
 				cameraWriteDescriptorSet.descriptorCount = 1;
 				cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -100,7 +101,7 @@ struct Renderable {
 				shadowWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				shadowWriteDescriptorSet.pNext = nullptr;
 				shadowWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				shadowWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				shadowWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				shadowWriteDescriptorSet.dstArrayElement = 0;
 				shadowWriteDescriptorSet.descriptorCount = 1;
 				shadowWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -119,7 +120,7 @@ struct Renderable {
 				lightingWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				lightingWriteDescriptorSet.pNext = nullptr;
 				lightingWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				lightingWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				lightingWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				lightingWriteDescriptorSet.dstArrayElement = 0;
 				lightingWriteDescriptorSet.descriptorCount = 1;
 				lightingWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -138,7 +139,7 @@ struct Renderable {
 				irradianceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				irradianceWriteDescriptorSet.pNext = nullptr;
 				irradianceWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				irradianceWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				irradianceWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				irradianceWriteDescriptorSet.dstArrayElement = 0;
 				irradianceWriteDescriptorSet.descriptorCount = 1;
 				irradianceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -157,7 +158,7 @@ struct Renderable {
 				prefilterWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				prefilterWriteDescriptorSet.pNext = nullptr;
 				prefilterWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				prefilterWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				prefilterWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				prefilterWriteDescriptorSet.dstArrayElement = 0;
 				prefilterWriteDescriptorSet.descriptorCount = 1;
 				prefilterWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -176,7 +177,7 @@ struct Renderable {
 				brdfLUTWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				brdfLUTWriteDescriptorSet.pNext = nullptr;
 				brdfLUTWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				brdfLUTWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				brdfLUTWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				brdfLUTWriteDescriptorSet.dstArrayElement = 0;
 				brdfLUTWriteDescriptorSet.descriptorCount = 1;
 				brdfLUTWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -199,7 +200,7 @@ struct Renderable {
 				shadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				shadowMapsWriteDescriptorSet.pNext = nullptr;
 				shadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				shadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				shadowMapsWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				shadowMapsWriteDescriptorSet.dstArrayElement = 0;
 				shadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(shadowMapsInfos.size());
 				shadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -218,7 +219,7 @@ struct Renderable {
 				timeWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				timeWriteDescriptorSet.pNext = nullptr;
 				timeWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				timeWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				timeWriteDescriptorSet.dstBinding = opaqueGraphicsPipeline->sets[0].bindings[i].binding.binding;
 				timeWriteDescriptorSet.dstArrayElement = 0;
 				timeWriteDescriptorSet.descriptorCount = 1;
 				timeWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

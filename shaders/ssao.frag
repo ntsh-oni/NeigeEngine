@@ -22,12 +22,12 @@ layout(set = 0, binding = 4) uniform Camera {
 
 layout(location = 0) in vec2 uv;
 
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out float outColor;
 
 void main() {
 	const vec2 randomScale = vec2(imageSize.size.x / 4.0, imageSize.size.y / 4.0);
 	const float radius = 0.25;
-	const float bias = 0.025;
+	const float bias = 0.05;
 	
 	vec3 position = texture(positionSampler, uv).xyz;
 	vec3 normal = texture(normalSampler, uv).xyz;
@@ -53,5 +53,5 @@ void main() {
 	}
 	occlusion = 1.0 - (occlusion / SAMPLES);
 
-	outColor = vec4(vec3(occlusion), 1.0);
+	outColor = occlusion;
 }
