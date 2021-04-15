@@ -23,7 +23,20 @@ $ cd build
 $ cmake ..
 $ make
 ```
-
+## Features
+### General Features
+- [x] Entity component system
+- [x] Keyboard and mouse input
+- [x] glTF import
+### Graphics Features
+- [x] Physically Based Rendering (PBL) metallic-roughness
+- [x] Image-Based Lighting (IBL) and environment map
+- [x] Shadow mapping
+- [x] Pure Depth Screen Space Ambiant Occlusion (SSAO)
+- [x] Bloom
+- [x] Weighted Blended Order-Independant Transparency (WBOIT)
+- [x] Alpha cutoff
+- [x] Realtime shaders reloading
 ## Screenshots
 ![Amazon Lumberyard Bistro](https://i.imgur.com/oQ0EeZy.png)
 <sub>Amazon Lumberyard Bistro</sub>
