@@ -15,12 +15,17 @@ layout(set = 0, binding = 1) uniform Shadow {
 } shadow;
 
 layout(push_constant) uniform LightIndex {
-	int lightIndex;
+	layout(offset = 0) int lightIndex;
 } lightIndex;
 
 layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 uv;
+
+layout(location = 0) out vec2 outUv;
 
 void main() {
+	outUv = uv;
+
 	int numDirLights = int(shadow.numLights.x);
 	
 	if (lightIndex.lightIndex < numDirLights) {

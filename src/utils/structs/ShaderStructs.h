@@ -60,6 +60,13 @@ struct Set {
 	std::vector<Binding> bindings;
 };
 
+// Specialization constant
+struct SpecializationConstant {
+	uint32_t id;
+	std::string type;
+	std::string name;
+};
+
 // Vertex
 struct Vertex {
 	glm::vec3 position;

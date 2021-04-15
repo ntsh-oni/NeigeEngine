@@ -27,7 +27,9 @@ struct Mesh {
 	uint32_t indexOffset;
 	int32_t vertexOffset;
 	std::vector<Primitive> opaquePrimitives;
-	std::vector<Primitive> transparentPrimitives;
+	std::vector<Primitive> maskPrimitives;
+	std::vector<float> alphaCutoffs;
+	std::vector<Primitive> blendPrimitives;
 	Bone skeleton;
 	std::vector<Bone> boneList;
 	std::vector<Buffer> boneBuffers;

@@ -62,7 +62,7 @@ void Renderer::init(const std::string applicationName) {
 		renderPasses.emplace("opaqueScene", renderPass);
 	}
 
-	// Transparent scene
+	// Blend scene
 	{
 		std::vector<RenderPassAttachment> attachments;
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 0.0f)));
@@ -77,7 +77,7 @@ void Renderer::init(const std::string applicationName) {
 
 		RenderPass renderPass;
 		renderPass.init(attachments, dependencies);
-		renderPasses.emplace("transparentScene", renderPass);
+		renderPasses.emplace("blendScene", renderPass);
 	}
 
 	// Alpha compositing
@@ -501,36 +501,59 @@ void Renderer::loadObject(Entity object) {
 		graphicsPipelines.emplace(objectRenderable.lookupString + "o", opaqueGraphicsPipeline);
 	}
 
-	// Transparent
-	std::string transparentFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_t.frag";
-	if (graphicsPipelines.find(objectRenderable.lookupString + "t") == graphicsPipelines.end() && FileTools::exists(transparentFragmentShader)) {
-		GraphicsPipeline transparentGraphicsPipeline;
-		transparentGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		transparentGraphicsPipeline.fragmentShaderPath = transparentFragmentShader;
-		transparentGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
-		transparentGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
-		transparentGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
-		transparentGraphicsPipeline.renderPass = &renderPasses.at("transparentScene");
-		transparentGraphicsPipeline.multiSample = false;
-		transparentGraphicsPipeline.viewport = &fullscreenViewport;
-		transparentGraphicsPipeline.topology = objectRenderable.topology;
-		transparentGraphicsPipeline.depthCompare = Compare::LESS_OR_EQUAL;
-		transparentGraphicsPipeline.depthWrite = false;
-		transparentGraphicsPipeline.backfaceCulling = false;
-		transparentGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
-		transparentGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
+	// Mask
+	std::string maskFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_m.frag";
+	if (graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
+		GraphicsPipeline maskGraphicsPipeline;
+		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
+		maskGraphicsPipeline.fragmentShaderPath = maskFragmentShader;
+		maskGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
+		maskGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
+		maskGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
+		maskGraphicsPipeline.renderPass = &renderPasses.at("opaqueScene");
+		maskGraphicsPipeline.multiSample = false;
+		maskGraphicsPipeline.viewport = &fullscreenViewport;
+		maskGraphicsPipeline.topology = objectRenderable.topology;
+		maskGraphicsPipeline.depthCompare = Compare::EQUAL;
+		maskGraphicsPipeline.depthWrite = false;
+		maskGraphicsPipeline.backfaceCulling = false;
+		maskGraphicsPipeline.init();
+		graphicsPipelines.emplace(objectRenderable.lookupString + "m", maskGraphicsPipeline);
+	}
 
-		transparentGraphicsPipeline.init();
-		graphicsPipelines.emplace(objectRenderable.lookupString + "t", transparentGraphicsPipeline);
+	// Blend
+	std::string blendFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_b.frag";
+	if (graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
+		GraphicsPipeline blendGraphicsPipeline;
+		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
+		blendGraphicsPipeline.fragmentShaderPath = blendFragmentShader;
+		blendGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
+		blendGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
+		blendGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
+		blendGraphicsPipeline.renderPass = &renderPasses.at("blendScene");
+		blendGraphicsPipeline.multiSample = false;
+		blendGraphicsPipeline.viewport = &fullscreenViewport;
+		blendGraphicsPipeline.topology = objectRenderable.topology;
+		blendGraphicsPipeline.depthCompare = Compare::LESS_OR_EQUAL;
+		blendGraphicsPipeline.depthWrite = false;
+		blendGraphicsPipeline.backfaceCulling = false;
+		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
+		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
+		blendGraphicsPipeline.init();
+		graphicsPipelines.emplace(objectRenderable.lookupString + "b", blendGraphicsPipeline);
 	}
 
 	objectRenderable.opaqueGraphicsPipeline = &graphicsPipelines.at(objectRenderable.lookupString + "o");
-	objectRenderable.transparentGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "t") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "t") : nullptr;
+	objectRenderable.maskGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "m") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "m") : nullptr;
+	objectRenderable.blendGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "b") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "b") : nullptr;
 
 	objectRenderable.buffers.resize(framesInFlight);
 	objectRenderable.descriptorSets.resize(framesInFlight);
+	objectRenderable.maskDescriptorSets.resize(framesInFlight);
 	objectRenderable.depthPrepassDescriptorSets.resize(framesInFlight);
+	objectRenderable.depthPrepassMaskDescriptorSets.resize(framesInFlight);
 	objectRenderable.shadowDescriptorSets.resize(framesInFlight);
+	objectRenderable.shadowMaskDescriptorSets.resize(framesInFlight);
 
 	if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -540,11 +563,26 @@ void Renderer::loadObject(Entity object) {
 			// Descriptor sets
 			objectRenderable.createEntityDescriptorSet(i);
 
+			// Mask descriptor sets
+			if (objectRenderable.maskGraphicsPipeline) {
+				objectRenderable.createMaskEntityDescriptorSet(i);
+			}
+
 			// Depth prepass
 			objectRenderable.createDepthPrepassEntityDescriptorSet(i);
 
+			// Depth prepass mask
+			if (objectRenderable.maskGraphicsPipeline) {
+				objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
+			}
+
 			// Shadow
 			objectRenderable.createShadowEntityDescriptorSet(i);
+
+			// Shadow mask
+			if (objectRenderable.maskGraphicsPipeline) {
+				objectRenderable.createShadowMaskEntityDescriptorSet(i);
+			}
 		}
 	}
 
@@ -556,8 +594,13 @@ void Renderer::loadObject(Entity object) {
 	}
 	if (models.at(objectRenderable.modelPath).meshes.at(0).descriptorSets.find(objectRenderable.opaqueGraphicsPipeline) == models.at(objectRenderable.modelPath).meshes.at(0).descriptorSets.end()) {
 		models.at(objectRenderable.modelPath).createOpaqueDescriptorSets(objectRenderable.opaqueGraphicsPipeline);
-		if (objectRenderable.transparentGraphicsPipeline) {
-			models.at(objectRenderable.modelPath).createTransparentDescriptorSets(objectRenderable.transparentGraphicsPipeline);
+		if (objectRenderable.maskGraphicsPipeline) {
+			models.at(objectRenderable.modelPath).createMaskDescriptorSets(objectRenderable.maskGraphicsPipeline);
+			models.at(objectRenderable.modelPath).createDiscardMaskDescriptorSets(&depthPrepass.maskGraphicsPipeline);
+			models.at(objectRenderable.modelPath).createDiscardMaskDescriptorSets(&shadow.maskGraphicsPipeline);
+		}
+		if (objectRenderable.blendGraphicsPipeline) {
+			models.at(objectRenderable.modelPath).createBlendDescriptorSets(objectRenderable.blendGraphicsPipeline);
 		}
 	}
 }
@@ -666,10 +709,8 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 }
 
 void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t framebufferIndex) {
-	currentPipeline = nullptr;
-
 	RenderPass* opaqueSceneRenderPass = &renderPasses.at("opaqueScene");
-	RenderPass* transparentSceneRenderPass = &renderPasses.at("transparentScene");
+	RenderPass* blendSceneRenderPass = &renderPasses.at("blendScene");
 	RenderPass* alphaCompositingRenderPass = &renderPasses.at("alphaCompositing");
 	RenderPass* postRenderPass = &renderPasses.at("post");
 
@@ -678,14 +719,23 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	// Depth prepass
 	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffers[frameInFlightIndex].framebuffer, window.extent);
-	depthPrepass.graphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
+		Model* model = &models.at(objectRenderable.modelPath);
+		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
+		// Opaque
+		depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 		objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+		model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, frameInFlightIndex, false);
 
-		models.at(objectRenderable.modelPath).drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.graphicsPipeline, frameInFlightIndex, false);
+		// Mask
+		if (objectRenderable.maskGraphicsPipeline) {
+			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, frameInFlightIndex, true, 0);
+		}
 	}
 
 	depthPrepass.renderPass.end(&renderingCommandBuffers[frameInFlightIndex]);
@@ -698,16 +748,24 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
 			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].at(frameInFlightIndex).framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
 
-			shadow.graphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-			shadow.graphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-
 			for (Entity object : entities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
+				Model* model = &models.at(objectRenderable.modelPath);
+				model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
+				// Opaque
+				shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 				objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+				shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
+				model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, frameInFlightIndex, false);
 
-				models.at(objectRenderable.modelPath).drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.graphicsPipeline, frameInFlightIndex, false);
-				models.at(objectRenderable.modelPath).drawTransparent(&renderingCommandBuffers[frameInFlightIndex], &shadow.graphicsPipeline, frameInFlightIndex, false);
+				// Mask
+				if (objectRenderable.maskGraphicsPipeline) {
+					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
+					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, frameInFlightIndex, true, 16);
+				}
 			}
 
 			shadow.renderPass.end(&renderingCommandBuffers[frameInFlightIndex]);
@@ -720,18 +778,24 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	opaqueSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], opaqueSceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
+		Model* model = &models.at(objectRenderable.modelPath);
+		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
-		if (currentPipeline != objectRenderable.opaqueGraphicsPipeline) {
-			objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
-
-			currentPipeline = objectRenderable.opaqueGraphicsPipeline;
-		}
-
-		if (currentPipeline->sets.size() != 0) {
+		// Opaque
+		objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
+		if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
 			objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 		}
+		model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, frameInFlightIndex, true);
 
-		models.at(objectRenderable.modelPath).drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, frameInFlightIndex, true);
+		// Mask
+		if (objectRenderable.maskGraphicsPipeline) {
+			objectRenderable.maskGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
+			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
+				objectRenderable.maskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			}
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, frameInFlightIndex, true, 0);
+		}
 	}
 	skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 	skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
@@ -740,27 +804,23 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	opaqueSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
-	// Transparent scene
-	transparentSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], transparentSceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
+	// Blend scene
+	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
+		Model* model = &models.at(objectRenderable.modelPath);
+		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
-		if (objectRenderable.transparentGraphicsPipeline) {
-			if (currentPipeline != objectRenderable.transparentGraphicsPipeline) {
-				objectRenderable.transparentGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
-
-				currentPipeline = objectRenderable.transparentGraphicsPipeline;
-			}
-
-			if (currentPipeline->sets.size() != 0) {
+		if (objectRenderable.blendGraphicsPipeline) {
+			objectRenderable.blendGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
+			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-
-			models.at(objectRenderable.modelPath).drawTransparent(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.transparentGraphicsPipeline, frameInFlightIndex, true);
+			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, frameInFlightIndex, true);
 		}
 	}
 
-	transparentSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
+	blendSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Alpha compositing
 	alphaCompositingRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], alphaCompositingFramebuffers[framebufferIndex].framebuffer, window.extent);
@@ -792,39 +852,39 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 void Renderer::createResources() {
 	// Opaque scene
 	{
-		ImageTools::createImage(&opaqueSceneImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &opaqueSceneImage.memoryInfo);
-		ImageTools::createImageView(&opaqueSceneImage.imageView, opaqueSceneImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&opaqueSceneImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+		ImageTools::createImage(&sceneImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &sceneImage.memoryInfo);
+		ImageTools::createImageView(&sceneImage.imageView, sceneImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
+		ImageTools::createImageSampler(&sceneImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	
 		std::vector<std::vector<VkImageView>> framebufferAttachments;
 		framebufferAttachments.resize(swapchainSize);
 		opaqueSceneFramebuffers.resize(swapchainSize);
 		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(opaqueSceneImage.imageView);
+			framebufferAttachments[i].push_back(sceneImage.imageView);
 			framebufferAttachments[i].push_back(bloom.thresholdImage.imageView);
 			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
 			opaqueSceneFramebuffers[i].init(&renderPasses.at("opaqueScene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
 	}
 
-	// Transparent scene
+	// Blend scene
 	{
-		ImageTools::createImage(&transparentAccumulationImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &transparentAccumulationImage.memoryInfo);
-		ImageTools::createImageView(&transparentAccumulationImage.imageView, transparentAccumulationImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&transparentAccumulationImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+		ImageTools::createImage(&blendAccumulationImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &blendAccumulationImage.memoryInfo);
+		ImageTools::createImageView(&blendAccumulationImage.imageView, blendAccumulationImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
+		ImageTools::createImageSampler(&blendAccumulationImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
-		ImageTools::createImage(&transparentRevealageImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &transparentRevealageImage.memoryInfo);
-		ImageTools::createImageView(&transparentRevealageImage.imageView, transparentRevealageImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&transparentRevealageImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_INT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+		ImageTools::createImage(&blendRevealageImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &blendRevealageImage.memoryInfo);
+		ImageTools::createImageView(&blendRevealageImage.imageView, blendRevealageImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+		ImageTools::createImageSampler(&blendRevealageImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_INT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 		std::vector<std::vector<VkImageView>> framebufferAttachments;
 		framebufferAttachments.resize(swapchainSize);
-		transparentSceneFramebuffers.resize(swapchainSize);
+		blendSceneFramebuffers.resize(swapchainSize);
 		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(transparentAccumulationImage.imageView);
-			framebufferAttachments[i].push_back(transparentRevealageImage.imageView);
+			framebufferAttachments[i].push_back(blendAccumulationImage.imageView);
+			framebufferAttachments[i].push_back(blendRevealageImage.imageView);
 			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
-			transparentSceneFramebuffers[i].init(&renderPasses.at("transparentScene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
+			blendSceneFramebuffers[i].init(&renderPasses.at("blendScene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
 	}
 
@@ -834,7 +894,7 @@ void Renderer::createResources() {
 		framebufferAttachments.resize(swapchainSize);
 		alphaCompositingFramebuffers.resize(swapchainSize);
 		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(opaqueSceneImage.imageView);
+			framebufferAttachments[i].push_back(sceneImage.imageView);
 			alphaCompositingFramebuffers[i].init(&renderPasses.at("alphaCompositing"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
 		}
 	}
@@ -853,19 +913,19 @@ void Renderer::createResources() {
 
 void Renderer::destroyResources() {
 	swapchain.destroy();
-	opaqueSceneImage.destroy();
-	transparentAccumulationImage.destroy();
-	transparentRevealageImage.destroy();
+	sceneImage.destroy();
+	blendAccumulationImage.destroy();
+	blendRevealageImage.destroy();
 	for (Framebuffer& framebuffer : opaqueSceneFramebuffers) {
 		framebuffer.destroy();
 	}
 	opaqueSceneFramebuffers.clear();
 	opaqueSceneFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : transparentSceneFramebuffers) {
+	for (Framebuffer& framebuffer : blendSceneFramebuffers) {
 		framebuffer.destroy();
 	}
-	transparentSceneFramebuffers.clear();
-	transparentSceneFramebuffers.shrink_to_fit();
+	blendSceneFramebuffers.clear();
+	blendSceneFramebuffers.shrink_to_fit();
 	for (Framebuffer& framebuffer : alphaCompositingFramebuffers) {
 		framebuffer.destroy();
 	}
@@ -885,13 +945,13 @@ void Renderer::createAlphaCompositingDescriptorSet() {
 	alphaCompositingDescriptorSet.init(&graphicsPipelines.at("alphaCompositing"), 0);
 
 	VkDescriptorImageInfo accumulationInfo = {};
-	accumulationInfo.sampler = transparentAccumulationImage.imageSampler;
-	accumulationInfo.imageView = transparentAccumulationImage.imageView;
+	accumulationInfo.sampler = blendAccumulationImage.imageSampler;
+	accumulationInfo.imageView = blendAccumulationImage.imageView;
 	accumulationInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo revealageInfo = {};
-	revealageInfo.sampler = transparentRevealageImage.imageSampler;
-	revealageInfo.imageView = transparentRevealageImage.imageView;
+	revealageInfo.sampler = blendRevealageImage.imageSampler;
+	revealageInfo.imageView = blendRevealageImage.imageView;
 	revealageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
@@ -929,8 +989,8 @@ void Renderer::createPostProcessDescriptorSet() {
 	postDescriptorSet.init(&graphicsPipelines.at("post"), 0);
 
 	VkDescriptorImageInfo sceneInfo = {};
-	sceneInfo.sampler = opaqueSceneImage.imageSampler;
-	sceneInfo.imageView = opaqueSceneImage.imageView;
+	sceneInfo.sampler = sceneImage.imageSampler;
+	sceneInfo.imageView = sceneImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo bloomInfo = {};

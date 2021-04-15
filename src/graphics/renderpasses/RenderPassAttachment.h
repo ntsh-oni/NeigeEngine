@@ -4,7 +4,8 @@
 enum struct AttachmentType {
 	COLOR,
 	DEPTH,
-	RESOLVE
+	RESOLVE,
+	UNUSED
 };
 
 struct ClearColorValue {

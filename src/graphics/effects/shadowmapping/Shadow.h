@@ -12,7 +12,8 @@
 
 struct Shadow {
 	Viewport viewport;
-	GraphicsPipeline graphicsPipeline;
+	GraphicsPipeline opaqueGraphicsPipeline;
+	GraphicsPipeline maskGraphicsPipeline;
 	std::vector<Buffer> buffers;
 	std::vector<Image> images;
 	RenderPass renderPass;

@@ -94,6 +94,10 @@ void GraphicsPipeline::init() {
 				sets.push_back(shader.sets[i]);
 			}
 		}
+
+		if (pushConstantRanges.size() != 0 && shader.pushConstantRanges.size() != 0) {
+			shader.pushConstantRanges[shader.pushConstantRanges.size() - 1].offset += pushConstantRanges[pushConstantRanges.size() - 1].size;
+		}
 		pushConstantRanges.insert(pushConstantRanges.end(), shader.pushConstantRanges.begin(), shader.pushConstantRanges.end());
 		uniqueDescriptorTypes.insert(shader.uniqueDescriptorTypes.begin(), shader.uniqueDescriptorTypes.end());
 	}
@@ -131,6 +135,10 @@ void GraphicsPipeline::init() {
 			if (!found) {
 				sets.push_back(shader.sets[i]);
 			}
+		}
+
+		if (pushConstantRanges.size() != 0 && shader.pushConstantRanges.size() != 0) {
+			shader.pushConstantRanges[shader.pushConstantRanges.size() - 1].offset += pushConstantRanges[pushConstantRanges.size() - 1].size;
 		}
 		pushConstantRanges.insert(pushConstantRanges.end(), shader.pushConstantRanges.begin(), shader.pushConstantRanges.end());
 		uniqueDescriptorTypes.insert(shader.uniqueDescriptorTypes.begin(), shader.uniqueDescriptorTypes.end());
@@ -170,6 +178,10 @@ void GraphicsPipeline::init() {
 				sets.push_back(shader.sets[i]);
 			}
 		}
+
+		if (pushConstantRanges.size() != 0 && shader.pushConstantRanges.size() != 0) {
+			shader.pushConstantRanges[shader.pushConstantRanges.size() - 1].offset += pushConstantRanges[pushConstantRanges.size() - 1].size;
+		}
 		pushConstantRanges.insert(pushConstantRanges.end(), shader.pushConstantRanges.begin(), shader.pushConstantRanges.end());
 		uniqueDescriptorTypes.insert(shader.uniqueDescriptorTypes.begin(), shader.uniqueDescriptorTypes.end());
 	}
@@ -207,6 +219,10 @@ void GraphicsPipeline::init() {
 			if (!found) {
 				sets.push_back(shader.sets[i]);
 			}
+		}
+
+		if (pushConstantRanges.size() != 0 && shader.pushConstantRanges.size() != 0) {
+			shader.pushConstantRanges[shader.pushConstantRanges.size() - 1].offset += pushConstantRanges[pushConstantRanges.size() - 1].size;
 		}
 		pushConstantRanges.insert(pushConstantRanges.end(), shader.pushConstantRanges.begin(), shader.pushConstantRanges.end());
 		uniqueDescriptorTypes.insert(shader.uniqueDescriptorTypes.begin(), shader.uniqueDescriptorTypes.end());

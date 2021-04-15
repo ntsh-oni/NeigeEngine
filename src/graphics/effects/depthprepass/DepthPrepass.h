@@ -14,7 +14,8 @@
 struct DepthPrepass {
 	Viewport viewport;
 	RenderPass renderPass;
-	GraphicsPipeline graphicsPipeline;
+	GraphicsPipeline opaqueGraphicsPipeline;
+	GraphicsPipeline maskGraphicsPipeline;
 	Image image;
 	std::vector<Framebuffer> framebuffers;
 

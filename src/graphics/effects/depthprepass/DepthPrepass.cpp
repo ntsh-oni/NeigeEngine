@@ -18,19 +18,28 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 		renderPass.init(attachments, dependencies);
 	}
 
-	graphicsPipeline.vertexShaderPath = "../shaders/depthPrepass.vert";
-	graphicsPipeline.renderPass = &renderPass;
-	graphicsPipeline.viewport = &viewport;
-	graphicsPipeline.multiSample = false;
-	graphicsPipeline.backfaceCulling = true;
-	graphicsPipeline.init();
+	opaqueGraphicsPipeline.vertexShaderPath = "../shaders/depthPrepass.vert";
+	opaqueGraphicsPipeline.renderPass = &renderPass;
+	opaqueGraphicsPipeline.viewport = &viewport;
+	opaqueGraphicsPipeline.multiSample = false;
+	opaqueGraphicsPipeline.backfaceCulling = true;
+	opaqueGraphicsPipeline.init();
+
+	maskGraphicsPipeline.vertexShaderPath = "../shaders/depthPrepass.vert";
+	maskGraphicsPipeline.fragmentShaderPath = "../shaders/depthPrepassMask.frag";
+	maskGraphicsPipeline.renderPass = &renderPass;
+	maskGraphicsPipeline.viewport = &viewport;
+	maskGraphicsPipeline.multiSample = false;
+	maskGraphicsPipeline.backfaceCulling = true;
+	maskGraphicsPipeline.init();
 
 	createResources(fullscreenViewport);
 }
 
 void DepthPrepass::destroy() {
 	renderPass.destroy();
-	graphicsPipeline.destroy();
+	opaqueGraphicsPipeline.destroy();
+	maskGraphicsPipeline.destroy();
 	destroyResources();
 }
 

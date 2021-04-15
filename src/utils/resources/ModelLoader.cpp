@@ -90,13 +90,15 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 		modelMesh.vertexOffset = *modelVertexOffset;
 
 		std::vector<Primitive> opaquePrimitives;
-		std::vector<Primitive> transparentPrimitives;
+		std::vector<Primitive> maskPrimitives;
+		std::vector<float> alphaCutoffs;
+		std::vector<Primitive> blendPrimitives;
 
 		uint32_t firstIndex = 0;
 		uint32_t indexCount = 0;
 		int32_t vertexOffset = 0;
 		int32_t vertexCount = 0;
-		bool opaque = true;
+		cgltf_alpha_mode alphaMode = cgltf_alpha_mode_opaque;
 
 		for (size_t j = 0; j < mesh->primitives_count; j++) {
 			cgltf_primitive* primitive = &mesh->primitives[j];
@@ -108,7 +110,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			indexCount = 0;
 			vertexOffset += vertexCount;
 			vertexCount = 0;
-			opaque = true;
+			alphaMode = cgltf_alpha_mode_opaque;
 
 			float* position;
 			float* normal;
@@ -304,7 +306,11 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 			if (primitive->material != NULL) {
 				Material primitiveMaterial;
-				opaque = primitive->material->alpha_mode == cgltf_alpha_mode_opaque || primitive->material->alpha_mode == cgltf_alpha_mode_mask;
+				alphaMode = primitive->material->alpha_mode;
+
+				if (alphaMode == cgltf_alpha_mode_mask) {
+					alphaCutoffs.push_back(primitive->material->alpha_cutoff);
+				}
 
 				if (primitive->material->has_pbr_metallic_roughness) {
 					cgltf_pbr_metallic_roughness pbrMetallicRoughness = primitive->material->pbr_metallic_roughness;
@@ -418,11 +424,14 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			}
 
 			// Primitive
-			if (opaque) {
+			if (alphaMode == cgltf_alpha_mode_opaque) {
 				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
 			}
+			else if (alphaMode == cgltf_alpha_mode_mask) {
+				maskPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+			}
 			else {
-				transparentPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+				blendPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
 			}
 
 			vertices->insert(vertices->end(), primitiveVertices.begin(), primitiveVertices.end());
@@ -439,7 +448,9 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 		}
 
 		modelMesh.opaquePrimitives = opaquePrimitives;
-		modelMesh.transparentPrimitives = transparentPrimitives;
+		modelMesh.maskPrimitives = maskPrimitives;
+		modelMesh.alphaCutoffs = alphaCutoffs;
+		modelMesh.blendPrimitives = blendPrimitives;
 
 		if (node->skin != NULL) {
 			cgltf_skin* skin = node->skin;

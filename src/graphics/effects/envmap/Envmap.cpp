@@ -5,10 +5,17 @@
 #include "../../../graphics/resources/RendererResources.h"
 
 void Envmap::init(std::string filePath) {
-	if (filePath != "") {
+	if (FileTools::exists(filePath)) {
 		ImageTools::loadHDREnvmap(filePath, &envmapImage.image, physicalDevice.colorFormat, &envmapImage.memoryInfo);
-		ImageTools::createImageView(&envmapImage.imageView, envmapImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
+	else {
+		if (filePath != "") {
+			NEIGE_WARNING("Envmap " + filePath + " does not exist.");
+		}
+		float defaultEnvmap[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		ImageTools::loadColorForEnvmap(defaultEnvmap, &envmapImage.image, physicalDevice.colorFormat, &envmapImage.mipmapLevels, &envmapImage.memoryInfo);
+	}
+	ImageTools::createImageView(&envmapImage.imageView, envmapImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	uint32_t skyboxMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(ENVMAP_WIDTH, ENVMAP_HEIGHT)))) + 1;
 	ImageTools::createImage(&skyboxImage.image, 6, ENVMAP_WIDTH, ENVMAP_HEIGHT, skyboxMipLevels, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &skyboxImage.memoryInfo);
