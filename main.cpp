@@ -27,12 +27,12 @@ int main(void) {
 		45.0f,
 		0.3f,
 		200.0f,
-		""
+		"../modelfiles/sunset_forest_8k.hdr"
 		});
 
-	Entity bistro = ecs.createEntity();
+	/*Entity bistro = ecs.createEntity();
 	ecs.addComponent(bistro, Renderable{
-		"../modelfiles/Bistro_v5_1/bistro1024.gltf",
+		"../modelfiles/Bistro_v5_1/bistrointe.gltf",
 		"../shaders/pbr.vert",
 		"../shaders/pbr.frag",
 		"",
@@ -46,7 +46,7 @@ int main(void) {
 		glm::vec3(1.0f, 1.0f, 1.0f)
 		});
 
-	/*Entity bistroLight1 = ecs.createEntity();
+	Entity bistroLight1 = ecs.createEntity();
 	ecs.addComponent(bistroLight1, Light{
 		LightType::SPOT,
 		glm::vec3(2.63273f, 1.44006f, -0.314734f),
@@ -80,9 +80,9 @@ int main(void) {
 		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
 		glm::vec2(40.0f, 50.0f)
-		});
+		});*/
 
-	Entity porsche = ecs.createEntity();
+	/*Entity porsche = ecs.createEntity();
 	ecs.addComponent(porsche, Renderable{
 		"../modelfiles/free_1975_porsche_911_930_turbo/scene.gltf",
 		"../shaders/pbr.vert",
@@ -230,7 +230,7 @@ int main(void) {
 		glm::vec3(3.0f, 1.0f, 2.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});
+		});*/
 
 	Entity entity3 = ecs.createEntity();
 	ecs.addComponent(entity3, Renderable{
@@ -244,11 +244,11 @@ int main(void) {
 		});
 	ecs.addComponent(entity3, Transform{
 		glm::vec3(0.0f, 1.5f, 0.0f),
-		glm::vec3(90.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
 		});
 
-	Entity entity4 = ecs.createEntity();
+	/*Entity entity4 = ecs.createEntity();
 	ecs.addComponent(entity4, Renderable{
 		"../modelfiles/sphere.gltf",
 		"../shaders/pbr.vert",
@@ -280,7 +280,7 @@ int main(void) {
 		glm::vec3(1.0f, 1.0f, 1.0f)
 		});*/
 
-	Entity light1 = ecs.createEntity();
+	/*Entity light1 = ecs.createEntity();
 	ecs.addComponent(light1, Light{
 		LightType::DIRECTIONAL,
 		glm::vec3(0.0f, 0.0f, 0.0f),
@@ -368,7 +368,7 @@ int main(void) {
 		glm::vec3(0.0f),
 		glm::vec3(0.5f, 0.0f, 0.5f),
 		glm::vec2(0.0f)
-		});
+		});*/
 
 	g.launch();
 }
