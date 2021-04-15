@@ -72,7 +72,6 @@ bool Shader::compile() {
 			if (equalPos != std::string::npos) {
 				std::string constantId = code.substr(equalPos + 1, closingParenthesisPos - equalPos - 1);
 				specializationConstant.id = std::stoi(constantId);
-				std::cout << specializationConstant.id << std::endl;
 			}
 		}
 
