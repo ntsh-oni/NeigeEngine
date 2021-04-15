@@ -21,7 +21,7 @@ std::string FileTools::readBinary(const std::string& filePath) {
 }
 
 std::string FileTools::filename(const std::string& filePath) {
-    std::size_t slashPosition = filePath.find_last_of('/');
+    size_t slashPosition = filePath.find_last_of('/');
     if (slashPosition == std::string::npos) {
         return filePath;
     }
@@ -29,7 +29,7 @@ std::string FileTools::filename(const std::string& filePath) {
 }
 
 std::string FileTools::extension(const std::string& filePath) {
-    std::size_t dotPosition = filePath.find_last_of('.');
+    size_t dotPosition = filePath.find_last_of('.');
     if (dotPosition == std::string::npos) {
         NEIGE_ERROR("File \"" + filePath + "\" extension could not be found.");
     }
@@ -37,7 +37,7 @@ std::string FileTools::extension(const std::string& filePath) {
 }
 
 std::string FileTools::fileGetDirectory(const std::string& filePath) {
-    std::size_t slashPosition = filePath.find_last_of('/');
+    size_t slashPosition = filePath.find_last_of('/');
     if (slashPosition == std::string::npos) {
         return filePath;
     }

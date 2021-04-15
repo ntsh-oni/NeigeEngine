@@ -23,16 +23,25 @@ void Shadow::init() {
 	ImageTools::createImageSampler(&defaultShadow.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_LESS);
 	ImageTools::transitionLayout(defaultShadow.image, physicalDevice.depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
-	graphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
-	graphicsPipeline.renderPass = &renderPass;
-	graphicsPipeline.viewport = &viewport;
-	graphicsPipeline.multiSample = false;
-	graphicsPipeline.init();
+	opaqueGraphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
+	opaqueGraphicsPipeline.renderPass = &renderPass;
+	opaqueGraphicsPipeline.viewport = &viewport;
+	opaqueGraphicsPipeline.multiSample = false;
+	opaqueGraphicsPipeline.init();
+
+	maskGraphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
+	maskGraphicsPipeline.fragmentShaderPath = "../shaders/shadowMask.frag";
+	maskGraphicsPipeline.renderPass = &renderPass;
+	maskGraphicsPipeline.viewport = &viewport;
+	maskGraphicsPipeline.multiSample = false;
+	maskGraphicsPipeline.backfaceCulling = false;
+	maskGraphicsPipeline.init();
 }
 
 void Shadow::destroy() {
 	renderPass.destroy();
-	graphicsPipeline.destroy();
+	opaqueGraphicsPipeline.destroy();
+	maskGraphicsPipeline.destroy();
 	for (Buffer& buffer : buffers) {
 		buffer.destroy();
 	}

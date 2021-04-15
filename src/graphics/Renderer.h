@@ -39,16 +39,14 @@ struct Renderer : public System {
 	std::vector<Semaphore> RFsemaphores;
 
 	// Pipelines
-	GraphicsPipeline* currentPipeline;
-
 	Viewport fullscreenViewport;
-
 	std::unordered_map<std::string, GraphicsPipeline> graphicsPipelines;
 
+	// Render Passes
 	std::unordered_map<std::string, RenderPass> renderPasses;
 
 	std::vector<Framebuffer> opaqueSceneFramebuffers;
-	std::vector<Framebuffer> transparentSceneFramebuffers;
+	std::vector<Framebuffer> blendSceneFramebuffers;
 	std::vector<Framebuffer> alphaCompositingFramebuffers;
 	std::vector<Framebuffer> postFramebuffers;
 

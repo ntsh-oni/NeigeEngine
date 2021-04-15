@@ -59,6 +59,45 @@ bool Shader::compile() {
 	spvCode.shrink_to_fit();
 
 	std::string code = FileTools::readAscii(file);
+
+	// Parse specialization constants
+	size_t specializationPos = code.find("constant_id");
+	while (specializationPos != std::string::npos) {
+		SpecializationConstant specializationConstant = {};
+
+		// Get constant_id
+		size_t closingParenthesisPos = code.find_first_of(')', specializationPos + 1);
+		if (closingParenthesisPos != std::string::npos) {
+			size_t equalPos = code.find_first_of('=', specializationPos + 1);
+			if (equalPos != std::string::npos) {
+				std::string constantId = code.substr(equalPos + 1, closingParenthesisPos - equalPos - 1);
+				specializationConstant.id = std::stoi(constantId);
+				std::cout << specializationConstant.id << std::endl;
+			}
+		}
+
+		// Get type and name
+		size_t constPos = code.find("const", specializationPos + 1);
+		if (constPos != std::string::npos) {
+			size_t spacePos = code.find_first_of(' ', constPos + 1);
+			if (spacePos != std::string::npos) {
+				size_t equalPos = code.find_first_of('=', spacePos + 1);
+				if (equalPos != std::string::npos) {
+					std::string typeAndName = code.substr(spacePos + 1, equalPos - spacePos - 2);
+					spacePos = typeAndName.find_first_of(' ');
+					if (spacePos != std::string::npos) {
+						specializationConstant.type = typeAndName.substr(0, spacePos);
+						specializationConstant.name = typeAndName.substr(spacePos + 1, typeAndName.length() - spacePos - 1);
+					}
+				}
+			}
+		}
+
+		specializationConstants.push_back(specializationConstant);
+
+		specializationPos = code.find("constant_id", specializationPos + 1);
+	}
+
 	const char* codeString = code.c_str();
 	EShLanguage shaderType = shaderTypeToGlslangShaderType();
 
@@ -184,14 +223,17 @@ void Shader::reflect() {
 	std::vector<SpvReflectBlockVariable*> pushConstants(pushConstantsCount);
 	result = spvReflectEnumeratePushConstantBlocks(&spvShaderModule, &pushConstantsCount, pushConstants.data());
 	NEIGE_ASSERT(result == SPV_REFLECT_RESULT_SUCCESS, "\"" + file + "\" : unable to find push constants.");
-	
+
+	uint32_t pushConstantsOffset = 0;
 	for (uint32_t i = 0; i < pushConstantsCount; i++) {
 		VkPushConstantRange pushConstantRange = {};
-		pushConstantRange.offset = pushConstants[i]->offset;
-		pushConstantRange.size = pushConstants[i]->size;
 		pushConstantRange.stageFlags = shaderTypeToVkShaderFlagBits();
+		pushConstantRange.offset = pushConstantsOffset;
+		pushConstantRange.size = pushConstants[i]->size;
 		pushConstantRanges.push_back(pushConstantRange);
+		pushConstantsOffset += pushConstants[i]->size;
 	}
+
 	spvReflectDestroyShaderModule(&spvShaderModule);
 }
 

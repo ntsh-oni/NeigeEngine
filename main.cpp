@@ -27,12 +27,12 @@ int main(void) {
 		45.0f,
 		0.3f,
 		200.0f,
-		"../modelfiles/sunset_forest_8k.hdr"
+		""
 		});
 
-	/*Entity bistro = ecs.createEntity();
+	Entity bistro = ecs.createEntity();
 	ecs.addComponent(bistro, Renderable{
-		"../modelfiles/Bistro_v5_1/bistrointe.gltf",
+		"../modelfiles/Bistro_v5_1/bistro1024.gltf",
 		"../shaders/pbr.vert",
 		"../shaders/pbr.frag",
 		"",
@@ -44,9 +44,45 @@ int main(void) {
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});*/
+		});
 
-	/*Entity porsche = ecs.createEntity();
+	/*Entity bistroLight1 = ecs.createEntity();
+	ecs.addComponent(bistroLight1, Light{
+		LightType::SPOT,
+		glm::vec3(2.63273f, 1.44006f, -0.314734f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec2(40.0f, 50.0f)
+		});
+
+	Entity bistroLight2 = ecs.createEntity();
+	ecs.addComponent(bistroLight2, Light{
+		LightType::SPOT,
+		glm::vec3(4.23652f, 1.44006f, 0.513211f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec2(40.0f, 50.0f)
+		});
+
+	Entity bistroLight3 = ecs.createEntity();
+	ecs.addComponent(bistroLight3, Light{
+		LightType::SPOT,
+		glm::vec3(2.25823f, 1.44006f, -2.64679f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec2(40.0f, 50.0f)
+		});
+
+	Entity bistroLight4 = ecs.createEntity();
+	ecs.addComponent(bistroLight4, Light{
+		LightType::SPOT,
+		glm::vec3(3.24595f, 1.44006f, -4.52136),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		glm::vec2(40.0f, 50.0f)
+		});
+
+	Entity porsche = ecs.createEntity();
 	ecs.addComponent(porsche, Renderable{
 		"../modelfiles/free_1975_porsche_911_930_turbo/scene.gltf",
 		"../shaders/pbr.vert",
@@ -76,9 +112,9 @@ int main(void) {
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});*/
+		});
 
-	/*Entity sr = ecs.createEntity();
+	Entity sr = ecs.createEntity();
 	ecs.addComponent(sr, Renderable{
 		"../modelfiles/spherered.gltf",
 		"../shaders/pbr.vert",
@@ -148,8 +184,8 @@ int main(void) {
 				});
 	}*/
 
-	/*Entity skinningTest = ecs.createEntity();
-	ecs.addComponent(skinningTest, Renderable{
+	/*Entity boomBox = ecs.createEntity();
+	ecs.addComponent(boomBox, Renderable{
 		"../modelfiles/BoomBox.gltf",
 		"../shaders/pbr.vert",
 		"../shaders/pbr.frag",
@@ -158,7 +194,7 @@ int main(void) {
 		"",
 		Topology::TRIANGLE_LIST
 		});
-	ecs.addComponent(skinningTest, Transform{
+	ecs.addComponent(boomBox, Transform{
 		glm::vec3(3.0f, 2.0f, 0.0f),
 		glm::vec3(180.0f, 0.0f, 0.0f),
 		glm::vec3(100.0f, 100.0f, 100.0f)
@@ -178,9 +214,9 @@ int main(void) {
 		glm::vec3(5.0f, 1.0f, 2.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});
+		});*/
 
-	Entity entity8 = ecs.createEntity();
+	/*Entity entity8 = ecs.createEntity();
 	ecs.addComponent(entity8, Renderable{
 		"../modelfiles/Duck2.gltf",
 		"../shaders/pbr.vert",
@@ -226,7 +262,7 @@ int main(void) {
 		glm::vec3(5.0f, 1.0f, -4.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});*/
+		});
 
 	Entity sponza = ecs.createEntity();
 	ecs.addComponent(sponza, Renderable{
@@ -242,15 +278,15 @@ int main(void) {
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});
+		});*/
 
 	Entity light1 = ecs.createEntity();
 	ecs.addComponent(light1, Light{
 		LightType::DIRECTIONAL,
-		glm::vec3(0.0f),
-		glm::vec3(-1.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec2(0.0f)
+		glm::vec2(0.0f, 0.0f)
 		});
 
 	Entity light2 = ecs.createEntity();

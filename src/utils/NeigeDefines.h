@@ -39,33 +39,29 @@
 
 #ifndef NDEBUG
 #define NEIGE_ASSERT(c, m) \
-		do { \
-			if (!(c)) { \
-				std::cerr << "\033[1m\033[35mNEIGE ASSERT : \033[39m\033[0m" << m << std::endl; \
-				exit(3); \
-			} \
-		} while(0)
+	do { \
+		if (!(c)) { \
+			std::cerr << "\033[1m\033[35mNEIGE ASSERT : \033[39m\033[0m" << m << std::endl; \
+			exit(3); \
+		} \
+	} while(0)
 #else
 #define NEIGE_ASSERT(c, m)
 #endif
 
 #ifndef NDEBUG
 #define MEMORY_INFO(m) \
-		do { \
-			std::cerr << "\033[1m\033[95mMEMORY INFO : \033[39m\033[0m" << m << std::endl; \
-		} while(0)
+	do { \
+		std::cerr << "\033[1m\033[95mMEMORY INFO : \033[39m\033[0m" << m << std::endl; \
+	} while(0)
 #else
 #define MEMORY_INFO(m)
 #endif
 
-#ifndef NDEBUG
 #define NEIGE_SHADER_ERROR(m) \
-		do { \
-			std::cerr << "\033[1m\033[94mSHADER ERROR : \033[39m\033[0m" << m << std::endl; \
-		} while(0)
-#else
-#define NEIGE_SHADER_ERROR(m)
-#endif
+	do { \
+		std::cerr << "\033[1m\033[94mSHADER ERROR : \033[39m\033[0m" << m << std::endl; \
+	} while(0)
 
 #ifndef NDEBUG
 const bool NEIGE_DEBUG = true;

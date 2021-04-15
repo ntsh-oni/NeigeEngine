@@ -21,6 +21,7 @@ struct Shader {
 	std::vector<ShaderType> layoutBindingsShaderTypes;
 	std::vector<VkPushConstantRange> pushConstantRanges;
 	std::set<VkDescriptorType> uniqueDescriptorTypes;
+    std::vector<SpecializationConstant> specializationConstants;
 	bool glslInitialized = false;
     TBuiltInResource defaultTBuiltInResource = { 32,
         6,
