@@ -30,7 +30,7 @@ int main(void) {
 		"../modelfiles/sunset_forest_8k.hdr"
 		});
 
-	/*Entity bistro = ecs.createEntity();
+	Entity bistro = ecs.createEntity();
 	ecs.addComponent(bistro, Renderable{
 		"../modelfiles/Bistro_v5_1/bistrointe.gltf",
 		"../shaders/pbr.vert",
@@ -80,7 +80,7 @@ int main(void) {
 		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
 		glm::vec2(40.0f, 50.0f)
-		});*/
+		});
 
 	/*Entity porsche = ecs.createEntity();
 	ecs.addComponent(porsche, Renderable{
@@ -232,7 +232,7 @@ int main(void) {
 		glm::vec3(1.0f, 1.0f, 1.0f)
 		});*/
 
-	Entity entity3 = ecs.createEntity();
+	/*Entity entity3 = ecs.createEntity();
 	ecs.addComponent(entity3, Renderable{
 		"../modelfiles/DamagedHelmet.gltf",
 		"../shaders/pbr.vert",
@@ -246,7 +246,7 @@ int main(void) {
 		glm::vec3(0.0f, 1.5f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f)
-		});
+		});*/
 
 	/*Entity entity4 = ecs.createEntity();
 	ecs.addComponent(entity4, Renderable{
