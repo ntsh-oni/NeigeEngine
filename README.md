@@ -30,11 +30,11 @@ $ make
 - [x] glTF import
 ### Graphics Features
 - [x] Physically Based Rendering (PBL) metallic-roughness
-- [x] Image-Based Lighting (IBL) and environment map
+- [x] Image-Based Lighting (IBL) and  map
 - [x] Shadow mapping
-- [x] Pure Depth Screen Space Ambiant Occlusion (SSAO)
+- [x] Pure Depth Screen Space Ambient Occlusion (SSAO)
 - [x] Bloom
-- [x] Weighted Blended Order-Independant Transparency (WBOIT)
+- [x] Weighted Blended Order-Independent Transparency (WBOIT)
 - [x] Alpha cutoff
 - [x] Realtime shaders reloading
 ## Screenshots
