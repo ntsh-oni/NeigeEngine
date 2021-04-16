@@ -37,10 +37,10 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 }
 
 void DepthPrepass::destroy() {
+	destroyResources();
 	renderPass.destroy();
 	opaqueGraphicsPipeline.destroy();
 	maskGraphicsPipeline.destroy();
-	destroyResources();
 }
 
 void DepthPrepass::createResources(Viewport fullscreenViewport) {
@@ -52,23 +52,14 @@ void DepthPrepass::createResources(Viewport fullscreenViewport) {
 	ImageTools::createImageSampler(&image.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Framebuffer
-	framebuffers.resize(framesInFlight);
-
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(image.imageView);
-			framebuffers[i].init(&renderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(image.imageView);
+		framebuffer.init(&renderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 }
 
 void DepthPrepass::destroyResources() {
 	image.destroy();
-	for (Framebuffer& framebuffer : framebuffers) {
-		framebuffer.destroy();
-	}
-	framebuffers.clear();
-	framebuffers.shrink_to_fit();
+	framebuffer.destroy();
 }

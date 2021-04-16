@@ -21,7 +21,7 @@ struct Bloom {
 	GraphicsPipeline resizeGraphicsPipeline;
 	DescriptorSet resizeDescriptorSet;
 	RenderPass resizeRenderPass;
-	std::vector<Framebuffer> resizeFramebuffers;
+	Framebuffer resizeFramebuffer;
 
 	// Blur
 	GraphicsPipeline blurGraphicsPipeline;
@@ -29,13 +29,13 @@ struct Bloom {
 	DescriptorSet backBlurDescriptorSet;
 	Image blurredImage;
 	RenderPass blurRenderPass;
-	std::vector<Framebuffer> blurFramebuffers;
-	std::vector<Framebuffer> backBlurFramebuffers;
+	Framebuffer blurFramebuffer;
+	Framebuffer backBlurFramebuffer;
 	int horizontalBlur = 1;
 	
 	void init(Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
-	void draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
+	void draw(CommandBuffer* commandBuffer);
 };

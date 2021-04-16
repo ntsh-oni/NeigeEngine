@@ -12,6 +12,7 @@
 #define ENVMAP_HEIGHT 2048
 
 inline uint32_t framesInFlight;
+inline uint32_t swapchainSize;
 
 // Layers
 const std::vector<const char*> debugExplicitLayers = {

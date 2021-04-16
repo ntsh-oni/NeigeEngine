@@ -97,10 +97,11 @@ void Renderer::init(const std::string applicationName) {
 	// Post-process
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		std::vector<SubpassDependency> dependencies;
-		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 
 		RenderPass renderPass;
 		renderPass.init(attachments, dependencies);
@@ -210,26 +211,29 @@ void Renderer::init(const std::string applicationName) {
 	// Image and famebuffers
 	createResources();
 
+
+	// FXAA
+	NEIGE_INFO("FXAA init start.");
+	fxaa.init(fullscreenViewport);
+	NEIGE_INFO("FXAA init end.");
+
+	// Shadow
 	{
 		for (Entity light : lights) {
 			auto const& lightLight = ecs.getComponent<Light>(light);
 
 			if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
-				std::vector<Framebuffer> lightFramebuffers;
-				lightFramebuffers.resize(framesInFlight);
+				Framebuffer lightFramebuffer;
 
 				Image depthAttachment;
 				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.memoryInfo);
 				ImageTools::createImageView(&depthAttachment.imageView, depthAttachment.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 				shadow.images.push_back(depthAttachment);
 
-				std::vector<std::vector<VkImageView>> framebufferAttachments;
-				framebufferAttachments.resize(framesInFlight);
-				for (size_t i = 0; i < framesInFlight; i++) {
-					framebufferAttachments[i].push_back(depthAttachment.imageView);
-					lightFramebuffers[i].init(&shadow.renderPass, framebufferAttachments[i], SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1);
-				}
-				shadow.framebuffers.push_back(lightFramebuffers);
+				std::vector<VkImageView> framebufferAttachments;
+				framebufferAttachments.push_back(depthAttachment.imageView);
+				lightFramebuffer.init(&shadow.renderPass, framebufferAttachments, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1);
+				shadow.framebuffers.push_back(lightFramebuffer);
 
 				shadow.mapCount++;
 			}
@@ -347,6 +351,8 @@ void Renderer::update() {
 			}
 			skyboxGraphicsPipeline.destroyPipeline();
 			skyboxGraphicsPipeline.init();
+			fxaa.graphicsPipeline.destroyPipeline();
+			fxaa.graphicsPipeline.init();
 		}
 
 		if (keyboardInputs.cKey == KeyState::PRESSED) {
@@ -420,6 +426,7 @@ void Renderer::destroy() {
 	depthPrepass.destroy();
 	envmap.destroy();
 	shadow.destroy();
+	fxaa.destroy();
 	ssao.destroy();
 	bloom.destroy();
 	for (CommandPool& renderingCommandPool : renderingCommandPools) {
@@ -718,7 +725,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	renderingCommandBuffers[frameInFlightIndex].begin();
 
 	// Depth prepass
-	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffers[frameInFlightIndex].framebuffer, window.extent);
+	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffer.framebuffer, window.extent);
 
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
@@ -746,7 +753,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		auto const& lightLight = ecs.getComponent<Light>(light);
 
 		if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
-			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].at(frameInFlightIndex).framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
+			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
 
 			for (Entity object : entities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
@@ -775,7 +782,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	}
 
 	// Opaque scene
-	opaqueSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], opaqueSceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
+	opaqueSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], opaqueSceneFramebuffer.framebuffer, window.extent);
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
@@ -805,7 +812,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	opaqueSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Blend scene
-	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffers[frameInFlightIndex].framebuffer, window.extent);
+	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffer.framebuffer, window.extent);
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
@@ -823,7 +830,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	blendSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Alpha compositing
-	alphaCompositingRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], alphaCompositingFramebuffers[framebufferIndex].framebuffer, window.extent);
+	alphaCompositingRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], alphaCompositingFramebuffer.framebuffer, window.extent);
 	graphicsPipelines.at("alphaCompositing").bind(&renderingCommandBuffers[frameInFlightIndex]);
 	alphaCompositingDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 	
@@ -832,19 +839,22 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	alphaCompositingRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Bloom
-	bloom.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	bloom.draw(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// SSAO
 	ssao.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 
 	// Post-processing
-	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postFramebuffers[framebufferIndex].framebuffer, window.extent);
+	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postFramebuffer.framebuffer, window.extent);
 	graphicsPipelines.at("post").bind(&renderingCommandBuffers[frameInFlightIndex]);
 	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 
 	vkCmdDraw(renderingCommandBuffers[frameInFlightIndex].commandBuffer, 3, 1, 0, 0);
 
 	postRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
+
+	// FXAA
+	fxaa.draw(&renderingCommandBuffers[frameInFlightIndex], framebufferIndex);
 
 	renderingCommandBuffers[frameInFlightIndex].end();
 }
@@ -856,15 +866,11 @@ void Renderer::createResources() {
 		ImageTools::createImageView(&sceneImage.imageView, sceneImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
 		ImageTools::createImageSampler(&sceneImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	
-		std::vector<std::vector<VkImageView>> framebufferAttachments;
-		framebufferAttachments.resize(swapchainSize);
-		opaqueSceneFramebuffers.resize(swapchainSize);
-		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(sceneImage.imageView);
-			framebufferAttachments[i].push_back(bloom.thresholdImage.imageView);
-			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
-			opaqueSceneFramebuffers[i].init(&renderPasses.at("opaqueScene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
-		}
+		std::vector<VkImageView> framebufferAttachments;
+		framebufferAttachments.push_back(sceneImage.imageView);
+		framebufferAttachments.push_back(bloom.thresholdImage.imageView);
+		framebufferAttachments.push_back(depthPrepass.image.imageView);
+		opaqueSceneFramebuffer.init(&renderPasses.at("opaqueScene"), framebufferAttachments, window.extent.width, window.extent.height, 1);
 	}
 
 	// Blend scene
@@ -877,37 +883,29 @@ void Renderer::createResources() {
 		ImageTools::createImageView(&blendRevealageImage.imageView, blendRevealageImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 		ImageTools::createImageSampler(&blendRevealageImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_INT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
-		std::vector<std::vector<VkImageView>> framebufferAttachments;
-		framebufferAttachments.resize(swapchainSize);
-		blendSceneFramebuffers.resize(swapchainSize);
-		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(blendAccumulationImage.imageView);
-			framebufferAttachments[i].push_back(blendRevealageImage.imageView);
-			framebufferAttachments[i].push_back(depthPrepass.image.imageView);
-			blendSceneFramebuffers[i].init(&renderPasses.at("blendScene"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
-		}
+		std::vector<VkImageView> framebufferAttachments;
+		framebufferAttachments.push_back(blendAccumulationImage.imageView);
+		framebufferAttachments.push_back(blendRevealageImage.imageView);
+		framebufferAttachments.push_back(depthPrepass.image.imageView);
+		blendSceneFramebuffer.init(&renderPasses.at("blendScene"), framebufferAttachments, window.extent.width, window.extent.height, 1);
 	}
 
 	// Alpha compositing
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachments;
-		framebufferAttachments.resize(swapchainSize);
-		alphaCompositingFramebuffers.resize(swapchainSize);
-		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(sceneImage.imageView);
-			alphaCompositingFramebuffers[i].init(&renderPasses.at("alphaCompositing"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
-		}
+		std::vector<VkImageView> framebufferAttachments;
+		framebufferAttachments.push_back(sceneImage.imageView);
+		alphaCompositingFramebuffer.init(&renderPasses.at("alphaCompositing"), framebufferAttachments, window.extent.width, window.extent.height, 1);
 	}
 
 	// Post-process
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachments;
-		framebufferAttachments.resize(swapchainSize);
-		postFramebuffers.resize(swapchainSize);
-		for (uint32_t i = 0; i < swapchainSize; i++) {
-			framebufferAttachments[i].push_back(swapchain.imageViews[i]);
-			postFramebuffers[i].init(&renderPasses.at("post"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
-		}
+		ImageTools::createImage(&postProcessImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, swapchain.surfaceFormat.format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &postProcessImage.memoryInfo);
+		ImageTools::createImageView(&postProcessImage.imageView, postProcessImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, swapchain.surfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
+		ImageTools::createImageSampler(&postProcessImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+
+		std::vector<VkImageView> framebufferAttachments;
+		framebufferAttachments.push_back(postProcessImage.imageView);
+		postFramebuffer.init(&renderPasses.at("post"), framebufferAttachments, window.extent.width, window.extent.height, 1);
 	}
 }
 
@@ -916,29 +914,11 @@ void Renderer::destroyResources() {
 	sceneImage.destroy();
 	blendAccumulationImage.destroy();
 	blendRevealageImage.destroy();
-	for (Framebuffer& framebuffer : opaqueSceneFramebuffers) {
-		framebuffer.destroy();
-	}
-	opaqueSceneFramebuffers.clear();
-	opaqueSceneFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : blendSceneFramebuffers) {
-		framebuffer.destroy();
-	}
-	blendSceneFramebuffers.clear();
-	blendSceneFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : alphaCompositingFramebuffers) {
-		framebuffer.destroy();
-	}
-	alphaCompositingFramebuffers.clear();
-	alphaCompositingFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : postFramebuffers) {
-		framebuffer.destroy();
-	}
-	postFramebuffers.clear();
-	postFramebuffers.shrink_to_fit();
-	depthPrepass.destroyResources();
-	ssao.destroyResources();
-	bloom.destroyResources();
+	postProcessImage.destroy();
+	opaqueSceneFramebuffer.destroy();
+	blendSceneFramebuffer.destroy();
+	alphaCompositingFramebuffer.destroy();
+	postFramebuffer.destroy();
 }
 
 void Renderer::createAlphaCompositingDescriptorSet() {
@@ -1064,16 +1044,23 @@ void Renderer::reloadOnResize() {
 	fullscreenViewport.scissor.extent.height = window.extent.height;
 
 	// Depth prepass
+	depthPrepass.destroyResources();
 	depthPrepass.createResources(fullscreenViewport);
 
 	// Bloom
+	bloom.destroyResources();
 	bloom.createResources(fullscreenViewport);
 
 	// SSAO
+	ssao.destroyResources();
 	ssao.createResources(fullscreenViewport);
 
 	// Image and framebuffers
 	createResources();
+
+	// FXAA
+	fxaa.destroyResources();
+	fxaa.createResources(fullscreenViewport);
 
 	createAlphaCompositingDescriptorSet();
 

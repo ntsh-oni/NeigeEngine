@@ -74,35 +74,22 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 	ImageTools::createImageSampler(&bloomImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Framebuffers
-	resizeFramebuffers.resize(framesInFlight);
-	blurFramebuffers.resize(framesInFlight);
-	backBlurFramebuffers.resize(framesInFlight);
-
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(bloomImage.imageView);
-			resizeFramebuffers[i].init(&resizeRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(bloomImage.imageView);
+		resizeFramebuffer.init(&resizeRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(blurredImage.imageView);
-			blurFramebuffers[i].init(&blurRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(blurredImage.imageView);
+		blurFramebuffer.init(&blurRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(bloomImage.imageView);
-			backBlurFramebuffers[i].init(&blurRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(bloomImage.imageView);
+		backBlurFramebuffer.init(&blurRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	// Descriptor sets
@@ -189,26 +176,14 @@ void Bloom::destroyResources() {
 	thresholdImage.destroy();
 	blurredImage.destroy();
 	bloomImage.destroy();
-	for (Framebuffer& framebuffer : resizeFramebuffers) {
-		framebuffer.destroy();
-	}
-	resizeFramebuffers.clear();
-	resizeFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : blurFramebuffers) {
-		framebuffer.destroy();
-	}
-	blurFramebuffers.clear();
-	blurFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : backBlurFramebuffers) {
-		framebuffer.destroy();
-	}
-	backBlurFramebuffers.clear();
-	backBlurFramebuffers.shrink_to_fit();
+	resizeFramebuffer.destroy();
+	blurFramebuffer.destroy();
+	backBlurFramebuffer.destroy();
 }
 
-void Bloom::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
+void Bloom::draw(CommandBuffer* commandBuffer) {
 	// Resize
-	resizeRenderPass.begin(commandBuffer, resizeFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	resizeRenderPass.begin(commandBuffer, resizeFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 	resizeGraphicsPipeline.bind(commandBuffer);
 	resizeDescriptorSet.bind(commandBuffer, 0);
 
@@ -221,12 +196,12 @@ void Bloom::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 
 	for (int i = 0; i < BLURQUANTITY * 2; i++) {
 		if (horizontalBlur == 1) {
-			blurRenderPass.begin(commandBuffer, blurFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+			blurRenderPass.begin(commandBuffer, blurFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 			blurGraphicsPipeline.bind(commandBuffer);
 			blurDescriptorSet.bind(commandBuffer, 0);
 		}
 		else {
-			blurRenderPass.begin(commandBuffer, backBlurFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+			blurRenderPass.begin(commandBuffer, backBlurFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 			blurGraphicsPipeline.bind(commandBuffer);
 			backBlurDescriptorSet.bind(commandBuffer, 0);
 		}

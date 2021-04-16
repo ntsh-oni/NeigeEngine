@@ -34,15 +34,16 @@ $ make
 - [x] Physically Based Rendering (PBL) metallic-roughness
 - [x] Image-Based Lighting (IBL) and  map
 - [x] Shadow mapping
+- [x] Fast Approximate Anti-Aliasing (FXAA)
 - [x] Pure Depth Screen Space Ambient Occlusion (SSAO)
 - [x] Bloom
 - [x] Weighted Blended Order-Independent Transparency (WBOIT)
 - [x] Alpha cutoff
 - [x] Realtime shaders reloading
 ## Screenshots
-![Amazon Lumberyard Bistro](https://i.imgur.com/oQ0EeZy.png)
+![Amazon Lumberyard Bistro](https://i.imgur.com/VmK7h8R.png)
 <sub>Amazon Lumberyard Bistro</sub>
 
 
-![Damaged Helmet](https://i.imgur.com/dZGCFZH.png)
+![Damaged Helmet](https://i.imgur.com/Q09qfSM.png)
 <sub>Damaged Helmet</sub>

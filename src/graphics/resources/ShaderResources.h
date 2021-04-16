@@ -5,6 +5,7 @@
 #include "../effects/bloom/Bloom.h"
 #include "../effects/depthprepass/DepthPrepass.h"
 #include "../effects/envmap/Envmap.h"
+#include "../effects/fxaa/FXAA.h"
 #include "../effects/shadowmapping/Shadow.h"
 #include "../effects/ssao/SSAO.h"
 #include "../../ecs/ECS.h"
@@ -24,8 +25,10 @@ inline std::vector<Buffer> timeBuffers;
 inline Image sceneImage;
 inline Image blendAccumulationImage;
 inline Image blendRevealageImage;
+inline Image postProcessImage;
 inline Bloom bloom;
 inline DepthPrepass depthPrepass;
 inline Envmap envmap;
+inline FXAA fxaa;
 inline Shadow shadow;
 inline SSAO ssao;

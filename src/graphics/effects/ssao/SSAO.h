@@ -28,8 +28,8 @@ struct SSAO {
 	Image depthToNormalsImage;
 	RenderPass depthToPositionsRenderPass;
 	RenderPass depthToNormalsRenderPass;
-	std::vector<Framebuffer> depthToPositionsFramebuffers;
-	std::vector<Framebuffer> depthToNormalsFramebuffers;
+	Framebuffer depthToPositionsFramebuffer;
+	Framebuffer depthToNormalsFramebuffer;
 
 	// Sample kernel
 	Buffer sampleKernel;
@@ -40,14 +40,14 @@ struct SSAO {
 	std::vector<DescriptorSet> ssaoDescriptorSets;
 	Image ssaoImage;
 	RenderPass ssaoRenderPass;
-	std::vector<Framebuffer> ssaoFramebuffers;
+	Framebuffer ssaoFramebuffer;
 
 	// SSAO blurred
 	GraphicsPipeline ssaoBlurredGraphicsPipeline;
 	DescriptorSet ssaoBlurredDescriptorSet;
 	Image ssaoBlurredImage;
 	RenderPass ssaoBlurredRenderPass;
-	std::vector<Framebuffer> ssaoBlurredFramebuffers;
+	Framebuffer ssaoBlurredFramebuffer;
 
 	void init(Viewport fullscreenViewport);
 	void destroy();
