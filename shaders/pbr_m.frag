@@ -209,7 +209,7 @@ void main() {
 	
 	float brightness = dot(tmpColor, vec3(0.2126, 0.7152, 0.0722));
 	
-	if (brightness > 1.0) {
+	if (brightness > 1.5) {
 		bloomColor = vec4(tmpColor + emissiveSample, 1.0);
 	}
 	else {

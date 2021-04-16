@@ -17,7 +17,7 @@ struct Shadow {
 	std::vector<Buffer> buffers;
 	std::vector<Image> images;
 	RenderPass renderPass;
-	std::vector<std::vector<Framebuffer>> framebuffers;
+	std::vector<Framebuffer> framebuffers;
 	Image defaultShadow;
 	int mapCount;
 

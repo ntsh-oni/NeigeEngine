@@ -16,5 +16,6 @@ void main() {
 	vec3 tmpColor = scene + bloom;
 	
 	tmpColor = tmpColor / (tmpColor + vec3(1.0));
-	outColor = vec4(tmpColor * ssaoBlurred, 1.0);
+	tmpColor *= ssaoBlurred;
+	outColor = vec4(tmpColor, 1.0);
 }

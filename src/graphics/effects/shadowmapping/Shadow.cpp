@@ -50,8 +50,6 @@ void Shadow::destroy() {
 		image.destroy();
 	}
 	for (size_t i = 0; i < framebuffers.size(); i++) {
-		for (Framebuffer& framebuffer : framebuffers[i]) {
-			framebuffer.destroy();
-		}
+		framebuffers[i].destroy();
 	}
 }

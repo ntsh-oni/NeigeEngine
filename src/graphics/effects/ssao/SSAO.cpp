@@ -131,45 +131,28 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 	ImageTools::createImageSampler(&ssaoBlurredImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Framebuffers
-	depthToPositionsFramebuffers.resize(framesInFlight);
-	depthToNormalsFramebuffers.resize(framesInFlight);
-	ssaoFramebuffers.resize(framesInFlight);
-	ssaoBlurredFramebuffers.resize(framesInFlight);
-
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(depthToPositionsImage.imageView);
-			depthToPositionsFramebuffers[i].init(&depthToPositionsRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(depthToPositionsImage.imageView);
+		depthToPositionsFramebuffer.init(&depthToPositionsRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(depthToNormalsImage.imageView);
-			depthToNormalsFramebuffers[i].init(&depthToNormalsRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(depthToNormalsImage.imageView);
+		depthToNormalsFramebuffer.init(&depthToNormalsRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(ssaoImage.imageView);
-			ssaoFramebuffers[i].init(&ssaoRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(ssaoImage.imageView);
+		ssaoFramebuffer.init(&ssaoRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	{
-		std::vector<std::vector<VkImageView>> framebufferAttachements;
-		framebufferAttachements.resize(framesInFlight);
-		for (size_t i = 0; i < framesInFlight; i++) {
-			framebufferAttachements[i].push_back(ssaoBlurredImage.imageView);
-			ssaoBlurredFramebuffers[i].init(&ssaoBlurredRenderPass, framebufferAttachements[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
-		}
+		std::vector<VkImageView> framebufferAttachements;
+		framebufferAttachements.push_back(ssaoBlurredImage.imageView);
+		ssaoBlurredFramebuffer.init(&ssaoBlurredRenderPass, framebufferAttachements, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
 	}
 
 	// Descriptor sets
@@ -403,26 +386,10 @@ void SSAO::destroyResources() {
 	depthToNormalsImage.destroy();
 	ssaoImage.destroy();
 	ssaoBlurredImage.destroy();
-	for (Framebuffer& framebuffer : depthToPositionsFramebuffers) {
-		framebuffer.destroy();
-	}
-	depthToPositionsFramebuffers.clear();
-	depthToPositionsFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : depthToNormalsFramebuffers) {
-		framebuffer.destroy();
-	}
-	depthToNormalsFramebuffers.clear();
-	depthToNormalsFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : ssaoFramebuffers) {
-		framebuffer.destroy();
-	}
-	ssaoFramebuffers.clear();
-	ssaoFramebuffers.shrink_to_fit();
-	for (Framebuffer& framebuffer : ssaoBlurredFramebuffers) {
-		framebuffer.destroy();
-	}
-	ssaoBlurredFramebuffers.clear();
-	ssaoBlurredFramebuffers.shrink_to_fit();
+	depthToPositionsFramebuffer.destroy();
+	depthToNormalsFramebuffer.destroy();
+	ssaoFramebuffer.destroy();
+	ssaoBlurredFramebuffer.destroy();
 }
 
 void SSAO::createRandomTexture() {
@@ -470,7 +437,7 @@ void SSAO::createRandomTexture() {
 
 void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	// Depth to positions
-	depthToPositionsRenderPass.begin(commandBuffer, depthToPositionsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	depthToPositionsRenderPass.begin(commandBuffer, depthToPositionsFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToPositionsGraphicsPipeline.bind(commandBuffer);
 	depthToPositionsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
@@ -480,7 +447,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	depthToPositionsRenderPass.end(commandBuffer);
 
 	// Depth to normals
-	depthToNormalsRenderPass.begin(commandBuffer, depthToNormalsFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	depthToNormalsRenderPass.begin(commandBuffer, depthToNormalsFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToNormalsGraphicsPipeline.bind(commandBuffer);
 	depthToNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
@@ -492,7 +459,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	// SSAO
 	glm::vec2 imageSize = {viewport.viewport.width, viewport.viewport.height};
 
-	ssaoRenderPass.begin(commandBuffer, ssaoFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	ssaoRenderPass.begin(commandBuffer, ssaoFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoGraphicsPipeline.bind(commandBuffer);
 	ssaoDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
@@ -503,7 +470,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	ssaoRenderPass.end(commandBuffer);
 
 	// SSAO blurred
-	ssaoBlurredRenderPass.begin(commandBuffer, ssaoBlurredFramebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+	ssaoBlurredRenderPass.begin(commandBuffer, ssaoBlurredFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoBlurredGraphicsPipeline.bind(commandBuffer);
 	ssaoBlurredDescriptorSet.bind(commandBuffer, 0);

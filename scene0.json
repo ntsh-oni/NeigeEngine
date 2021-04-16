@@ -20,7 +20,7 @@
         },
         {
             "renderable": {
-                "modelPath": "../modelfiles/Bistro_v5_1/bistrointe.gltf",
+                "modelPath": "../modelfiles/DamagedHelmet.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
@@ -39,117 +39,6 @@
                     1.0,
                     1.0,
                     1.0
-                ]
-            }
-        },
-        {
-            "light": {
-                "type": "DIRECTIONAL",
-                "direction": [
-                    0.0,
-                    -1.0,
-                    0.0
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "light": {
-                "type": "SPOT",
-                "position": [
-                    2.63273,
-					1.44006,
-					-0.314734
-                ],
-                "direction": [
-                    0.0,
-                    -1.0,
-                    0.0
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "cutoffs": [
-                    40.0,
-                    50.0
-                ]
-            }
-        },
-        {
-            "light": {
-                "type": "SPOT",
-                "position": [
-                    4.23652,
-					1.44006,
-					0.513211
-                ],
-                "direction": [
-                    0.0,
-                    -1.0,
-                    0.0
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "cutoffs": [
-                    40.0,
-                    50.0
-                ]
-            }
-        },
-		{
-            "light": {
-                "type": "SPOT",
-                "position": [
-                    2.25823,
-					1.44006,
-					-2.64679
-                ],
-                "direction": [
-                    0.0,
-                    -1.0,
-                    0.0
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "cutoffs": [
-                    40.0,
-                    50.0
-                ]
-            }
-        },
-		{
-            "light": {
-                "type": "SPOT",
-                "position": [
-                    3.24595,
-					1.44006,
-					-4.52136
-                ],
-                "direction": [
-                    0.0,
-                    -1.0,
-                    0.0
-                ],
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "cutoffs": [
-                    40.0,
-                    50.0
                 ]
             }
         }

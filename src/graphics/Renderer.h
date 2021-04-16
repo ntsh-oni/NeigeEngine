@@ -45,10 +45,10 @@ struct Renderer : public System {
 	// Render Passes
 	std::unordered_map<std::string, RenderPass> renderPasses;
 
-	std::vector<Framebuffer> opaqueSceneFramebuffers;
-	std::vector<Framebuffer> blendSceneFramebuffers;
-	std::vector<Framebuffer> alphaCompositingFramebuffers;
-	std::vector<Framebuffer> postFramebuffers;
+	Framebuffer opaqueSceneFramebuffer;
+	Framebuffer blendSceneFramebuffer;
+	Framebuffer alphaCompositingFramebuffer;
+	Framebuffer postFramebuffer;
 
 	DescriptorSet alphaCompositingDescriptorSet;
 	DescriptorSet postDescriptorSet;
@@ -57,7 +57,6 @@ struct Renderer : public System {
 	std::vector<CommandPool> renderingCommandPools;
 	std::vector<CommandBuffer> renderingCommandBuffers;
 
-	uint32_t swapchainSize;
 	uint32_t currentFrame = 0;
 
 	bool pressed = false;
