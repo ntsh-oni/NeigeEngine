@@ -10,6 +10,7 @@
 - [glfw](https://www.glfw.org/)
 - [glm](https://github.com/g-truc/glm)
 - [glslang](https://github.com/KhronosGroup/glslang)
+- [simdjson](https://github.com/simdjson/simdjson)
 - [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
 - [stb](https://github.com/nothings/stb)
 ## Download
@@ -28,6 +29,7 @@ $ make
 - [x] Entity component system
 - [x] Keyboard and mouse input
 - [x] glTF import
+- [x] JSON scene format
 ### Graphics Features
 - [x] Physically Based Rendering (PBL) metallic-roughness
 - [x] Image-Based Lighting (IBL) and  map
