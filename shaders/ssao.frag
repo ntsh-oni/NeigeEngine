@@ -26,7 +26,7 @@ layout(location = 0) out float outColor;
 
 void main() {
 	const vec2 randomScale = vec2(imageSize.size.x / 4.0, imageSize.size.y / 4.0);
-	const float radius = 0.25;
+	const float radius = 0.1;
 	const float bias = 0.05;
 	
 	vec3 position = texture(positionSampler, uv).xyz;

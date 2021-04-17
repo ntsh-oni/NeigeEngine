@@ -15,7 +15,7 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 200.0,
-                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+                "envmapPath": "../modelfiles/Bistro_v5_1/san_giuseppe_bridge_4k.hdr"
             }
         },
         {

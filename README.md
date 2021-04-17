@@ -45,5 +45,5 @@ $ make
 <sub>Amazon Lumberyard Bistro</sub>
 
 
-![Damaged Helmet](https://i.imgur.com/Q09qfSM.png)
+![Damaged Helmet](https://i.imgur.com/gP9MNbP.png)
 <sub>Damaged Helmet</sub>

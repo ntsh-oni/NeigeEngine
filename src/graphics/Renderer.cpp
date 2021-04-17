@@ -341,6 +341,7 @@ void Renderer::update() {
 	if (NEIGE_DEBUG) {
 		if (keyboardInputs.pKey == KeyState::PRESSED) {
 			logicalDevice.wait();
+			NEIGE_INFO("Shaders reloading.");
 			for (std::unordered_map<std::string, Shader>::iterator it = shaders.begin(); it != shaders.end(); it++) {
 				it->second.reload();
 			}
@@ -351,6 +352,16 @@ void Renderer::update() {
 			}
 			skyboxGraphicsPipeline.destroyPipeline();
 			skyboxGraphicsPipeline.init();
+			ssao.depthToPositionsGraphicsPipeline.destroyPipeline();
+			ssao.depthToPositionsGraphicsPipeline.init();
+			ssao.depthToNormalsGraphicsPipeline.destroyPipeline();
+			ssao.depthToNormalsGraphicsPipeline.init();
+			ssao.ssaoGraphicsPipeline.destroyPipeline();
+			ssao.ssaoGraphicsPipeline.init();
+			ssao.ssaoBlurredGraphicsPipeline.destroyPipeline();
+			ssao.ssaoBlurredGraphicsPipeline.init();
+			bloom.blurGraphicsPipeline.destroyPipeline();
+			bloom.blurGraphicsPipeline.init();
 			fxaa.graphicsPipeline.destroyPipeline();
 			fxaa.graphicsPipeline.init();
 		}
