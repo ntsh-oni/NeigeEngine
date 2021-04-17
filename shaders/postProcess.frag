@@ -9,7 +9,6 @@ layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	vec2 texelSize = 1.0 / vec2(textureSize(sceneSampler, 0));
 	vec3 scene = texture(sceneSampler, uv).rgb;
 	vec3 bloom = texture(bloomSampler, uv).rgb;
 	float ssaoBlurred = texture(ssaoBlurredSampler, uv).r;

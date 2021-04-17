@@ -32,7 +32,7 @@ $ make
 - [x] JSON scene format
 ### Graphics Features
 - [x] Physically Based Rendering (PBL) metallic-roughness
-- [x] Image-Based Lighting (IBL) and  map
+- [x] Image-Based Lighting (IBL)
 - [x] Shadow mapping
 - [x] Fast Approximate Anti-Aliasing (FXAA)
 - [x] Pure Depth Screen Space Ambient Occlusion (SSAO)
