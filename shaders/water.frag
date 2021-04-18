@@ -1,4 +1,5 @@
 #version 460
+#extension GL_EXT_nonuniform_qualifier : enable
 
 #define MAX_DIR_LIGHTS 10
 #define MAX_POINT_LIGHTS 10
@@ -30,14 +31,13 @@ layout(set = 0, binding = 7) uniform sampler2DShadow shadowMaps[MAX_DIR_LIGHTS +
 
 layout(set = 1, binding = 0) uniform sampler2D textures[];
 
-layout(push_constant) uniform PushConstants {
+layout(push_constant) uniform MaterialIndices {
 	int diffuseIndex;
 	int normalIndex;
-	int metallicIndex;
-	int roughnessIndex;
+	int metallicRoughnessIndex;
 	int emissiveIndex;
 	int occlusionIndex;
-} pC;
+} mI;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
@@ -142,7 +142,7 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 
 void main() {
 	vec4 colorSample = vec4(0.75);
-	vec3 normalSample = texture(textures[pC.normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
+	vec3 normalSample = texture(textures[mI.normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
 	float metallicSample = 1.0;
 	float roughnessSample = 0.0;
 	float occlusionSample = 1.0;
