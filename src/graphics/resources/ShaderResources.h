@@ -14,8 +14,11 @@
 #include <unordered_map>
 
 inline std::unordered_map<std::string, Model> models;
-inline std::unordered_map<std::string, Image> textures;
+inline std::vector<Texture> textures;
 inline std::vector<Material> materials;
+inline VkDescriptorPool texturesDescriptorPool = VK_NULL_HANDLE;
+inline VkDescriptorSetLayout texturesDescriptorSetLayout = VK_NULL_HANDLE;
+inline DescriptorSet texturesDescriptorSet;
 inline std::unordered_map<std::string, Shader> shaders;
 inline Entity camera;
 inline std::vector<Buffer> cameraBuffers;

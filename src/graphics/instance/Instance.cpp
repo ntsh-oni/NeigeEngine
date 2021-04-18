@@ -17,7 +17,7 @@ void Instance::init(const std::string applicationName, uint32_t engineVersion, c
 	applicationInfo.pApplicationName = applicationName.c_str();
 	applicationInfo.pEngineName = "NeigeEngine";
 	applicationInfo.engineVersion = engineVersion;
-	applicationInfo.apiVersion = VK_VERSION_1_2;
+	applicationInfo.apiVersion = VK_API_VERSION_1_2;
 
 	// Layers
 	if (NEIGE_DEBUG) {

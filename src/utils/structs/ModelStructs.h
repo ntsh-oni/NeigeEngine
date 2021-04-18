@@ -32,6 +32,5 @@ struct Mesh {
 	std::vector<Primitive> blendPrimitives;
 	Bone skeleton;
 	std::vector<Bone> boneList;
-	std::vector<Buffer> boneBuffers;
-	std::unordered_map<GraphicsPipeline*, std::vector<std::vector<DescriptorSet>>> descriptorSets;
+	Buffer boneBuffer;
 };

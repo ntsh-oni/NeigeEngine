@@ -69,6 +69,8 @@ struct Renderer : public System {
 	void recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t framebufferIndex);
 	void createResources();
 	void destroyResources();
+	void createBindlessDescriptorSet();
+	void updateBindlessDescriptorSet();
 	void createAlphaCompositingDescriptorSet();
 	void createPostProcessDescriptorSet();
 	void reloadOnResize();

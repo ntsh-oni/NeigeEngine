@@ -129,6 +129,8 @@ void Renderer::init(const std::string applicationName) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(double), &buffer.memoryInfo);
 	}
 
+	createBindlessDescriptorSet();
+
 	// Depth prepass
 	NEIGE_INFO("Depth prepass init start.");
 	depthPrepass.init(fullscreenViewport);
@@ -275,43 +277,42 @@ void Renderer::init(const std::string applicationName) {
 	ImageTools::loadColor(defaultDiffuse, &defaultDiffuseImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultDiffuseImage.mipmapLevels, &defaultDiffuseImage.memoryInfo);
 	ImageTools::createImageView(&defaultDiffuseImage.imageView, defaultDiffuseImage.image, 0, 1, 0, defaultDiffuseImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultDiffuseImage.imageSampler, defaultDiffuseImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	textures.emplace("defaultDiffuse", defaultDiffuseImage);
+	textures.push_back({ "defaultDiffuse", defaultDiffuseImage });
 
 	float defaultNormal[4] = { 0.5f, 0.5f, 1.0f, 0.0f };
 	Image defaultNormalImage;
 	ImageTools::loadColor(defaultNormal, &defaultNormalImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultNormalImage.mipmapLevels, &defaultNormalImage.memoryInfo);
 	ImageTools::createImageView(&defaultNormalImage.imageView, defaultNormalImage.image, 0, 1, 0, defaultNormalImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultNormalImage.imageSampler, defaultNormalImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	textures.emplace("defaultNormal", defaultNormalImage);
+	textures.push_back({ "defaultNormal", defaultNormalImage });
 
 	float defaultMetallicRoughness[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultMetallicRoughnessImage;
 	ImageTools::loadColor(defaultMetallicRoughness, &defaultMetallicRoughnessImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultMetallicRoughnessImage.mipmapLevels, &defaultMetallicRoughnessImage.memoryInfo);
 	ImageTools::createImageView(&defaultMetallicRoughnessImage.imageView, defaultMetallicRoughnessImage.image, 0, 1, 0, defaultMetallicRoughnessImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultMetallicRoughnessImage.imageSampler, defaultMetallicRoughnessImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	textures.emplace("defaultMetallicRoughness", defaultMetallicRoughnessImage);
+	textures.push_back({ "defaultMetallicRoughness", defaultMetallicRoughnessImage });
 
 	float defaultEmissive[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultEmissiveImage;
 	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.memoryInfo);
 	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultEmissiveImage.imageSampler, defaultEmissiveImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	textures.emplace("defaultEmissive", defaultEmissiveImage);
+	textures.push_back({ "defaultEmissive", defaultEmissiveImage });
 
 	float defaultOcclusion[4] = { 1.0, 1.0, 1.0, 0.0 };
 	Image defaultOcclusionImage;
 	ImageTools::loadColor(defaultOcclusion, &defaultOcclusionImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultOcclusionImage.mipmapLevels, &defaultOcclusionImage.memoryInfo);
 	ImageTools::createImageView(&defaultOcclusionImage.imageView, defaultOcclusionImage.image, 0, 1, 0, defaultOcclusionImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	ImageTools::createImageSampler(&defaultOcclusionImage.imageSampler, defaultOcclusionImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	textures.emplace("defaultOcclusion", defaultOcclusionImage);
-
-	Material defaultMaterial = { "defaultDiffuse", "defaultNormal", "defaultMetallicRoughness", "defaultEmissive", "defaultOcclusion" };
-	materials.push_back(defaultMaterial);
+	textures.push_back({ "defaultOcclusion", defaultOcclusionImage });
 
 	// Object resources
 	for (Entity object : entities) {
 		loadObject(object);
 	}
+
+	updateBindlessDescriptorSet();
 
 	// Command pools and buffers
 	renderingCommandPools.resize(framesInFlight);
@@ -440,6 +441,14 @@ void Renderer::destroy() {
 	fxaa.destroy();
 	ssao.destroy();
 	bloom.destroy();
+	if (texturesDescriptorPool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(logicalDevice.device, texturesDescriptorPool, nullptr);
+		texturesDescriptorPool = VK_NULL_HANDLE;
+	}
+	if (texturesDescriptorSetLayout != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(logicalDevice.device, texturesDescriptorSetLayout, nullptr);
+		texturesDescriptorSetLayout = VK_NULL_HANDLE;
+	}
 	for (CommandPool& renderingCommandPool : renderingCommandPools) {
 		renderingCommandPool.destroy();
 	}
@@ -472,9 +481,8 @@ void Renderer::destroy() {
 		Shader* shader = &it->second;
 		shader->destroy();
 	}
-	for (std::unordered_map<std::string, Image>::iterator it = textures.begin(); it != textures.end(); it++) {
-		Image* texture = &it->second;
-		texture->destroy();
+	for (size_t i = 0; i < textures.size(); i++) {
+		textures[i].image.destroy();
 	}
 	for (std::unordered_map<std::string, Model>::iterator it = models.begin(); it != models.end(); it++) {
 		Model* model = &it->second;
@@ -500,9 +508,17 @@ void Renderer::loadObject(Entity object) {
 
 	objectRenderable.createLookupString();
 
+	// Model
+	if (models.find(objectRenderable.modelPath) == models.end()) {
+		Model model;
+		model.init(objectRenderable.modelPath);
+		models.emplace(objectRenderable.modelPath, model);
+	}
+	Model* model = &models.at(objectRenderable.modelPath);
+
 	// Graphics pipelines
 	// Opaque
-	if (graphicsPipelines.find(objectRenderable.lookupString + "o") == graphicsPipelines.end()) {
+	if (model->gotOpaquePrimitives && graphicsPipelines.find(objectRenderable.lookupString + "o") == graphicsPipelines.end()) {
 		GraphicsPipeline opaqueGraphicsPipeline;
 		opaqueGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		opaqueGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
@@ -521,7 +537,7 @@ void Renderer::loadObject(Entity object) {
 
 	// Mask
 	std::string maskFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_m.frag";
-	if (graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
+	if (model->gotMaskPrimitives != 0 && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
 		GraphicsPipeline maskGraphicsPipeline;
 		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		maskGraphicsPipeline.fragmentShaderPath = maskFragmentShader;
@@ -541,7 +557,7 @@ void Renderer::loadObject(Entity object) {
 
 	// Blend
 	std::string blendFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_b.frag";
-	if (graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
+	if (model->gotBlendPrimitives != 0 && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
 		GraphicsPipeline blendGraphicsPipeline;
 		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		blendGraphicsPipeline.fragmentShaderPath = blendFragmentShader;
@@ -573,52 +589,34 @@ void Renderer::loadObject(Entity object) {
 	objectRenderable.shadowDescriptorSets.resize(framesInFlight);
 	objectRenderable.shadowMaskDescriptorSets.resize(framesInFlight);
 
-	if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
-		for (uint32_t i = 0; i < framesInFlight; i++) {
-			// Buffers
-			BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
+	// Buffers
+	for (uint32_t i = 0; i < framesInFlight; i++) {
+		BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
+	}
 
+	if (model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Descriptor sets
 			objectRenderable.createEntityDescriptorSet(i);
-
-			// Mask descriptor sets
-			if (objectRenderable.maskGraphicsPipeline) {
-				objectRenderable.createMaskEntityDescriptorSet(i);
-			}
-
-			// Depth prepass
-			objectRenderable.createDepthPrepassEntityDescriptorSet(i);
-
-			// Depth prepass mask
-			if (objectRenderable.maskGraphicsPipeline) {
-				objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
-			}
 
 			// Shadow
 			objectRenderable.createShadowEntityDescriptorSet(i);
 
-			// Shadow mask
-			if (objectRenderable.maskGraphicsPipeline) {
-				objectRenderable.createShadowMaskEntityDescriptorSet(i);
-			}
+			// Depth prepass
+			objectRenderable.createDepthPrepassEntityDescriptorSet(i);
 		}
 	}
 
-	// Model
-	if (models.find(objectRenderable.modelPath) == models.end()) {
-		Model model;
-		model.init(objectRenderable.modelPath);
-		models.emplace(objectRenderable.modelPath, model);
-	}
-	if (models.at(objectRenderable.modelPath).meshes.at(0).descriptorSets.find(objectRenderable.opaqueGraphicsPipeline) == models.at(objectRenderable.modelPath).meshes.at(0).descriptorSets.end()) {
-		models.at(objectRenderable.modelPath).createOpaqueDescriptorSets(objectRenderable.opaqueGraphicsPipeline);
-		if (objectRenderable.maskGraphicsPipeline) {
-			models.at(objectRenderable.modelPath).createMaskDescriptorSets(objectRenderable.maskGraphicsPipeline);
-			models.at(objectRenderable.modelPath).createDiscardMaskDescriptorSets(&depthPrepass.maskGraphicsPipeline);
-			models.at(objectRenderable.modelPath).createDiscardMaskDescriptorSets(&shadow.maskGraphicsPipeline);
-		}
-		if (objectRenderable.blendGraphicsPipeline) {
-			models.at(objectRenderable.modelPath).createBlendDescriptorSets(objectRenderable.blendGraphicsPipeline);
+	if (model->gotMaskPrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			// Mask descriptor sets
+			objectRenderable.createMaskEntityDescriptorSet(i);
+
+			// Depth prepass mask
+			objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
+
+			// Shadow mask
+			objectRenderable.createShadowMaskEntityDescriptorSet(i);
 		}
 	}
 }
@@ -744,15 +742,17 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 		// Opaque
-		depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-		objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
-		model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, frameInFlightIndex, false);
+		if (model->gotOpaquePrimitives) {
+			depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false);
+		}
 
 		// Mask
-		if (objectRenderable.maskGraphicsPipeline) {
+		if (model->gotMaskPrimitives) {
 			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, frameInFlightIndex, true, 0);
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, 0);
 		}
 	}
 
@@ -772,17 +772,19 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 				model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 				// Opaque
-				shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-				objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
-				shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-				model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, frameInFlightIndex, false);
+				if (model->gotOpaquePrimitives) {
+					shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+					shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
+					model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false);
+				}
 
 				// Mask
-				if (objectRenderable.maskGraphicsPipeline) {
+				if (model->gotMaskPrimitives) {
 					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, frameInFlightIndex, true, 16);
+					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, 16);
 				}
 			}
 
@@ -800,19 +802,21 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 		// Opaque
-		objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
-		if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
-			objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+		if (model->gotOpaquePrimitives) {
+			objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
+			if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			}
+			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true);
 		}
-		model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, frameInFlightIndex, true);
 
 		// Mask
-		if (objectRenderable.maskGraphicsPipeline) {
+		if (model->gotMaskPrimitives) {
 			objectRenderable.maskGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.maskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, frameInFlightIndex, true, 0);
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, 0);
 		}
 	}
 	skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
@@ -829,12 +833,12 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		Model* model = &models.at(objectRenderable.modelPath);
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
-		if (objectRenderable.blendGraphicsPipeline) {
+		if (model->gotBlendPrimitives) {
 			objectRenderable.blendGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, frameInFlightIndex, true);
+			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true);
 		}
 	}
 
@@ -930,6 +934,39 @@ void Renderer::destroyResources() {
 	blendSceneFramebuffer.destroy();
 	alphaCompositingFramebuffer.destroy();
 	postFramebuffer.destroy();
+}
+
+void Renderer::createBindlessDescriptorSet() {
+	texturesDescriptorSet.init();
+}
+
+void Renderer::updateBindlessDescriptorSet() {
+	std::vector<VkDescriptorImageInfo> textureInfos;
+	for (Texture& texture : textures) {
+		VkDescriptorImageInfo textureInfo = {};
+		textureInfo.sampler = texture.image.imageSampler;
+		textureInfo.imageView = texture.image.imageView;
+		textureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		textureInfos.push_back(textureInfo);
+	}
+
+	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+	VkWriteDescriptorSet textureWriteDescriptorSet = {};
+	textureWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	textureWriteDescriptorSet.pNext = nullptr;
+	textureWriteDescriptorSet.dstSet = texturesDescriptorSet.descriptorSet;
+	textureWriteDescriptorSet.dstBinding = 0;
+	textureWriteDescriptorSet.dstArrayElement = 0;
+	textureWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(textures.size());
+	textureWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureWriteDescriptorSet.pImageInfo = textureInfos.data();
+	textureWriteDescriptorSet.pBufferInfo = nullptr;
+	textureWriteDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(textureWriteDescriptorSet);
+
+	texturesDescriptorSet.update(writesDescriptorSet);
 }
 
 void Renderer::createAlphaCompositingDescriptorSet() {

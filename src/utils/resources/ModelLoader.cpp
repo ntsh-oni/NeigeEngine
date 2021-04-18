@@ -320,26 +320,30 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					if (baseColorTexture != NULL) {
 						cgltf_image* baseColorImage = baseColorTexture->image;
 
-						if (textures.find(baseColorImage->uri) == textures.end()) {
+						int index;
+						if ((index = findTexture(baseColorImage->uri)) == -1) {
 							Image image;
 							ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + baseColorImage->uri, &image.image, VK_FORMAT_R8G8B8A8_SRGB, &image.mipmapLevels, &image.memoryInfo);
 							ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 							ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-							textures.emplace(baseColorImage->uri, image);
+							textures.push_back({ baseColorImage->uri, image });
+							index = static_cast<int>(textures.size() - 1);
 						}
-						primitiveMaterial.diffuseKey = baseColorImage->uri;
+						primitiveMaterial.diffuseIndex = index;
 					}
 					else if (baseColorFactor != NULL) {
-						std::string mapKey = std::to_string(baseColorFactor[0]) + std::to_string(baseColorFactor[1]) + std::to_string(baseColorFactor[2]) + std::to_string(baseColorFactor[3]);
+						std::string key = std::to_string(baseColorFactor[0]) + std::to_string(baseColorFactor[1]) + std::to_string(baseColorFactor[2]) + std::to_string(baseColorFactor[3]);
 
-						if (textures.find(mapKey) == textures.end()) {
+						int index;
+						if ((index = findTexture(key)) == -1) {
 							Image image;
 							ImageTools::loadColor(baseColorFactor, &image.image, VK_FORMAT_R8G8B8A8_SRGB, &image.mipmapLevels, &image.memoryInfo);
 							ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 							ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-							textures.emplace(mapKey, image);
+							textures.push_back({ key, image });
+							index = static_cast<int>(textures.size() - 1);
 						}
-						primitiveMaterial.diffuseKey = mapKey;
+						primitiveMaterial.diffuseIndex = index;
 					}
 
 					cgltf_texture_view metallicRoughnessTextureView = pbrMetallicRoughness.metallic_roughness_texture;
@@ -349,27 +353,31 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					if (metallicRoughnessTexture != NULL) {
 						cgltf_image* metallicRoughnessImage = metallicRoughnessTexture->image;
 
-						if (textures.find(metallicRoughnessImage->uri) == textures.end()) {
+						int index;
+						if ((index = findTexture(metallicRoughnessImage->uri)) == -1) {
 							Image image;
 							ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + metallicRoughnessImage->uri, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
 							ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 							ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-							textures.emplace(metallicRoughnessImage->uri, image);
+							textures.push_back({ metallicRoughnessImage->uri, image });
+							index = static_cast<int>(textures.size() - 1);
 						}
-						primitiveMaterial.metallicRoughnessKey = metallicRoughnessImage->uri;
+						primitiveMaterial.metallicRoughnessIndex = index;
 					}
 					else {
-						std::string metallicRoughnessMapKey = std::to_string(metallicFactor) + std::to_string(roughnessFactor);
+						std::string key = std::to_string(metallicFactor) + std::to_string(roughnessFactor);
 						float metallicRoughnessArray[4] = { 0.0f, roughnessFactor, metallicFactor, 1.0f };
 
-						if (textures.find(metallicRoughnessMapKey) == textures.end()) {
+						int index;
+						if ((index = findTexture(key)) == -1) {
 							Image image;
 							ImageTools::loadColor(metallicRoughnessArray, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
 							ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 							ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-							textures.emplace(metallicRoughnessMapKey, image);
+							textures.push_back({ key, image });
+							index = static_cast<int>(textures.size() - 1);
 						}
-						primitiveMaterial.metallicRoughnessKey = metallicRoughnessMapKey;
+						primitiveMaterial.metallicRoughnessIndex = index;
 					}
 				}
 
@@ -378,14 +386,16 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				if (normalTexture != NULL) {
 					cgltf_image* normalImage = normalTexture->image;
 
-					if (textures.find(normalImage->uri) == textures.end()) {
+					int index;
+					if ((index = findTexture(normalImage->uri)) == -1) {
 						Image image;
 						ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + normalImage->uri, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
 						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 						ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-						textures.emplace(normalImage->uri, image);
+						textures.push_back({ normalImage->uri, image });
+						index = static_cast<int>(textures.size() - 1);
 					}
-					primitiveMaterial.normalKey = normalImage->uri;
+					primitiveMaterial.normalIndex = index;
 				}
 
 				cgltf_texture_view emissiveTextureView = primitive->material->emissive_texture;
@@ -393,14 +403,16 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				if (emissiveTexture != NULL) {
 					cgltf_image* emissiveImage = emissiveTexture->image;
 
-					if (textures.find(emissiveImage->uri) == textures.end()) {
+					int index;
+					if ((index = findTexture(emissiveImage->uri)) == -1) {
 						Image image;
 						ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + emissiveImage->uri, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
 						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 						ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-						textures.emplace(emissiveImage->uri, image);
+						textures.push_back({ emissiveImage->uri, image });
+						index = static_cast<int>(textures.size() - 1);
 					}
-					primitiveMaterial.emissiveKey = emissiveImage->uri;
+					primitiveMaterial.emissiveIndex = index;
 				}
 
 				cgltf_texture_view occlusionTextureView = primitive->material->occlusion_texture;
@@ -408,14 +420,16 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				if (occlusionTexture != NULL) {
 					cgltf_image* occlusionImage = occlusionTexture->image;
 
-					if (textures.find(occlusionImage->uri) == textures.end()) {
+					int index;
+					if ((index = findTexture(occlusionImage->uri)) == -1) {
 						Image image;
 						ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + occlusionImage->uri, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
 						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 						ImageTools::createImageSampler(&image.imageSampler, image.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-						textures.emplace(occlusionImage->uri, image);
+						textures.push_back({ occlusionImage->uri, image });
+						index = static_cast<int>(textures.size() - 1);
 					}
-					primitiveMaterial.occlusionKey = occlusionImage->uri;
+					primitiveMaterial.occlusionIndex = index;
 				}
 
 				materials.push_back(primitiveMaterial);
@@ -534,4 +548,13 @@ void ModelLoader::loadglTFJoint(const std::string& filePath, cgltf_node* node, g
 	if (hierarchy != nullptr) {
 		hierarchy->children.push_back(bone);
 	}
+}
+
+int ModelLoader::findTexture(std::string key) {
+	for (size_t i = 0; i < textures.size(); i++) {
+		if (textures[i].key == key) {
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
 }

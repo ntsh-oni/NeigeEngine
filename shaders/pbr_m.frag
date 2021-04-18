@@ -1,4 +1,5 @@
-#version 450
+#version 460
+#extension GL_EXT_nonuniform_qualifier : enable
 
 #define MAX_DIR_LIGHTS 10
 #define MAX_POINT_LIGHTS 10
@@ -24,15 +25,16 @@ layout(set = 0, binding = 6) uniform sampler2D brdfLUT;
 
 layout(set = 0, binding = 7) uniform sampler2DShadow shadowMaps[MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
-layout(set = 1, binding = 0) uniform sampler2D colorMap;
-layout(set = 1, binding = 1) uniform sampler2D normalMap;
-layout(set = 1, binding = 2) uniform sampler2D metallicRoughnessMap;
-layout(set = 1, binding = 3) uniform sampler2D emissiveMap;
-layout(set = 1, binding = 4) uniform sampler2D occlusionMap;
+layout(set = 1, binding = 0) uniform sampler2D textures[];
 
-layout(push_constant) uniform AlphaCutoff {
+layout(push_constant) uniform PushConstants {
+	int diffuseIndex;
+	int normalIndex;
+	int metallicRoughnessIndex;
+	int emissiveIndex;
+	int occlusionIndex;
 	float alphaCutoff;
-} alphaCutoff;
+} pC;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
@@ -136,15 +138,15 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = texture(colorMap, uv);
-	if (colorSample.w <= alphaCutoff.alphaCutoff) {
+	vec4 colorSample = texture(textures[pC.diffuseIndex], uv);
+	if (colorSample.w <= pC.alphaCutoff) {
 		discard;
 	}
-	vec3 normalSample = texture(normalMap, uv).xyz;
-	float metallicSample = texture(metallicRoughnessMap, uv).b;
-	float roughnessSample = texture(metallicRoughnessMap, uv).g;
-	vec3 emissiveSample = texture(emissiveMap, uv).xyz;
-	float occlusionSample = texture(occlusionMap, uv).r;
+	vec3 normalSample = texture(textures[pC.normalIndex], uv).xyz;
+	float metallicSample = texture(textures[pC.metallicRoughnessIndex], uv).b;
+	float roughnessSample = texture(textures[pC.metallicRoughnessIndex], uv).g;
+	vec3 emissiveSample = texture(textures[pC.emissiveIndex], uv).xyz;
+	float occlusionSample = texture(textures[pC.occlusionIndex], uv).r;
 
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;

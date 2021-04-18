@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "../../external/glm/glm/glm.hpp"
+#include "../../graphics/resources/Image.h"
 #include "../NeigeDefines.h"
 
 #define MAX_DIR_LIGHTS 10
@@ -33,13 +34,19 @@ enum struct LightType {
 	SPOT
 };
 
+// Texture
+struct Texture {
+	std::string key;
+	Image image;
+};
+
 // Material
 struct Material {
-	std::string diffuseKey = "";
-	std::string normalKey = "";
-	std::string metallicRoughnessKey = "";
-	std::string emissiveKey = "";
-	std::string occlusionKey = "";
+	int diffuseIndex = 0;
+	int normalIndex = 1;
+	int metallicRoughnessIndex = 2;
+	int emissiveIndex = 3;
+	int occlusionIndex = 4;
 };
 
 // Input variable

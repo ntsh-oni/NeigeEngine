@@ -249,9 +249,10 @@ void GraphicsPipeline::init() {
 	}
 
 	// Descriptor set layouts
+	// Set 1 is reserved for bindless
 	descriptorSetLayouts.resize(sets.size());
 	for (size_t i = 0; i < sets.size(); i++) {
-		if (descriptorSetLayouts[i] == VK_NULL_HANDLE) {
+		if (i != 1 && descriptorSetLayouts[i] == VK_NULL_HANDLE) {
 			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorSetLayoutCreateInfo.pNext = nullptr;
@@ -260,6 +261,11 @@ void GraphicsPipeline::init() {
 			descriptorSetLayoutCreateInfo.pBindings = setBindings[i].data();
 			NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayouts[i]));
 		}
+	}
+
+	// Bindless
+	if (sets.size() > 1) {
+		descriptorSetLayouts[1] = texturesDescriptorSetLayout;
 	}
 
 	// Descriptor pool
@@ -445,10 +451,10 @@ void GraphicsPipeline::destroy() {
 		vkDestroyDescriptorPool(logicalDevice.device, descriptorPool, nullptr);
 		descriptorPool = VK_NULL_HANDLE;
 	}
-	for (VkDescriptorSetLayout descriptorSetLayout : descriptorSetLayouts) {
-		if (descriptorSetLayout != VK_NULL_HANDLE) {
-			vkDestroyDescriptorSetLayout(logicalDevice.device, descriptorSetLayout, nullptr);
-			descriptorSetLayout = VK_NULL_HANDLE;
+	for (size_t i = 0; i < descriptorSetLayouts.size(); i++) {
+		if (i != 1 && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
+			vkDestroyDescriptorSetLayout(logicalDevice.device, descriptorSetLayouts[i], nullptr);
+			descriptorSetLayouts[i] = VK_NULL_HANDLE;
 		}
 	}
 	destroyPipeline();

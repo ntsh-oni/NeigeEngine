@@ -13,15 +13,14 @@ struct Model {
 	std::vector<Mesh> meshes;
 	Buffer vertexBuffer;
 	Buffer indexBuffer;
+	bool gotOpaquePrimitives = false;
+	bool gotMaskPrimitives = false;
+	bool gotBlendPrimitives = false;
 
 	void init(std::string filePath);
 	void destroy();
 	void bindBuffers(CommandBuffer* commandBuffer);
-	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures);
-	void drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* maskGraphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures, uint32_t pushConstantOffset);
-	void drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* blendGraphicsPipeline, uint32_t frameInFlightIndex, bool bindTextures);
-	void createOpaqueDescriptorSets(GraphicsPipeline* opaqueGraphicsPipeline);
-	void createMaskDescriptorSets(GraphicsPipeline* maskGraphicsPipeline);
-	void createDiscardMaskDescriptorSets(GraphicsPipeline* discardGraphicsPipeline);
-	void createBlendDescriptorSets(GraphicsPipeline* blendGraphicsPipeline);
+	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, bool bindTextures);
+	void drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* maskGraphicsPipeline, bool bindTextures, uint32_t pushConstantOffset);
+	void drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* blendGraphicsPipeline, bool bindTextures);
 };
