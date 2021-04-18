@@ -104,12 +104,12 @@ bool Shader::compile() {
 	shader.setStrings(&codeString, 1);
 	int clientInputSemanticsVersion = 120;
 	glslang::EShTargetClientVersion vulkanClientVersion = glslang::EShTargetVulkan_1_2;
-	glslang::EShTargetLanguageVersion languageVersion = glslang::EShTargetSpv_1_0;
+	glslang::EShTargetLanguageVersion languageVersion = glslang::EShTargetSpv_1_5;
 	shader.setEnvInput(glslang::EShSourceGlsl, shaderType, glslang::EShClientVulkan, clientInputSemanticsVersion);
 	shader.setEnvClient(glslang::EShClientVulkan, vulkanClientVersion);
 	shader.setEnvTarget(glslang::EShTargetSpv, languageVersion);
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
-	int defaultVersion = 450;
+	int defaultVersion = 460;
 
 	// Preprocess
 	DirStackFileIncluder includer;
@@ -190,20 +190,20 @@ void Shader::reflect() {
 
 	// Bindings
 	for (uint32_t i = 0; i < descriptorSetsCount; i++) {
-		const SpvReflectDescriptorSet& reflectSet = *descriptorSets[i];
+		const SpvReflectDescriptorSet& reflectedSet = *descriptorSets[i];
 		Set set;
-		set.set = reflectSet.set;
-		for (uint32_t j = 0; j < reflectSet.binding_count; j++) {
-			const SpvReflectDescriptorBinding& reflectBinding = *reflectSet.bindings[j];
+		set.set = reflectedSet.set;
+		for (uint32_t j = 0; j < reflectedSet.binding_count; j++) {
+			const SpvReflectDescriptorBinding& reflectedBinding = *reflectedSet.bindings[j];
 			Binding b = {};
 			VkDescriptorSetLayoutBinding binding = {};
-			std::string name = reflectBinding.name;
-			binding.binding = reflectBinding.binding;
-			binding.descriptorType = static_cast<VkDescriptorType>(reflectBinding.descriptor_type);
+			std::string name = reflectedBinding.name;
+			binding.binding = reflectedBinding.binding;
+			binding.descriptorType = static_cast<VkDescriptorType>(reflectedBinding.descriptor_type);
 			uniqueDescriptorTypes.insert(binding.descriptorType);
 			binding.descriptorCount = 1;
-			for (uint32_t k = 0; k < reflectBinding.array.dims_count; k++) {
-				binding.descriptorCount *= reflectBinding.array.dims[k];
+			for (uint32_t k = 0; k < reflectedBinding.array.dims_count; k++) {
+				binding.descriptorCount *= reflectedBinding.array.dims[k];
 			}
 			binding.stageFlags = shaderTypeToVkShaderFlagBits();
 			binding.pImmutableSamplers = nullptr;

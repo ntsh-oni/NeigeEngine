@@ -15,12 +15,12 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 200.0,
-                "envmapPath": "../modelfiles/Bistro_v5_1/san_giuseppe_bridge_4k.hdr"
+                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
             }
         },
         {
             "renderable": {
-                "modelPath": "../modelfiles/DamagedHelmet.gltf",
+                "modelPath": "../modelfiles/Bistro_v5_1/bistrointe.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
@@ -36,6 +36,21 @@
                     0.0
                 ],
                 "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "light": {
+                "type": "DIRECTIONAL",
+                "direction": [
+                    1.0,
+                    -1.0,
+                    0.0
+                ],
+                "color": [
                     1.0,
                     1.0,
                     1.0
