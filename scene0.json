@@ -18,9 +18,9 @@
                 "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
             }
         },
-        {
+		{
             "renderable": {
-                "modelPath": "../modelfiles/Bistro_v5_1/bistrointe.gltf",
+                "modelPath": "../modelfiles/sphereblue.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
@@ -36,9 +36,33 @@
                     0.0
                 ],
                 "scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/water.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/water.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    -1.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    10.0,
+                    10.0,
+                    10.0
                 ]
             }
         },

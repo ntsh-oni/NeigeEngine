@@ -577,7 +577,7 @@ void Renderer::loadObject(Entity object) {
 		graphicsPipelines.emplace(objectRenderable.lookupString + "b", blendGraphicsPipeline);
 	}
 
-	objectRenderable.opaqueGraphicsPipeline = &graphicsPipelines.at(objectRenderable.lookupString + "o");
+	objectRenderable.opaqueGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "o") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "o") : nullptr;;
 	objectRenderable.maskGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "m") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "m") : nullptr;
 	objectRenderable.blendGraphicsPipeline = (graphicsPipelines.find(objectRenderable.lookupString + "b") != graphicsPipelines.end()) ? &graphicsPipelines.at(objectRenderable.lookupString + "b") : nullptr;
 
@@ -594,11 +594,16 @@ void Renderer::loadObject(Entity object) {
 		BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
 	}
 
-	if (model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+	if ((model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) || (model->gotBlendPrimitives && objectRenderable.blendGraphicsPipeline->sets.size() != 0)) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Descriptor sets
-			objectRenderable.createEntityDescriptorSet(i);
+			GraphicsPipeline* graphicsPipeline = (objectRenderable.opaqueGraphicsPipeline) ? objectRenderable.opaqueGraphicsPipeline : objectRenderable.blendGraphicsPipeline;
+			objectRenderable.createEntityDescriptorSet(i, graphicsPipeline);
+		}
+	}
 
+	if (model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Shadow
 			objectRenderable.createShadowEntityDescriptorSet(i);
 
@@ -607,7 +612,7 @@ void Renderer::loadObject(Entity object) {
 		}
 	}
 
-	if (model->gotMaskPrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+	if (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Mask descriptor sets
 			objectRenderable.createMaskEntityDescriptorSet(i);
@@ -708,19 +713,17 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		auto const& objectTransform = ecs.getComponent<Transform>(object);
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
-			ObjectUniformBufferObject oubo = {};
-			glm::mat4 translate = glm::translate(glm::mat4(1.0f), objectTransform.position);
-			glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-			glm::mat4 scale = glm::scale(glm::mat4(1.0f), objectTransform.scale);
-			oubo.model = translate * rotateX * rotateY * rotateZ * scale;
+		ObjectUniformBufferObject oubo = {};
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), objectTransform.position);
+		glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), objectTransform.scale);
+		oubo.model = translate * rotateX * rotateY * rotateZ * scale;
 
-			objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
-			memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
-			objectRenderable.buffers.at(frameInFlightIndex).unmap();
-		}
+		objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
+		memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
+		objectRenderable.buffers.at(frameInFlightIndex).unmap();
 	}
 }
 
