@@ -537,7 +537,7 @@ void Renderer::loadObject(Entity object) {
 
 	// Mask
 	std::string maskFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_m.frag";
-	if (model->gotMaskPrimitives != 0 && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
+	if (model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
 		GraphicsPipeline maskGraphicsPipeline;
 		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		maskGraphicsPipeline.fragmentShaderPath = maskFragmentShader;
@@ -557,7 +557,7 @@ void Renderer::loadObject(Entity object) {
 
 	// Blend
 	std::string blendFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_b.frag";
-	if (model->gotBlendPrimitives != 0 && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
+	if (model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
 		GraphicsPipeline blendGraphicsPipeline;
 		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		blendGraphicsPipeline.fragmentShaderPath = blendFragmentShader;
@@ -583,7 +583,6 @@ void Renderer::loadObject(Entity object) {
 
 	objectRenderable.buffers.resize(framesInFlight);
 	objectRenderable.descriptorSets.resize(framesInFlight);
-	objectRenderable.maskDescriptorSets.resize(framesInFlight);
 	objectRenderable.depthPrepassDescriptorSets.resize(framesInFlight);
 	objectRenderable.depthPrepassMaskDescriptorSets.resize(framesInFlight);
 	objectRenderable.shadowDescriptorSets.resize(framesInFlight);
@@ -594,10 +593,10 @@ void Renderer::loadObject(Entity object) {
 		BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
 	}
 
-	if ((model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) || (model->gotBlendPrimitives && objectRenderable.blendGraphicsPipeline->sets.size() != 0)) {
+	if ((model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) || (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) || (model->gotBlendPrimitives && objectRenderable.blendGraphicsPipeline->sets.size() != 0)) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Descriptor sets
-			GraphicsPipeline* graphicsPipeline = (objectRenderable.opaqueGraphicsPipeline) ? objectRenderable.opaqueGraphicsPipeline : objectRenderable.blendGraphicsPipeline;
+			GraphicsPipeline* graphicsPipeline = objectRenderable.opaqueGraphicsPipeline ? objectRenderable.opaqueGraphicsPipeline : (objectRenderable.maskGraphicsPipeline ? objectRenderable.maskGraphicsPipeline : objectRenderable.blendGraphicsPipeline);
 			objectRenderable.createEntityDescriptorSet(i, graphicsPipeline);
 		}
 	}
@@ -614,8 +613,6 @@ void Renderer::loadObject(Entity object) {
 
 	if (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
-			// Mask descriptor sets
-			objectRenderable.createMaskEntityDescriptorSet(i);
 
 			// Depth prepass mask
 			objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
@@ -817,7 +814,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotMaskPrimitives) {
 			objectRenderable.maskGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
-				objectRenderable.maskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
 			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, 0);
 		}
