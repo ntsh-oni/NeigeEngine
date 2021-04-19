@@ -44,6 +44,30 @@
         },
 		{
             "renderable": {
+                "modelPath": "../../glTF-Sample-Models-master/2.0/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    3.0,
+                    3.0,
+                    3.0
+                ]
+            }
+        },
+		{
+            "renderable": {
                 "modelPath": "../modelfiles/water.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/water.frag"
