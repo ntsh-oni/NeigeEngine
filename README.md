@@ -1,6 +1,6 @@
 
 # NeigeEngine
-![NeigeEngine](https://i.imgur.com/Pf8Esjf.png)
+![NeigeEngine](https://i.imgur.com/JcU2ZnS.jpg)
 
 ## Dependencies
 ### To install
@@ -31,7 +31,7 @@ $ make
 - [x] glTF import
 - [x] JSON scene format
 ### Graphics Features
-- [x] Physically Based Rendering (PBL) metallic-roughness
+- [x] Physically Based Rendering (PBR) metallic-roughness
 - [x] Image-Based Lighting (IBL)
 - [x] Shadow mapping
 - [x] Fast Approximate Anti-Aliasing (FXAA)
