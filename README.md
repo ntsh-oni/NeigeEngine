@@ -41,9 +41,9 @@ $ make
 - [x] Alpha cutoff
 - [x] Realtime shaders reloading
 ## Screenshots
-![Amazon Lumberyard Bistro](https://i.imgur.com/VmK7h8R.png)
+![Amazon Lumberyard Bistro](https://i.imgur.com/9LchRk5.png)
 <sub>Amazon Lumberyard Bistro</sub>
 
 
-![Damaged Helmet](https://i.imgur.com/gP9MNbP.png)
+![Damaged Helmet](https://i.imgur.com/8vQjgoq.png)
 <sub>Damaged Helmet</sub>

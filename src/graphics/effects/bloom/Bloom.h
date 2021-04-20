@@ -8,7 +8,6 @@
 #include "../../pipelines/Viewport.h"
 
 #define BLOOMDOWNSCALE 4
-#define BLURQUANTITY 1
 
 struct Bloom {
 	Viewport viewport;
@@ -16,6 +15,10 @@ struct Bloom {
 	// Threshold and bloom
 	Image thresholdImage;
 	Image bloomImage;
+	VkImageView bloomLod0ImageView;
+	uint32_t mipLevels;
+	std::vector<uint32_t> mipWidths;
+	std::vector<uint32_t> mipHeights;
 
 	// Resize
 	GraphicsPipeline resizeGraphicsPipeline;
@@ -24,13 +27,16 @@ struct Bloom {
 	Framebuffer resizeFramebuffer;
 
 	// Blur
+	Viewport blurViewport;
 	GraphicsPipeline blurGraphicsPipeline;
-	DescriptorSet blurDescriptorSet;
-	DescriptorSet backBlurDescriptorSet;
+	std::vector<DescriptorSet> blurDescriptorSets;
+	std::vector<DescriptorSet> backBlurDescriptorSets;
 	Image blurredImage;
 	RenderPass blurRenderPass;
-	Framebuffer blurFramebuffer;
-	Framebuffer backBlurFramebuffer;
+	std::vector<Framebuffer> blurFramebuffers;
+	std::vector<Framebuffer> backBlurFramebuffers;
+	std::vector<VkImageView> blurImageViews;
+	std::vector<VkImageView> backBlurImageViews;
 	int horizontalBlur = 1;
 	
 	void init(Viewport fullscreenViewport);

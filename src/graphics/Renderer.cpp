@@ -134,9 +134,10 @@ void Renderer::init(const std::string applicationName) {
 	// Create samplers
 	ImageTools::createImageSampler(&trilinearEdgeBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::createImageSampler(&trilinearEdgeOneLodBlackSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&trilinearEdgeWhiteSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearBorderWhiteLessSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_LESS);
 	ImageTools::createImageSampler(&trilinearRepeatBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::createImageSampler(&nearestEdgeBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestEdgeOneLodBlackSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::createImageSampler(&nearestRepeatBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Depth prepass
@@ -446,9 +447,9 @@ void Renderer::destroy() {
 		vkDestroySampler(logicalDevice.device, trilinearEdgeOneLodBlackSampler, nullptr);
 		trilinearEdgeOneLodBlackSampler = VK_NULL_HANDLE;
 	}
-	if (trilinearEdgeWhiteSampler != VK_NULL_HANDLE) {
-		vkDestroySampler(logicalDevice.device, trilinearEdgeWhiteSampler, nullptr);
-		trilinearEdgeWhiteSampler = VK_NULL_HANDLE;
+	if (trilinearBorderWhiteLessSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearBorderWhiteLessSampler, nullptr);
+		trilinearBorderWhiteLessSampler = VK_NULL_HANDLE;
 	}
 	if (trilinearRepeatBlackSampler != VK_NULL_HANDLE) {
 		vkDestroySampler(logicalDevice.device, trilinearRepeatBlackSampler, nullptr);
@@ -457,6 +458,10 @@ void Renderer::destroy() {
 	if (nearestEdgeBlackSampler != VK_NULL_HANDLE) {
 		vkDestroySampler(logicalDevice.device, nearestEdgeBlackSampler, nullptr);
 		nearestEdgeBlackSampler = VK_NULL_HANDLE;
+	}
+	if (nearestEdgeOneLodBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, nearestEdgeOneLodBlackSampler, nullptr);
+		nearestEdgeOneLodBlackSampler = VK_NULL_HANDLE;
 	}
 	if (nearestRepeatBlackSampler != VK_NULL_HANDLE) {
 		vkDestroySampler(logicalDevice.device, nearestRepeatBlackSampler, nullptr);
