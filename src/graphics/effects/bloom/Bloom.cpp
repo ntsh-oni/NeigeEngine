@@ -1,6 +1,7 @@
 #include "Bloom.h"
 #include "../../../utils/resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
+#include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
 void Bloom::init(Viewport fullscreenViewport) {
@@ -63,15 +64,12 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 	// Images
 	ImageTools::createImage(&thresholdImage.image, 1, static_cast<uint32_t>(fullscreenViewport.viewport.width), static_cast<uint32_t>(fullscreenViewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &thresholdImage.memoryInfo);
 	ImageTools::createImageView(&thresholdImage.imageView, thresholdImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&thresholdImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	ImageTools::createImage(&blurredImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &blurredImage.memoryInfo);
 	ImageTools::createImageView(&blurredImage.imageView, blurredImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&blurredImage.imageSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	ImageTools::createImage(&bloomImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &bloomImage.memoryInfo);
 	ImageTools::createImageView(&bloomImage.imageView, bloomImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&bloomImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Framebuffers
 	{
@@ -97,7 +95,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 		resizeDescriptorSet.init(&resizeGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo thresholdInfo = {};
-		thresholdInfo.sampler = bloomImage.imageSampler;
+		thresholdInfo.sampler = nearestEdgeBlackSampler;
 		thresholdInfo.imageView = thresholdImage.imageView;
 		thresholdInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -123,7 +121,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 		blurDescriptorSet.init(&blurGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo bloomInfo = {};
-		bloomInfo.sampler = blurredImage.imageSampler;
+		bloomInfo.sampler = nearestEdgeBlackSampler;
 		bloomInfo.imageView = bloomImage.imageView;
 		bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -149,7 +147,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 		backBlurDescriptorSet.init(&blurGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo blurInfo = {};
-		blurInfo.sampler = blurredImage.imageSampler;
+		blurInfo.sampler = nearestEdgeBlackSampler;
 		blurInfo.imageView = blurredImage.imageView;
 		blurInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

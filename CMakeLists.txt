@@ -58,7 +58,7 @@ SET(GRAPHICS_PIPELINES_HEADERS src/graphics/pipelines/DescriptorSet.h src/graphi
 SET(GRAPHICS_RENDERPASSES_SOURCES src/graphics/renderpasses/Framebuffer.cpp src/graphics/renderpasses/RenderPass.cpp src/graphics/renderpasses/RenderPassAttachment.cpp src/graphics/renderpasses/Swapchain.cpp)
 SET(GRAPHICS_RENDERPASSES_HEADERS src/graphics/renderpasses/Framebuffer.h src/graphics/renderpasses/RenderPass.h src/graphics/renderpasses/RenderPassAttachment.h src/graphics/renderpasses/Swapchain.h)
 SET(GRAPHICS_RESOURCES_SOURCES src/graphics/resources/Buffer.cpp src/graphics/resources/Image.cpp)
-SET(GRAPHICS_RESOURCES_HEADERS src/graphics/resources/Buffer.h src/graphics/resources/Image.h src/graphics/resources/RendererResources.h src/graphics/resources/ShaderResources.h)
+SET(GRAPHICS_RESOURCES_HEADERS src/graphics/resources/Buffer.h src/graphics/resources/Image.h src/graphics/resources/RendererResources.h src/graphics/resources/Samplers.h src/graphics/resources/ShaderResources.h)
 SET(GRAPHICS_SYNC_SOURCES src/graphics/sync/Fence.cpp src/graphics/sync/Semaphore.cpp)
 SET(GRAPHICS_SYNC_HEADERS src/graphics/sync/Fence.h src/graphics/sync/Semaphore.h)
 SET(GRAPHICS_EFFECTS_SOURCES src/graphics/effects/bloom/Bloom.cpp src/graphics/effects/depthprepass/DepthPrepass.cpp src/graphics/effects/fxaa/FXAA.cpp src/graphics/effects/envmap/Envmap.cpp src/graphics/effects/shadowmapping/Shadow.cpp src/graphics/effects/ssao/SSAO.cpp)

@@ -3,6 +3,7 @@
 #include "../../../utils/resources/BufferTools.h"
 #include "../../../utils/resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
+#include "../../../graphics/resources/Samplers.h"
 
 void Envmap::init(std::string filePath) {
 	if (FileTools::exists(filePath)) {
@@ -20,13 +21,11 @@ void Envmap::init(std::string filePath) {
 	uint32_t skyboxMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(ENVMAP_WIDTH, ENVMAP_HEIGHT)))) + 1;
 	ImageTools::createImage(&skyboxImage.image, 6, ENVMAP_WIDTH, ENVMAP_HEIGHT, skyboxMipLevels, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &skyboxImage.memoryInfo);
 	ImageTools::createImageView(&skyboxImage.imageView, skyboxImage.image, 0, 6, 0, skyboxMipLevels, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&skyboxImage.imageSampler, skyboxMipLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(skyboxImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, skyboxMipLevels, 6);
 
 	float defaultSkyboxColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	ImageTools::loadColorForEnvmap(defaultSkyboxColor, &defaultSkybox.image, physicalDevice.colorFormat, &defaultSkybox.mipmapLevels, &defaultSkybox.memoryInfo);
 	ImageTools::createImageView(&defaultSkybox.imageView, defaultSkybox.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultSkybox.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	std::vector<uint32_t> cubeIndices;
 	cubeIndices.resize(cubeVertices.size());
@@ -116,7 +115,7 @@ void Envmap::equiRectangleToCubemap() {
 	equiRecToCubemapDescriptorSet.init(&equiRecToCubemapGraphicsPipeline, 0);
 
 	VkDescriptorImageInfo skyboxInfo = {};
-	skyboxInfo.sampler = defaultSkybox.imageSampler;
+	skyboxInfo.sampler = trilinearEdgeBlackSampler;
 	skyboxInfo.imageView = envmapImage.image != VK_NULL_HANDLE ? envmapImage.imageView : defaultSkybox.imageView;
 	skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -190,7 +189,6 @@ void Envmap::equiRectangleToCubemap() {
 void Envmap::createDiffuseIradiance() {
 	ImageTools::createImage(&diffuseIradianceImage.image, 6, CONVOLVE_WIDTH, CONVOLVE_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &diffuseIradianceImage.memoryInfo);
 	ImageTools::createImageView(&diffuseIradianceImage.imageView, diffuseIradianceImage.image, 0, 6, 0, 1, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&diffuseIradianceImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(diffuseIradianceImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 6);
 
 	Viewport convolveViewport;
@@ -225,7 +223,7 @@ void Envmap::createDiffuseIradiance() {
 	convolveDescriptorSet.init(&convolveGraphicsPipeline, 0);
 
 	VkDescriptorImageInfo skyboxInfo = {};
-	skyboxInfo.sampler = skyboxImage.imageSampler;
+	skyboxInfo.sampler = trilinearEdgeBlackSampler;
 	skyboxInfo.imageView = skyboxImage.image != VK_NULL_HANDLE ? skyboxImage.imageView : defaultSkybox.imageView;
 	skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -295,7 +293,6 @@ void Envmap::createDiffuseIradiance() {
 void Envmap::createPrefilter() {
 	ImageTools::createImage(&prefilterImage.image, 6, PREFILTER_WIDTH, PREFILTER_HEIGHT, 5, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &prefilterImage.memoryInfo);
 	ImageTools::createImageView(&prefilterImage.imageView, prefilterImage.image, 0, 6, 0, 5, VK_IMAGE_VIEW_TYPE_CUBE, physicalDevice.colorFormat, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&prefilterImage.imageSampler, 5, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(prefilterImage.image, physicalDevice.colorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 5, 6);
 
 	std::vector<RenderPassAttachment> attachments;
@@ -347,7 +344,7 @@ void Envmap::createPrefilter() {
 		prefilterDescriptorSet.init(&prefilterGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo skyboxInfo = {};
-		skyboxInfo.sampler = skyboxImage.imageSampler;
+		skyboxInfo.sampler = trilinearEdgeBlackSampler;
 		skyboxInfo.imageView = skyboxImage.image != VK_NULL_HANDLE ? skyboxImage.imageView : defaultSkybox.imageView;
 		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -439,7 +436,6 @@ void Envmap::createPrefilter() {
 void Envmap::createBRDFConvolution() {
 	ImageTools::createImage(&brdfConvolutionImage.image, 1, BRDFCONVOLUTION_WIDTH, BRDFCONVOLUTION_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &brdfConvolutionImage.memoryInfo);
 	ImageTools::createImageView(&brdfConvolutionImage.imageView, brdfConvolutionImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&brdfConvolutionImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	ImageTools::transitionLayout(brdfConvolutionImage.image, VK_FORMAT_R32G32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, 1);
 
 	Viewport brdfConvolutionViewport;
