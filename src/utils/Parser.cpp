@@ -238,7 +238,7 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 						transform.position = glm::vec3(position[0], position[1], position[2]);
 					}
 					else {
-						NEIGE_WARNING("Tranform position vector is missing " + std::to_string(3 - index) + " values.");
+						NEIGE_WARNING("Transform position vector is missing " + std::to_string(3 - index) + " values.");
 						transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
 					}
 				}
@@ -262,7 +262,7 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 						transform.rotation = glm::vec3(rotation[0], rotation[1], rotation[2]);
 					}
 					else {
-						NEIGE_WARNING("Tranform rotation vector is missing " + std::to_string(3 - index) + " values.");
+						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
 						transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 					}
 				}
@@ -286,7 +286,7 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 						transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
 					}
 					else {
-						NEIGE_WARNING("Tranform rotation vector is missing " + std::to_string(3 - index) + " values.");
+						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
 						transform.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 					}
 				}

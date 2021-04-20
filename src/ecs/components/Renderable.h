@@ -195,7 +195,7 @@ struct Renderable {
 				shadowMapsInfos.resize(MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS);
 
 				for (int j = 0; j < MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS; j++) {
-					shadowMapsInfos[j].sampler = trilinearEdgeWhiteSampler;
+					shadowMapsInfos[j].sampler = trilinearBorderWhiteLessSampler;
 					shadowMapsInfos[j].imageView = (j < shadow.mapCount) ? shadow.images[j].imageView : shadow.defaultShadow.imageView;
 					shadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				}
