@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../NeigeDefines.h"
 #include "../structs/RendererStructs.h"
 #include "../../graphics/commands/CommandBuffer.h"

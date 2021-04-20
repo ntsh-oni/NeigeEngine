@@ -1,7 +1,8 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../utils/structs/RendererStructs.h"
 #include "../sync/Semaphore.h"
+#include <array>
 
 struct Swapchain {
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;

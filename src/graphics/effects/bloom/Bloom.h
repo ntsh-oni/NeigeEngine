@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../resources/Image.h"
 #include "../../renderpasses/Framebuffer.h"
 #include "../../renderpasses/RenderPass.h"

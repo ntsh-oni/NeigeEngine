@@ -1,6 +1,7 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../NeigeDefines.h"
+#include <vector>
 #include <optional>
 
 #define MAX_FRAMES_IN_FLIGHT 3

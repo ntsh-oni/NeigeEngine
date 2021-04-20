@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../NeigeDefines.h"
 #include "../structs/RendererStructs.h"
 #include "BufferTools.h"
@@ -7,6 +7,7 @@
 #include "../../graphics/resources/Buffer.h"
 #include "../../graphics/commands/CommandBuffer.h"
 #include "../../graphics/commands/CommandPool.h"
+#include <array>
 
 struct ImageTools {
 	static void createImage(VkImage* image,
