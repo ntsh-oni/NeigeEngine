@@ -395,15 +395,29 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 				cgltf_texture_view emissiveTextureView = primitive->material->emissive_texture;
 				cgltf_texture* emissiveTexture = emissiveTextureView.texture;
+				cgltf_float* emissiveFactor = primitive->material->emissive_factor;
 				if (emissiveTexture != NULL) {
 					cgltf_image* emissiveImage = emissiveTexture->image;
 
 					int index;
 					if ((index = findTexture(emissiveImage->uri)) == -1) {
 						Image image;
-						ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + emissiveImage->uri, &image.image, VK_FORMAT_R8G8B8A8_UNORM, &image.mipmapLevels, &image.memoryInfo);
-						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+						ImageTools::loadImage(FileTools::fileGetDirectory(filePath) + emissiveImage->uri, &image.image, VK_FORMAT_R8G8B8A8_SRGB, &image.mipmapLevels, &image.memoryInfo);
+						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 						textures.push_back({ emissiveImage->uri, image });
+						index = static_cast<int>(textures.size() - 1);
+					}
+					primitiveMaterial.emissiveIndex = index;
+				}
+				else if (emissiveFactor != NULL) {
+					std::string key = std::to_string(emissiveFactor[0]) + std::to_string(emissiveFactor[1]) + std::to_string(emissiveFactor[2]);
+
+					int index;
+					if ((index = findTexture(key)) == -1) {
+						Image image;
+						ImageTools::loadColor(emissiveFactor, &image.image, VK_FORMAT_R8G8B8A8_SRGB, &image.mipmapLevels, &image.memoryInfo);
+						ImageTools::createImageView(&image.imageView, image.image, 0, 1, 0, image.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+						textures.push_back({ key, image });
 						index = static_cast<int>(textures.size() - 1);
 					}
 					primitiveMaterial.emissiveIndex = index;
