@@ -64,9 +64,6 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width) / BLOOMDOWNSCALE, static_cast<uint32_t>(fullscreenViewport.viewport.height) / BLOOMDOWNSCALE);
 
 	// Images
-	ImageTools::createImage(&thresholdImage.image, 1, static_cast<uint32_t>(fullscreenViewport.viewport.width), static_cast<uint32_t>(fullscreenViewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &thresholdImage.memoryInfo);
-	ImageTools::createImageView(&thresholdImage.imageView, thresholdImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-
 	mipLevels = std::min<uint32_t>(static_cast<uint32_t>(std::floor(std::log2(std::min(viewport.viewport.width, viewport.viewport.height)))) + 1, 6);
 
 	mipWidths.resize(mipLevels);
@@ -118,7 +115,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 
 		VkDescriptorImageInfo thresholdInfo = {};
 		thresholdInfo.sampler = nearestEdgeBlackSampler;
-		thresholdInfo.imageView = thresholdImage.imageView;
+		thresholdInfo.imageView = sceneImage.imageView;
 		thresholdInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
@@ -199,7 +196,6 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 }
 
 void Bloom::destroyResources() {
-	thresholdImage.destroy();
 	blurredImage.destroy();
 	vkDestroyImageView(logicalDevice.device, bloomLod0ImageView, nullptr);
 	bloomImage.destroy();
