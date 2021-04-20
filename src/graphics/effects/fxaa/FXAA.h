@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../../utils/structs/ShaderStructs.h"
 #include "../../resources/Image.h"
 #include "../../renderpasses/Framebuffer.h"

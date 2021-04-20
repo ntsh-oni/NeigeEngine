@@ -1,5 +1,5 @@
 #include "Envmap.h"
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../../utils/resources/BufferTools.h"
 #include "../../../utils/resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"

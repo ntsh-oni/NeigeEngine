@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../external/glm/glm/glm.hpp"
 #include "../../graphics/pipelines/DescriptorSet.h"
 #include "../../graphics/pipelines/GraphicsPipeline.h"

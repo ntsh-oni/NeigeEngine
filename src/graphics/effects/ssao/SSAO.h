@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../../../external/glm/glm/glm.hpp"
 #include "../../commands/CommandBuffer.h"
 #include "../../resources/Buffer.h"

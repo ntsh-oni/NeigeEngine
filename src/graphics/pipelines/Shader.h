@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 #include "../../external/glslang/glslang/Include/ShHandle.h"
 #include "../../external/glslang/SPIRV/GlslangToSpv.h"
 #include "../../external/glslang/StandAlone/DirStackFileIncluder.h"

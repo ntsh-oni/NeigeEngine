@@ -1,4 +1,4 @@
-#include "vulkan/vulkan.hpp"
+#include "vulkan/vulkan.h"
 
 inline VkSampler trilinearEdgeBlackSampler = VK_NULL_HANDLE;
 inline VkSampler trilinearEdgeOneLodBlackSampler = VK_NULL_HANDLE;

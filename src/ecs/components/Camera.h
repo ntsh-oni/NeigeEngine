@@ -3,6 +3,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "../../../external/glm/glm/glm.hpp"
 #include "../../../external/glm/glm/gtc/matrix_transform.hpp"
+#include <string>
 
 struct Camera {
 	glm::vec3 position;
