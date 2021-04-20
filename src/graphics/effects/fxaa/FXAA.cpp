@@ -1,6 +1,7 @@
 #include "FXAA.h"
 #include "../../../utils/resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
+#include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
 void FXAA::init(Viewport fullscreenViewport) {
@@ -55,7 +56,7 @@ void FXAA::createResources(Viewport fullscreenViewport) {
 		descriptorSet.init(&graphicsPipeline, 0);
 
 		VkDescriptorImageInfo postInfo = {};
-		postInfo.sampler = postProcessImage.imageSampler;
+		postInfo.sampler = trilinearEdgeBlackSampler;
 		postInfo.imageView = postProcessImage.imageView;
 		postInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

@@ -130,6 +130,14 @@ void Renderer::init(const std::string applicationName) {
 	}
 
 	createBindlessDescriptorSet();
+	
+	// Create samplers
+	ImageTools::createImageSampler(&trilinearEdgeBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearEdgeOneLodBlackSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearEdgeWhiteSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearRepeatBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestEdgeBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestRepeatBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 	// Depth prepass
 	NEIGE_INFO("Depth prepass init start.");
@@ -175,7 +183,7 @@ void Renderer::init(const std::string applicationName) {
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
 		VkDescriptorImageInfo skyboxInfo = {};
-		skyboxInfo.sampler = envmap.defaultSkybox.imageSampler;
+		skyboxInfo.sampler = trilinearEdgeOneLodBlackSampler;
 		skyboxInfo.imageView = envmap.skyboxImage.imageView;
 		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -276,35 +284,30 @@ void Renderer::init(const std::string applicationName) {
 	Image defaultDiffuseImage;
 	ImageTools::loadColor(defaultDiffuse, &defaultDiffuseImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultDiffuseImage.mipmapLevels, &defaultDiffuseImage.memoryInfo);
 	ImageTools::createImageView(&defaultDiffuseImage.imageView, defaultDiffuseImage.image, 0, 1, 0, defaultDiffuseImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultDiffuseImage.imageSampler, defaultDiffuseImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.push_back({ "defaultDiffuse", defaultDiffuseImage });
 
 	float defaultNormal[4] = { 0.5f, 0.5f, 1.0f, 0.0f };
 	Image defaultNormalImage;
 	ImageTools::loadColor(defaultNormal, &defaultNormalImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultNormalImage.mipmapLevels, &defaultNormalImage.memoryInfo);
 	ImageTools::createImageView(&defaultNormalImage.imageView, defaultNormalImage.image, 0, 1, 0, defaultNormalImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultNormalImage.imageSampler, defaultNormalImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.push_back({ "defaultNormal", defaultNormalImage });
 
 	float defaultMetallicRoughness[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultMetallicRoughnessImage;
 	ImageTools::loadColor(defaultMetallicRoughness, &defaultMetallicRoughnessImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultMetallicRoughnessImage.mipmapLevels, &defaultMetallicRoughnessImage.memoryInfo);
 	ImageTools::createImageView(&defaultMetallicRoughnessImage.imageView, defaultMetallicRoughnessImage.image, 0, 1, 0, defaultMetallicRoughnessImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultMetallicRoughnessImage.imageSampler, defaultMetallicRoughnessImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.push_back({ "defaultMetallicRoughness", defaultMetallicRoughnessImage });
 
 	float defaultEmissive[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultEmissiveImage;
 	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.memoryInfo);
 	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultEmissiveImage.imageSampler, defaultEmissiveImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.push_back({ "defaultEmissive", defaultEmissiveImage });
 
 	float defaultOcclusion[4] = { 1.0, 1.0, 1.0, 0.0 };
 	Image defaultOcclusionImage;
 	ImageTools::loadColor(defaultOcclusion, &defaultOcclusionImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultOcclusionImage.mipmapLevels, &defaultOcclusionImage.memoryInfo);
 	ImageTools::createImageView(&defaultOcclusionImage.imageView, defaultOcclusionImage.image, 0, 1, 0, defaultOcclusionImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::createImageSampler(&defaultOcclusionImage.imageSampler, defaultOcclusionImage.mipmapLevels, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	textures.push_back({ "defaultOcclusion", defaultOcclusionImage });
 
 	// Object resources
@@ -435,6 +438,30 @@ void Renderer::update() {
 void Renderer::destroy() {
 	logicalDevice.wait();
 	destroyResources();
+	if (trilinearEdgeBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearEdgeBlackSampler, nullptr);
+		trilinearEdgeBlackSampler = VK_NULL_HANDLE;
+	}
+	if (trilinearEdgeOneLodBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearEdgeOneLodBlackSampler, nullptr);
+		trilinearEdgeOneLodBlackSampler = VK_NULL_HANDLE;
+	}
+	if (trilinearEdgeWhiteSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearEdgeWhiteSampler, nullptr);
+		trilinearEdgeWhiteSampler = VK_NULL_HANDLE;
+	}
+	if (trilinearRepeatBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearRepeatBlackSampler, nullptr);
+		trilinearRepeatBlackSampler = VK_NULL_HANDLE;
+	}
+	if (nearestEdgeBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, nearestEdgeBlackSampler, nullptr);
+		nearestEdgeBlackSampler = VK_NULL_HANDLE;
+	}
+	if (nearestRepeatBlackSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, nearestRepeatBlackSampler, nullptr);
+		nearestRepeatBlackSampler = VK_NULL_HANDLE;
+	}
 	depthPrepass.destroy();
 	envmap.destroy();
 	shadow.destroy();
@@ -879,7 +906,6 @@ void Renderer::createResources() {
 	{
 		ImageTools::createImage(&sceneImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &sceneImage.memoryInfo);
 		ImageTools::createImageView(&sceneImage.imageView, sceneImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&sceneImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 	
 		std::vector<VkImageView> framebufferAttachments;
 		framebufferAttachments.push_back(sceneImage.imageView);
@@ -892,11 +918,9 @@ void Renderer::createResources() {
 	{
 		ImageTools::createImage(&blendAccumulationImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &blendAccumulationImage.memoryInfo);
 		ImageTools::createImageView(&blendAccumulationImage.imageView, blendAccumulationImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&blendAccumulationImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 		ImageTools::createImage(&blendRevealageImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &blendRevealageImage.memoryInfo);
 		ImageTools::createImageView(&blendRevealageImage.imageView, blendRevealageImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&blendRevealageImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_INT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 		std::vector<VkImageView> framebufferAttachments;
 		framebufferAttachments.push_back(blendAccumulationImage.imageView);
@@ -916,7 +940,6 @@ void Renderer::createResources() {
 	{
 		ImageTools::createImage(&postProcessImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, swapchain.surfaceFormat.format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &postProcessImage.memoryInfo);
 		ImageTools::createImageView(&postProcessImage.imageView, postProcessImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, swapchain.surfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
-		ImageTools::createImageSampler(&postProcessImage.imageSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
 
 		std::vector<VkImageView> framebufferAttachments;
 		framebufferAttachments.push_back(postProcessImage.imageView);
@@ -944,7 +967,7 @@ void Renderer::updateBindlessDescriptorSet() {
 	std::vector<VkDescriptorImageInfo> textureInfos;
 	for (Texture& texture : textures) {
 		VkDescriptorImageInfo textureInfo = {};
-		textureInfo.sampler = texture.image.imageSampler;
+		textureInfo.sampler = trilinearRepeatBlackSampler;
 		textureInfo.imageView = texture.image.imageView;
 		textureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -973,12 +996,12 @@ void Renderer::createAlphaCompositingDescriptorSet() {
 	alphaCompositingDescriptorSet.init(&graphicsPipelines.at("alphaCompositing"), 0);
 
 	VkDescriptorImageInfo accumulationInfo = {};
-	accumulationInfo.sampler = blendAccumulationImage.imageSampler;
+	accumulationInfo.sampler = trilinearEdgeBlackSampler;
 	accumulationInfo.imageView = blendAccumulationImage.imageView;
 	accumulationInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo revealageInfo = {};
-	revealageInfo.sampler = blendRevealageImage.imageSampler;
+	revealageInfo.sampler = trilinearEdgeBlackSampler;
 	revealageInfo.imageView = blendRevealageImage.imageView;
 	revealageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1017,17 +1040,17 @@ void Renderer::createPostProcessDescriptorSet() {
 	postDescriptorSet.init(&graphicsPipelines.at("post"), 0);
 
 	VkDescriptorImageInfo sceneInfo = {};
-	sceneInfo.sampler = sceneImage.imageSampler;
+	sceneInfo.sampler = trilinearEdgeBlackSampler;
 	sceneInfo.imageView = sceneImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo bloomInfo = {};
-	bloomInfo.sampler = bloom.bloomImage.imageSampler;
+	bloomInfo.sampler = trilinearEdgeBlackSampler;
 	bloomInfo.imageView = bloom.bloomImage.imageView;
 	bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo ssaoInfo = {};
-	ssaoInfo.sampler = ssao.ssaoBlurredImage.imageSampler;
+	ssaoInfo.sampler = nearestEdgeBlackSampler;
 	ssaoInfo.imageView = ssao.ssaoBlurredImage.imageView;
 	ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

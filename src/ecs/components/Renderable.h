@@ -2,6 +2,7 @@
 #include "../../graphics/resources/Buffer.h"
 #include "../../graphics/pipelines/DescriptorSet.h"
 #include "../../graphics/pipelines/GraphicsPipeline.h"
+#include "../../graphics/resources/Samplers.h"
 #include "../../graphics/resources/ShaderResources.h"
 #include "../../utils/structs/ShaderStructs.h"
 #include <string>
@@ -134,7 +135,7 @@ struct Renderable {
 				writesDescriptorSet.push_back(lightingWriteDescriptorSet);
 			}
 			else if (bindingName == "irradianceMap") {
-				irradianceInfo.sampler = envmap.diffuseIradianceImage.imageSampler;
+				irradianceInfo.sampler = trilinearEdgeBlackSampler;
 				irradianceInfo.imageView = envmap.diffuseIradianceImage.imageView;
 				irradianceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -153,7 +154,7 @@ struct Renderable {
 				writesDescriptorSet.push_back(irradianceWriteDescriptorSet);
 			}
 			else if (bindingName == "prefilterMap") {
-				prefilterInfo.sampler = envmap.prefilterImage.imageSampler;
+				prefilterInfo.sampler = trilinearEdgeBlackSampler;
 				prefilterInfo.imageView = envmap.prefilterImage.imageView;
 				prefilterInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -172,7 +173,7 @@ struct Renderable {
 				writesDescriptorSet.push_back(prefilterWriteDescriptorSet);
 			}
 			else if (bindingName == "brdfLUT") {
-				brdfLUTInfo.sampler = envmap.brdfConvolutionImage.imageSampler;
+				brdfLUTInfo.sampler = trilinearEdgeBlackSampler;
 				brdfLUTInfo.imageView = envmap.brdfConvolutionImage.imageView;
 				brdfLUTInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -194,7 +195,7 @@ struct Renderable {
 				shadowMapsInfos.resize(MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS);
 
 				for (int j = 0; j < MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS; j++) {
-					shadowMapsInfos[j].sampler = shadow.defaultShadow.imageSampler;
+					shadowMapsInfos[j].sampler = trilinearEdgeWhiteSampler;
 					shadowMapsInfos[j].imageView = (j < shadow.mapCount) ? shadow.images[j].imageView : shadow.defaultShadow.imageView;
 					shadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				}
