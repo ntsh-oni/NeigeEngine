@@ -15,66 +15,18 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 200.0,
-                "envmapPath": ""
+                "envmapPath": "../modelfiles/Bistro_v5_1/san_giuseppe_bridge_4k.hdr"
             }
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/spherered.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    -2.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/spheregreen.gltf",
+                "modelPath": "../modelfiles/DamagedHelmet.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
                     0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/sphereblue.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    2.0,
                     0.0,
                     0.0
                 ],

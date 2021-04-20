@@ -16,5 +16,6 @@ void main() {
 	color /= 4.0;
 	
 	color = min(color, 10.0);
+	color = max(color - 1.5, 0);
 	outColor = vec4(color, 1.0);
 }

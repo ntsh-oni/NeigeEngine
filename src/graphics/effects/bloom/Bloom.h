@@ -13,7 +13,6 @@ struct Bloom {
 	Viewport viewport;
 
 	// Threshold and bloom
-	Image thresholdImage;
 	Image bloomImage;
 	VkImageView bloomLod0ImageView;
 	uint32_t mipLevels;
