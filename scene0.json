@@ -15,18 +15,18 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 200.0,
-                "envmapPath": "../modelfiles/Bistro_v5_1/san_giuseppe_bridge_4k.hdr"
+                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
             }
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/DamagedHelmet.gltf",
+                "modelPath": "../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
-                    0.0,
+                    -2.0,
                     0.0,
                     0.0
                 ],
