@@ -18,8 +18,8 @@ void main() {
 	
 	float ssaoBlurred = texture(ssaoBlurredSampler, uv).r;
 	
-	vec3 tmpColor = scene + bloom;
+	vec3 tmpColor = (scene * ssaoBlurred) + bloom;
 	
 	tmpColor = tmpColor / (tmpColor + vec3(1.0));
-	outColor = vec4(tmpColor * ssaoBlurred, 1.0);
+	outColor = vec4(tmpColor, 1.0);
 }
