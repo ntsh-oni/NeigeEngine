@@ -2,10 +2,6 @@
 
 #define SAMPLES 64
 
-layout(push_constant) uniform ImageSize {
-	vec2 size;
-} imageSize;
-
 layout(set = 0, binding = 0) uniform sampler2D positionSampler;
 layout(set = 0, binding = 1) uniform sampler2D normalSampler;
 layout(set = 0, binding = 2) uniform sampler2D randomTexture;
@@ -25,7 +21,8 @@ layout(location = 0) in vec2 uv;
 layout(location = 0) out float outColor;
 
 void main() {
-	const vec2 randomScale = vec2(imageSize.size.x / 4.0, imageSize.size.y / 4.0);
+	vec2 imageSize = textureSize(positionSampler, 0);
+	const vec2 randomScale = imageSize / 4.0;
 	const float radius = 0.1;
 	const float bias = 0.05;
 	

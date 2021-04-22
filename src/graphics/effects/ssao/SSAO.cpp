@@ -453,13 +453,10 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	depthToNormalsRenderPass.end(commandBuffer);
 
 	// SSAO
-	glm::vec2 imageSize = {viewport.viewport.width, viewport.viewport.height};
-
 	ssaoRenderPass.begin(commandBuffer, ssaoFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoGraphicsPipeline.bind(commandBuffer);
 	ssaoDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
-	ssaoGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(float), &imageSize);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
