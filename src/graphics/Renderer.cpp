@@ -94,11 +94,19 @@ void Renderer::init(const std::string applicationName) {
 	// Post-process
 	{
 		std::vector<RenderPassAttachment> attachments;
-		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
-
 		std::vector<SubpassDependency> dependencies;
-		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+
+		if (enableFXAA) {
+			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+
+			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		}
+		else {
+			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+
+			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, VK_DEPENDENCY_BY_REGION_BIT });
+		}
 
 		RenderPass renderPass;
 		renderPass.init(attachments, dependencies);
@@ -143,9 +151,11 @@ void Renderer::init(const std::string applicationName) {
 	NEIGE_INFO("Depth prepass init end.");
 
 	// SSAO
-	NEIGE_INFO("SSAO init start.");
-	ssao.init(fullscreenViewport);
-	NEIGE_INFO("SSAO init end.");
+	if (enableSSAO) {
+		NEIGE_INFO("SSAO init start.");
+		ssao.init(fullscreenViewport);
+		NEIGE_INFO("SSAO init end.");
+	}
 
 	// Shadow
 	NEIGE_INFO("Shadowmapping init start.");
@@ -215,14 +225,18 @@ void Renderer::init(const std::string applicationName) {
 	createResources();
 
 	// Bloom
-	NEIGE_INFO("Bloom init start.");
-	bloom.init(fullscreenViewport);
-	NEIGE_INFO("Bloom init end.");
+	if (enableBloom) {
+		NEIGE_INFO("Bloom init start.");
+		bloom.init(fullscreenViewport);
+		NEIGE_INFO("Bloom init end.");
+	}
 
 	// FXAA
-	NEIGE_INFO("FXAA init start.");
-	fxaa.init(fullscreenViewport);
-	NEIGE_INFO("FXAA init end.");
+	if (enableFXAA) {
+		NEIGE_INFO("FXAA init start.");
+		fxaa.init(fullscreenViewport);
+		NEIGE_INFO("FXAA init end.");
+	}
 
 	// Shadow
 	{
@@ -265,7 +279,7 @@ void Renderer::init(const std::string applicationName) {
 	// Post-process
 	GraphicsPipeline postGraphicsPipeline;
 	postGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
-	postGraphicsPipeline.fragmentShaderPath = "../shaders/postProcess.frag";
+	postGraphicsPipeline.fragmentShaderPath = (enableBloom && enableSSAO) ? "../shaders/postProcess.frag" : (enableBloom ? "../shaders/postProcessBloomOnly.frag" : (enableSSAO ? "../shaders/postProcessSSAOOnly.frag" : "../shaders/passthrough.frag"));
 	postGraphicsPipeline.renderPass = &renderPasses.at("post");
 	postGraphicsPipeline.viewport = &fullscreenViewport;
 	postGraphicsPipeline.multiSample = false;
@@ -466,9 +480,15 @@ void Renderer::destroy() {
 	depthPrepass.destroy();
 	envmap.destroy();
 	shadow.destroy();
-	fxaa.destroy();
-	ssao.destroy();
-	bloom.destroy();
+	if (enableFXAA) {
+		fxaa.destroy();
+	}
+	if (enableSSAO) {
+		ssao.destroy();
+	}
+	if (enableBloom) {
+		bloom.destroy();
+	}
 	if (texturesDescriptorPool != VK_NULL_HANDLE) {
 		vkDestroyDescriptorPool(logicalDevice.device, texturesDescriptorPool, nullptr);
 		texturesDescriptorPool = VK_NULL_HANDLE;
@@ -882,13 +902,18 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	alphaCompositingRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Bloom
-	bloom.draw(&renderingCommandBuffers[frameInFlightIndex]);
+	if (enableBloom) {
+		bloom.draw(&renderingCommandBuffers[frameInFlightIndex]);
+	}
 
 	// SSAO
-	ssao.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	if (enableSSAO) {
+		ssao.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	}
 
 	// Post-processing
-	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postFramebuffer.framebuffer, window.extent);
+	VkFramebuffer postProcessingFramebuffer = enableFXAA ? postFramebuffers[0].framebuffer : postFramebuffers[framebufferIndex].framebuffer;
+	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postProcessingFramebuffer, window.extent);
 	graphicsPipelines.at("post").bind(&renderingCommandBuffers[frameInFlightIndex]);
 	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 
@@ -897,7 +922,9 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	postRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// FXAA
-	fxaa.draw(&renderingCommandBuffers[frameInFlightIndex], framebufferIndex);
+	if (enableFXAA) {
+		fxaa.draw(&renderingCommandBuffers[frameInFlightIndex], framebufferIndex);
+	}
 
 	renderingCommandBuffers[frameInFlightIndex].end();
 }
@@ -941,9 +968,25 @@ void Renderer::createResources() {
 		ImageTools::createImage(&postProcessImage.image, 1, window.extent.width, window.extent.height, 1, VK_SAMPLE_COUNT_1_BIT, swapchain.surfaceFormat.format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &postProcessImage.memoryInfo);
 		ImageTools::createImageView(&postProcessImage.imageView, postProcessImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, swapchain.surfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 
-		std::vector<VkImageView> framebufferAttachments;
-		framebufferAttachments.push_back(postProcessImage.imageView);
-		postFramebuffer.init(&renderPasses.at("post"), framebufferAttachments, window.extent.width, window.extent.height, 1);
+		std::vector<std::vector<VkImageView>> framebufferAttachments;
+		uint32_t postProcessSize;
+		if (enableFXAA) {
+			postProcessSize = 1;
+		}
+		else {
+			postProcessSize = swapchainSize;
+		}
+		framebufferAttachments.resize(postProcessSize);
+		postFramebuffers.resize(postProcessSize);
+		for (uint32_t i = 0; i < postProcessSize; i++) {
+			if (enableFXAA) {
+				framebufferAttachments[i].push_back(postProcessImage.imageView);
+			}
+			else {
+				framebufferAttachments[i].push_back(swapchain.imageViews[i]);
+			}
+			postFramebuffers[i].init(&renderPasses.at("post"), framebufferAttachments[i], window.extent.width, window.extent.height, 1);
+		}
 	}
 }
 
@@ -956,7 +999,11 @@ void Renderer::destroyResources() {
 	opaqueSceneFramebuffer.destroy();
 	blendSceneFramebuffer.destroy();
 	alphaCompositingFramebuffer.destroy();
-	postFramebuffer.destroy();
+	for (Framebuffer& framebuffer : postFramebuffers) {
+		framebuffer.destroy();
+	}
+	postFramebuffers.clear();
+	postFramebuffers.shrink_to_fit();
 }
 
 void Renderer::createBindlessDescriptorSet() {
@@ -1040,19 +1087,24 @@ void Renderer::createPostProcessDescriptorSet() {
 	postDescriptorSet.init(&graphicsPipelines.at("post"), 0);
 
 	VkDescriptorImageInfo sceneInfo = {};
+	VkDescriptorImageInfo bloomInfo = {};
+	VkDescriptorImageInfo ssaoInfo = {};
+
 	sceneInfo.sampler = trilinearEdgeBlackSampler;
 	sceneInfo.imageView = sceneImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	VkDescriptorImageInfo bloomInfo = {};
-	bloomInfo.sampler = trilinearEdgeBlackSampler;
-	bloomInfo.imageView = bloom.bloomImage.imageView;
-	bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	if (enableBloom) {
+		bloomInfo.sampler = trilinearEdgeBlackSampler;
+		bloomInfo.imageView = bloom.bloomImage.imageView;
+		bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
 
-	VkDescriptorImageInfo ssaoInfo = {};
-	ssaoInfo.sampler = nearestEdgeBlackSampler;
-	ssaoInfo.imageView = ssao.ssaoBlurredImage.imageView;
-	ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	if (enableSSAO) {
+		ssaoInfo.sampler = nearestEdgeBlackSampler;
+		ssaoInfo.imageView = ssao.ssaoBlurredImage.imageView;
+		ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
 
 	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
@@ -1069,31 +1121,35 @@ void Renderer::createPostProcessDescriptorSet() {
 	sceneWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(sceneWriteDescriptorSet);
 
-	VkWriteDescriptorSet bloomWriteDescriptorSet = {};
-	bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	bloomWriteDescriptorSet.pNext = nullptr;
-	bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	bloomWriteDescriptorSet.dstBinding = 1;
-	bloomWriteDescriptorSet.dstArrayElement = 0;
-	bloomWriteDescriptorSet.descriptorCount = 1;
-	bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
-	bloomWriteDescriptorSet.pBufferInfo = nullptr;
-	bloomWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(bloomWriteDescriptorSet);
+	if (enableBloom) {
+		VkWriteDescriptorSet bloomWriteDescriptorSet = {};
+		bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		bloomWriteDescriptorSet.pNext = nullptr;
+		bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
+		bloomWriteDescriptorSet.dstBinding = 1;
+		bloomWriteDescriptorSet.dstArrayElement = 0;
+		bloomWriteDescriptorSet.descriptorCount = 1;
+		bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
+		bloomWriteDescriptorSet.pBufferInfo = nullptr;
+		bloomWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(bloomWriteDescriptorSet);
+	}
 
-	VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
-	ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	ssaoWriteDescriptorSet.pNext = nullptr;
-	ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	ssaoWriteDescriptorSet.dstBinding = 2;
-	ssaoWriteDescriptorSet.dstArrayElement = 0;
-	ssaoWriteDescriptorSet.descriptorCount = 1;
-	ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
-	ssaoWriteDescriptorSet.pBufferInfo = nullptr;
-	ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
+	if (enableSSAO) {
+		VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
+		ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		ssaoWriteDescriptorSet.pNext = nullptr;
+		ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
+		ssaoWriteDescriptorSet.dstBinding = enableBloom ? 2 : 1;
+		ssaoWriteDescriptorSet.dstArrayElement = 0;
+		ssaoWriteDescriptorSet.descriptorCount = 1;
+		ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
+		ssaoWriteDescriptorSet.pBufferInfo = nullptr;
+		ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
+	}
 
 	postDescriptorSet.update(writesDescriptorSet);
 }
@@ -1119,19 +1175,25 @@ void Renderer::reloadOnResize() {
 	depthPrepass.createResources(fullscreenViewport);
 
 	// SSAO
-	ssao.destroyResources();
-	ssao.createResources(fullscreenViewport);
+	if (enableSSAO) {
+		ssao.destroyResources();
+		ssao.createResources(fullscreenViewport);
+	}
 
 	// Image and framebuffers
 	createResources();
 
 	// Bloom
-	bloom.destroyResources();
-	bloom.createResources(fullscreenViewport);
+	if (enableBloom) {
+		bloom.destroyResources();
+		bloom.createResources(fullscreenViewport);
+	}
 
 	// FXAA
-	fxaa.destroyResources();
-	fxaa.createResources(fullscreenViewport);
+	if (enableFXAA) {
+		fxaa.destroyResources();
+		fxaa.createResources(fullscreenViewport);
+	}
 
 	createAlphaCompositingDescriptorSet();
 

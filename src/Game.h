@@ -21,6 +21,9 @@ struct Game {
 	std::shared_ptr<Physics> physics;
 	double lastFrame = 0.0;
 	std::string applicationName = "";
+	bool enableBloom;
+	bool enableSSAO;
+	bool enableFXAA;
 
 	void init();
 	void launch();

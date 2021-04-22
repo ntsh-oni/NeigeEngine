@@ -12,6 +12,7 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 	auto json = simdjson::padded_string::load(filePath);
 	simdjson::ondemand::document document = parser.iterate(json);
 
+	// Game name
 	std::string_view name;
 	auto error = document["game"]["name"].get(name);
 	
@@ -19,6 +20,7 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 		gameInfo.name = name;
 	}
 
+	// Window width
 	int64_t windowWidth;
 	error = document["game"]["windowWidth"].get(windowWidth);
 
@@ -26,11 +28,38 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 		gameInfo.windowWidth = static_cast<uint32_t>(windowWidth);
 	}
 
+
+	// Window height
 	int64_t windowHeight;
 	error = document["game"]["windowHeight"].get(windowHeight);
 
 	if (!error) {
 		gameInfo.windowHeight = static_cast<uint32_t>(windowHeight);
+	}
+
+	// Graphics settings
+	// Bloom
+	bool enableBloom;
+	error = document["graphics"]["enableBloom"].get(enableBloom);
+
+	if (!error) {
+		gameInfo.enableBloom = enableBloom;
+	}
+
+	// SSAO
+	bool enableSSAO;
+	error = document["graphics"]["enableSSAO"].get(enableSSAO);
+
+	if (!error) {
+		gameInfo.enableSSAO = enableSSAO;
+	}
+
+	// FXAA
+	bool enableFXAA;
+	error = document["graphics"]["enableFXAA"].get(enableFXAA);
+
+	if (!error) {
+		gameInfo.enableFXAA = enableFXAA;
 	}
 
 	return gameInfo;
