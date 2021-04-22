@@ -48,7 +48,7 @@ struct Renderer : public System {
 	Framebuffer opaqueSceneFramebuffer;
 	Framebuffer blendSceneFramebuffer;
 	Framebuffer alphaCompositingFramebuffer;
-	Framebuffer postFramebuffer;
+	std::vector<Framebuffer> postFramebuffers;
 
 	DescriptorSet alphaCompositingDescriptorSet;
 	DescriptorSet postDescriptorSet;
@@ -59,7 +59,10 @@ struct Renderer : public System {
 
 	uint32_t currentFrame = 0;
 
-	bool pressed = false;
+	// Settings
+	bool enableBloom;
+	bool enableSSAO;
+	bool enableFXAA;
 
 	void init(const std::string applicationName);
 	void update();

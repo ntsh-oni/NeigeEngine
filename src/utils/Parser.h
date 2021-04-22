@@ -11,6 +11,9 @@ struct GameInfo {
 	std::string name = "";
 	uint32_t windowWidth = 300;
 	uint32_t windowHeight = 300;
+	bool enableBloom = false;
+	bool enableSSAO = false;
+	bool enableFXAA = false;
 };
 
 struct Parser {

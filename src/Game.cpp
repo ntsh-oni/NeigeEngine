@@ -17,6 +17,10 @@ void Game::init() {
 	rendererMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Renderer>(rendererMask);
 
+	renderer->enableBloom = enableBloom;
+	renderer->enableSSAO = enableSSAO;
+	renderer->enableFXAA = enableFXAA;
+
 	lighting = ecs.registerSystem<Lighting>();
 	ComponentMask lightingMask;
 	lightingMask.set(ecs.getComponentId<Light>());

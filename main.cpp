@@ -15,6 +15,10 @@ int main(void) {
 	window.extent.width = gameInfo.windowWidth;
 	window.extent.height = gameInfo.windowHeight;
 
+	g.enableBloom = gameInfo.enableBloom;
+	g.enableSSAO = gameInfo.enableSSAO;
+	g.enableFXAA = gameInfo.enableFXAA;
+
 	g.init();
 
 	Parser::parseScene("../scene0.json", ecs);
