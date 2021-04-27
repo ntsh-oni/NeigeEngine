@@ -9,8 +9,7 @@ RenderPassAttachment::RenderPassAttachment(AttachmentType attachmentType,
 	VkAttachmentStoreOp stencilStoreOp,
 	VkImageLayout initialLayout,
 	VkImageLayout finalLayout,
-	ClearColorValue clearValue) {
-	type = attachmentType;
+	ClearColorValue clearValue) : type (attachmentType), clearColorValue (clearValue) {
 	description.format = format;
 	description.samples = msaaSamples;
 	description.loadOp = loadOp;
@@ -19,7 +18,6 @@ RenderPassAttachment::RenderPassAttachment(AttachmentType attachmentType,
 	description.stencilStoreOp = stencilStoreOp;
 	description.initialLayout = initialLayout;
 	description.finalLayout = finalLayout;
-	clearColorValue = clearValue;
 }
 
 RenderPassAttachment::RenderPassAttachment(AttachmentType attachmentType,
@@ -31,8 +29,7 @@ RenderPassAttachment::RenderPassAttachment(AttachmentType attachmentType,
 	VkAttachmentStoreOp stencilStoreOp,
 	VkImageLayout initialLayout,
 	VkImageLayout finalLayout,
-	ClearDepthValue clearValue) {
-	type = attachmentType;
+	ClearDepthValue clearValue) : type (attachmentType), clearDepthValue (clearValue) {
 	description.format = format;
 	description.samples = msaaSamples;
 	description.loadOp = loadOp;
@@ -41,5 +38,4 @@ RenderPassAttachment::RenderPassAttachment(AttachmentType attachmentType,
 	description.stencilStoreOp = stencilStoreOp;
 	description.initialLayout = initialLayout;
 	description.finalLayout = finalLayout;
-	clearDepthValue = clearValue;
 }

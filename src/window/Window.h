@@ -42,7 +42,7 @@ struct Window {
 	int oldYPos;
 	VkExtent2D oldExtent;
 
-	void init(const std::string applicationName);
+	void init(const std::string& applicationName);
 	void destroy();
 	void updateExtent();
 	std::vector<const char*> instanceExtensions();

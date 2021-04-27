@@ -10,7 +10,7 @@
 
 extern ECS ecs;
 
-void Renderer::init(const std::string applicationName) {
+void Renderer::init(const std::string& applicationName) {
 	NEIGE_INFO("Renderer init start.");
 
 	// Instance

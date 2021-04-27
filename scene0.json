@@ -20,15 +20,15 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/DamagedHelmet.gltf",
+                "modelPath": "../modelfiles/steampunk_underwater_explorer/scene.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
-                    -2.0,
                     0.0,
-                    0.0
+                    -3.0,
+                    -20.0
                 ],
                 "rotation": [
                     0.0,
@@ -39,6 +39,54 @@
                     1.0,
                     1.0,
                     1.0
+                ]
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/water.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/water.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    -1.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/terraintest.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    25.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    20.0,
+                    20.0,
+                    20.0
                 ]
             }
         }

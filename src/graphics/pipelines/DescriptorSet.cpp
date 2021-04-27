@@ -63,7 +63,7 @@ void DescriptorSet::init() {
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &descriptorSet));
 }
 
-void DescriptorSet::update(const std::vector<VkWriteDescriptorSet> writesDescriptorSet) {
+void DescriptorSet::update(const std::vector<VkWriteDescriptorSet>& writesDescriptorSet) {
 	vkUpdateDescriptorSets(logicalDevice.device, static_cast<uint32_t>(writesDescriptorSet.size()), writesDescriptorSet.data(), 0, nullptr);
 }
 
