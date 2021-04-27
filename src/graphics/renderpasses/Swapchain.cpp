@@ -24,10 +24,11 @@ void Swapchain::init(uint32_t* swapchainSize) {
 	swapchainCreateInfo.imageExtent = extent;
 	swapchainCreateInfo.imageArrayLayers = 1;
 	swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	std::array<uint32_t, 2> swapchainQueueFamilies;
 	if (physicalDevice.queueFamilyIndices.graphicsFamily.value() != physicalDevice.queueFamilyIndices.presentFamily.value()) {
 		swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		swapchainCreateInfo.queueFamilyIndexCount = 2;
-		std::array<uint32_t, 2> swapchainQueueFamilies = { physicalDevice.queueFamilyIndices.graphicsFamily.value(), physicalDevice.queueFamilyIndices.presentFamily.value() };
+		swapchainQueueFamilies = { physicalDevice.queueFamilyIndices.graphicsFamily.value(), physicalDevice.queueFamilyIndices.presentFamily.value() };
 		swapchainCreateInfo.pQueueFamilyIndices = swapchainQueueFamilies.data();
 	}
 	else {

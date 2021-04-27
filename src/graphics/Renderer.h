@@ -64,7 +64,7 @@ struct Renderer : public System {
 	bool enableSSAO;
 	bool enableFXAA;
 
-	void init(const std::string applicationName);
+	void init(const std::string& applicationName);
 	void update();
 	void destroy();
 	void loadObject(Entity object);

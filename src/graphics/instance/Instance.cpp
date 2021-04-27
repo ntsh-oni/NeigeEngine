@@ -9,7 +9,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback([[maybe_unused]] VkDebugUtilsMessag
 	return VK_FALSE;
 }
 
-void Instance::init(const std::string applicationName, uint32_t engineVersion, const std::vector<const char*> windowExtensions) {
+void Instance::init(const std::string& applicationName, uint32_t engineVersion, const std::vector<const char*>& windowExtensions) {
 	// Application
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -26,9 +26,8 @@ void Instance::init(const std::string applicationName, uint32_t engineVersion, c
 		std::vector<VkLayerProperties> properties(propertyCount);
 		NEIGE_VK_CHECK(vkEnumerateInstanceLayerProperties(&propertyCount, properties.data()));
 
-		bool validationLayerFound;
 		for (const auto& layer : debugExplicitLayers) {
-			validationLayerFound = false;
+			bool validationLayerFound = false;
 			for (const VkLayerProperties& availableLayer : properties) {
 				if (strcmp(availableLayer.layerName, layer) == 0) {
 					validationLayerFound = true;
@@ -46,9 +45,8 @@ void Instance::init(const std::string applicationName, uint32_t engineVersion, c
 		std::vector<VkLayerProperties> properties(propertyCount);
 		NEIGE_VK_CHECK(vkEnumerateInstanceLayerProperties(&propertyCount, properties.data()));
 
-		bool validationLayerFound;
 		for (const auto& layer : releaseExplicitLayers) {
-			validationLayerFound = false;
+			bool validationLayerFound = false;
 			for (const VkLayerProperties& availableLayer : properties) {
 				if (strcmp(availableLayer.layerName, layer) == 0) {
 					validationLayerFound = true;

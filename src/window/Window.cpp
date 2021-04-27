@@ -2,7 +2,7 @@
 #include "../graphics/resources/RendererResources.h"
 #include "../inputs/Inputs.h"
 
-void Window::init(const std::string applicationName) {
+void Window::init(const std::string& applicationName) {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	window = glfwCreateWindow(extent.width, extent.height, applicationName.c_str(), nullptr, nullptr);
