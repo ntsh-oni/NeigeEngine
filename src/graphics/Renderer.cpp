@@ -164,62 +164,8 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Envmap
 	NEIGE_INFO("Environment map init start.");
-	envmap.init(cameraCamera.envmapPath);
+	envmap.init(cameraCamera.envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
 	NEIGE_INFO("Environment map init end.");
-
-	skyboxGraphicsPipeline.vertexShaderPath = "../shaders/skybox.vert";
-	skyboxGraphicsPipeline.fragmentShaderPath = "../shaders/skybox.frag";
-	skyboxGraphicsPipeline.renderPass = &renderPasses.at("opaqueScene");
-	skyboxGraphicsPipeline.multiSample = false;
-	skyboxGraphicsPipeline.viewport = &fullscreenViewport;
-	skyboxGraphicsPipeline.depthCompare = Compare::LESS_OR_EQUAL;
-	skyboxGraphicsPipeline.depthWrite = false;
-	skyboxGraphicsPipeline.init();
-
-	skyboxDescriptorSets.resize(framesInFlight);
-	for (uint32_t i = 0; i < framesInFlight; i++) {
-		skyboxDescriptorSets[i].init(&skyboxGraphicsPipeline, 0);
-
-		VkDescriptorBufferInfo cameraInfo = {};
-		cameraInfo.buffer = cameraBuffers.at(i).buffer;
-		cameraInfo.offset = 0;
-		cameraInfo.range = sizeof(CameraUniformBufferObject);
-
-		VkDescriptorImageInfo skyboxInfo = {};
-		skyboxInfo.sampler = trilinearEdgeOneLodBlackSampler;
-		skyboxInfo.imageView = envmap.skyboxImage.imageView;
-		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
-
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 0;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
-
-		VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
-		skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		skyboxWriteDescriptorSet.pNext = nullptr;
-		skyboxWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
-		skyboxWriteDescriptorSet.dstBinding = 1;
-		skyboxWriteDescriptorSet.dstArrayElement = 0;
-		skyboxWriteDescriptorSet.descriptorCount = 1;
-		skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
-		skyboxWriteDescriptorSet.pBufferInfo = nullptr;
-		skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
-
-		skyboxDescriptorSets[i].update(writesDescriptorSet);
-	}
 
 	// Image and famebuffers
 	createResources();
@@ -365,8 +311,8 @@ void Renderer::update() {
 				graphicsPipeline->destroyPipeline();
 				graphicsPipeline->init();
 			}
-			skyboxGraphicsPipeline.destroyPipeline();
-			skyboxGraphicsPipeline.init();
+			envmap.skyboxGraphicsPipeline.destroyPipeline();
+			envmap.skyboxGraphicsPipeline.init();
 			ssao.depthToPositionsGraphicsPipeline.destroyPipeline();
 			ssao.depthToPositionsGraphicsPipeline.init();
 			ssao.depthToNormalsGraphicsPipeline.destroyPipeline();
@@ -524,7 +470,6 @@ void Renderer::destroy() {
 		GraphicsPipeline* graphicsPipeline = &it->second;
 		graphicsPipeline->destroy();
 	}
-	skyboxGraphicsPipeline.destroy();
 	for (std::unordered_map<std::string, Shader>::iterator it = shaders.begin(); it != shaders.end(); it++) {
 		Shader* shader = &it->second;
 		shader->destroy();
@@ -676,12 +621,13 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 	// Camera
 	auto& cameraCamera = ecs.getComponent<Camera>(camera);
+	auto& cameraTransform = ecs.getComponent<Transform>(camera);
 
 	CameraUniformBufferObject cubo = {};
-	cameraCamera.view = Camera::createLookAtView(cameraCamera.position, cameraCamera.position + cameraCamera.to, glm::vec3(0.0f, 1.0f, 0.0f));
+	cameraCamera.view = Camera::createLookAtView(cameraTransform.position, cameraTransform.position + cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	cubo.view = cameraCamera.view;
 	cubo.projection = cameraCamera.projection;
-	cubo.position = cameraCamera.position;
+	cubo.position = cameraTransform.position;
 
 	cameraBuffers.at(frameInFlightIndex).map(0, sizeof(CameraUniformBufferObject), &data);
 	memcpy(data, &cubo, sizeof(CameraUniformBufferObject));
@@ -703,7 +649,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			glm::vec3 eye = -lightLight.direction;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), eye) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(eye)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
 			glm::mat4 shadowProjection = Camera::createOrthoProjection(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
-			glm::mat4 shadowView = Camera::createLookAtView(eye + cameraCamera.position + (cameraCamera.to * 3.0f), glm::vec3(0.0f, 0.0f, 0.0f) + cameraCamera.position + (cameraCamera.to * 3.0f), up);
+			glm::mat4 shadowView = Camera::createLookAtView(eye + cameraTransform.position + (cameraTransform.rotation * 3.0f), glm::vec3(0.0f, 0.0f, 0.0f) + cameraTransform.position + (cameraTransform.rotation * 3.0f), up);
 			subo.dirLightSpaces[dirLightCount] = shadowProjection * shadowView;
 
 			dirLightCount++;
@@ -867,8 +813,8 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, 0);
 		}
 	}
-	skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-	skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+	envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+	envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 
 	envmap.draw(&renderingCommandBuffers[frameInFlightIndex]);
 

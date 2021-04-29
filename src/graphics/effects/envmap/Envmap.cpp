@@ -4,8 +4,9 @@
 #include "../../../utils/resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
 #include "../../../graphics/resources/Samplers.h"
+#include "../../../graphics/resources/ShaderResources.h"
 
-void Envmap::init(std::string filePath) {
+void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass* opaqueSceneRenderPass) {
 	if (FileTools::exists(filePath)) {
 		ImageTools::loadHDREnvmap(filePath, &envmapImage.image, physicalDevice.colorFormat, &envmapImage.memoryInfo);
 	}
@@ -58,11 +59,67 @@ void Envmap::init(std::string filePath) {
 	createPrefilter();
 	createBRDFConvolution();
 
+	// Skybox
+	skyboxGraphicsPipeline.vertexShaderPath = "../shaders/skybox.vert";
+	skyboxGraphicsPipeline.fragmentShaderPath = "../shaders/skybox.frag";
+	skyboxGraphicsPipeline.renderPass = opaqueSceneRenderPass;
+	skyboxGraphicsPipeline.multiSample = false;
+	skyboxGraphicsPipeline.viewport = fullscreenViewport;
+	skyboxGraphicsPipeline.depthCompare = Compare::LESS_OR_EQUAL;
+	skyboxGraphicsPipeline.depthWrite = false;
+	skyboxGraphicsPipeline.init();
+
+	skyboxDescriptorSets.resize(framesInFlight);
+	for (uint32_t i = 0; i < framesInFlight; i++) {
+		skyboxDescriptorSets[i].init(&skyboxGraphicsPipeline, 0);
+
+		VkDescriptorBufferInfo cameraInfo = {};
+		cameraInfo.buffer = cameraBuffers.at(i).buffer;
+		cameraInfo.offset = 0;
+		cameraInfo.range = sizeof(CameraUniformBufferObject);
+
+		VkDescriptorImageInfo skyboxInfo = {};
+		skyboxInfo.sampler = trilinearEdgeOneLodBlackSampler;
+		skyboxInfo.imageView = envmap.skyboxImage.imageView;
+		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
+		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		cameraWriteDescriptorSet.pNext = nullptr;
+		cameraWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
+		cameraWriteDescriptorSet.dstBinding = 0;
+		cameraWriteDescriptorSet.dstArrayElement = 0;
+		cameraWriteDescriptorSet.descriptorCount = 1;
+		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		cameraWriteDescriptorSet.pImageInfo = nullptr;
+		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
+		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+
+		VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
+		skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		skyboxWriteDescriptorSet.pNext = nullptr;
+		skyboxWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
+		skyboxWriteDescriptorSet.dstBinding = 1;
+		skyboxWriteDescriptorSet.dstArrayElement = 0;
+		skyboxWriteDescriptorSet.descriptorCount = 1;
+		skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
+		skyboxWriteDescriptorSet.pBufferInfo = nullptr;
+		skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
+
+		skyboxDescriptorSets[i].update(writesDescriptorSet);
+	}
+
 	// Cleanup
 	envmapImage.destroy();
 }
 
 void Envmap::destroy() {
+	skyboxGraphicsPipeline.destroy();
 	cubeVertexBuffer.destroy();
 	cubeIndexBuffer.destroy();
 	defaultSkybox.destroy();

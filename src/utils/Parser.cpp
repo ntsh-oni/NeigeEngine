@@ -83,54 +83,6 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 			if (componentName == "camera") {
 				Camera camera = {};
 
-				// Position vector
-				float position[3];
-				simdjson::ondemand::array positionArray;
-				error = component.value()["position"].get(positionArray);
-				
-				if (!error) {
-					int index = 0;
-					for (auto value : positionArray) {
-						position[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						camera.position = glm::vec3(position[0], position[1], position[2]);
-					}
-					else {
-						NEIGE_WARNING("Camera position vector is missing " + std::to_string(3 - index) + " values.");
-						camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
-
-				// To vector
-				float to[3];
-				simdjson::ondemand::array toArray;
-				error = component.value()["to"].get(toArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : toArray) {
-						to[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						camera.to = glm::vec3(to[0], to[1], to[2]);
-					}
-					else {
-						NEIGE_WARNING("Camera to vector is missing " + std::to_string(3 - index) + " values.");
-						camera.to = glm::vec3(1.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					camera.to = glm::vec3(1.0f, 0.0f, 0.0f);
-				}
-
 				// FOV
 				double fov;
 				error = component.value()["fov"].get(fov);

@@ -6,8 +6,6 @@
 #include <string>
 
 struct Camera {
-	glm::vec3 position;
-	glm::vec3 to;
 	float FOV;
 	float nearPlane;
 	float farPlane;
