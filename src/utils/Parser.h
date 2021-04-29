@@ -6,15 +6,7 @@
 #include "../ecs/components/Light.h"
 #include "../ecs/components/Rigidbody.h"
 #include "resources/FileTools.h"
-
-struct GameInfo {
-	std::string name = "";
-	uint32_t windowWidth = 300;
-	uint32_t windowHeight = 300;
-	bool enableBloom = false;
-	bool enableSSAO = false;
-	bool enableFXAA = false;
-};
+#include "../Game.h"
 
 struct Parser {
 	static GameInfo parseGame(const std::string& filePath);

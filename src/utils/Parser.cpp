@@ -40,23 +40,44 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 	// Graphics settings
 	// Bloom
 	bool enableBloom;
-	error = document["graphics"]["enableBloom"].get(enableBloom);
+	error = document["graphics"]["bloom"]["enable"].get(enableBloom);
 
 	if (!error) {
 		gameInfo.enableBloom = enableBloom;
 	}
 
+	int64_t bloomDownscale;
+	error = document["graphics"]["bloom"]["downscale"].get(bloomDownscale);
+
+	if (!error) {
+		gameInfo.bloomDownscale = static_cast<int>(bloomDownscale);
+	}
+
+	int64_t blurSize;
+	error = document["graphics"]["bloom"]["size"].get(blurSize);
+
+	if (!error) {
+		gameInfo.blurSize = static_cast<int>(blurSize);
+	}
+
 	// SSAO
 	bool enableSSAO;
-	error = document["graphics"]["enableSSAO"].get(enableSSAO);
+	error = document["graphics"]["ssao"]["enable"].get(enableSSAO);
 
 	if (!error) {
 		gameInfo.enableSSAO = enableSSAO;
 	}
 
+	int64_t ssaoDownscale;
+	error = document["graphics"]["ssao"]["downscale"].get(ssaoDownscale);
+
+	if (!error) {
+		gameInfo.ssaoDownscale = static_cast<int>(ssaoDownscale);
+	}
+
 	// FXAA
 	bool enableFXAA;
-	error = document["graphics"]["enableFXAA"].get(enableFXAA);
+	error = document["graphics"]["fxaa"]["enable"].get(enableFXAA);
 
 	if (!error) {
 		gameInfo.enableFXAA = enableFXAA;

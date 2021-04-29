@@ -13,6 +13,18 @@
 #include "window/WindowResources.h"
 #include <string>
 
+struct GameInfo {
+	std::string name = "";
+	uint32_t windowWidth = 300;
+	uint32_t windowHeight = 300;
+	bool enableBloom = false;
+	int bloomDownscale = 4;
+	int blurSize = 9;
+	bool enableSSAO = false;
+	int ssaoDownscale = 3;
+	bool enableFXAA = false;
+};
+
 struct Game {
 	std::shared_ptr<Renderer> renderer;
 	std::shared_ptr<Lighting> lighting;
@@ -20,10 +32,7 @@ struct Game {
 	std::shared_ptr<CameraControls> cameraControls;
 	std::shared_ptr<Physics> physics;
 	double lastFrame = 0.0;
-	std::string applicationName = "";
-	bool enableBloom;
-	bool enableSSAO;
-	bool enableFXAA;
+	GameInfo info = {};
 
 	void init();
 	void launch();

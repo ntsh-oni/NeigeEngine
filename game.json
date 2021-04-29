@@ -5,8 +5,17 @@
 		"windowHeight": 480
 	},
 	"graphics": {
-		"enableBloom": true,
-		"enableSSAO": true,
-		"enableFXAA": true
+		"bloom": {
+			"enable": true,
+			"downscale": 4,
+			"size": 9
+		},
+		"ssao": {
+			"enable": true,
+			"downscale": 3
+		},
+		"fxaa": {
+			"enable": true
+		}
 	}
 }

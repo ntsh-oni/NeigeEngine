@@ -7,17 +7,11 @@ ECS ecs;
 int main(void) {
 	ecs.init();
 
-	GameInfo gameInfo = Parser::parseGame("../game.json");
-
 	Game g;
-	g.applicationName = gameInfo.name;
+	g.info = Parser::parseGame("../game.json");
 
-	window.extent.width = gameInfo.windowWidth;
-	window.extent.height = gameInfo.windowHeight;
-
-	g.enableBloom = gameInfo.enableBloom;
-	g.enableSSAO = gameInfo.enableSSAO;
-	g.enableFXAA = gameInfo.enableFXAA;
+	window.extent.width = g.info.windowWidth;
+	window.extent.height = g.info.windowHeight;
 
 	g.init();
 

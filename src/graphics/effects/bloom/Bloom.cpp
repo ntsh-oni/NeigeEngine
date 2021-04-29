@@ -4,8 +4,9 @@
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
-void Bloom::init(Viewport fullscreenViewport) {
-	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width) / BLOOMDOWNSCALE, static_cast<uint32_t>(fullscreenViewport.viewport.height) / BLOOMDOWNSCALE);
+void Bloom::init(int downscale, int size, Viewport fullscreenViewport) {
+	bloomDownscale = std::max(downscale, 1);
+	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / bloomDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / bloomDownscale, static_cast<uint32_t>(1)));
 
 	{
 		std::vector<RenderPassAttachment> attachments;
@@ -49,6 +50,8 @@ void Bloom::init(Viewport fullscreenViewport) {
 	blurGraphicsPipeline.depthWrite = false;
 	blurGraphicsPipeline.init();
 
+	blurSize = size;
+
 	createResources(fullscreenViewport);
 }
 
@@ -61,7 +64,7 @@ void Bloom::destroy() {
 }
 
 void Bloom::createResources(Viewport fullscreenViewport) {
-	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width) / BLOOMDOWNSCALE, static_cast<uint32_t>(fullscreenViewport.viewport.height) / BLOOMDOWNSCALE);
+	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / bloomDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / bloomDownscale, static_cast<uint32_t>(1)));
 
 	// Images
 	mipLevels = std::min<uint32_t>(static_cast<uint32_t>(std::floor(std::log2(std::min(viewport.viewport.width, viewport.viewport.height)))) + 1, 6);
@@ -237,26 +240,26 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 		blurViewport.init(mipWidths[mipLevel], mipHeights[mipLevel]);
 
 		// Horizontal
-		horizontalBlur = 1;
+		int pushConstants[2] = { 1, blurSize };
 
 		blurRenderPass.begin(commandBuffer, blurFramebuffers[mipLevel].framebuffer, { mipWidths[mipLevel], mipHeights[mipLevel] });
 		blurGraphicsPipeline.bind(commandBuffer);
 		blurDescriptorSets[mipLevel].bind(commandBuffer, 0);
 
-		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &horizontalBlur);
+		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(int), &pushConstants);
 
 		vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
 		blurRenderPass.end(commandBuffer);
 
 		// Vertical
-		horizontalBlur = 0;
+		pushConstants[0] = 0;
 
 		blurRenderPass.begin(commandBuffer, backBlurFramebuffers[mipLevel].framebuffer, { mipWidths[mipLevel], mipHeights[mipLevel] });
 		blurGraphicsPipeline.bind(commandBuffer);
 		backBlurDescriptorSets[mipLevel].bind(commandBuffer, 0);
 
-		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &horizontalBlur);
+		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(int), &pushConstants);
 
 		vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 

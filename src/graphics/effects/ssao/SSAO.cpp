@@ -5,8 +5,9 @@
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
-void SSAO::init(Viewport fullscreenViewport) {
-	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width) / SSAODOWNSCALE, static_cast<uint32_t>(fullscreenViewport.viewport.height) / SSAODOWNSCALE);
+void SSAO::init(int downscale, Viewport fullscreenViewport) {
+	ssaoDownscale = std::max(downscale, 1);
+	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / ssaoDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / ssaoDownscale, static_cast<uint32_t>(1)));
 
 	{
 		std::vector<RenderPassAttachment> attachments;
@@ -112,7 +113,7 @@ void SSAO::destroy() {
 }
 
 void SSAO::createResources(Viewport fullscreenViewport) {
-	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width) / SSAODOWNSCALE, static_cast<uint32_t>(fullscreenViewport.viewport.height) / SSAODOWNSCALE);
+	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / ssaoDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / ssaoDownscale, static_cast<uint32_t>(1)));
 	
 	// Images
 	ImageTools::createImage(&depthToPositionsImage.image, 1, static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthToPositionsImage.memoryInfo);

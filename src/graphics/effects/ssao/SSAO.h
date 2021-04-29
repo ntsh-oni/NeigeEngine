@@ -13,11 +13,12 @@
 #include <vector>
 #include <random>
 
-#define SSAODOWNSCALE 3
 #define SSAOSAMPLES 64
 
 struct SSAO {
 	Viewport viewport;
+
+	int ssaoDownscale = 3;
 
 	// Depth to positions and normals
 	GraphicsPipeline depthToPositionsGraphicsPipeline;
@@ -49,7 +50,7 @@ struct SSAO {
 	RenderPass ssaoBlurredRenderPass;
 	Framebuffer ssaoBlurredFramebuffer;
 
-	void init(Viewport fullscreenViewport);
+	void init(int downscale, Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();

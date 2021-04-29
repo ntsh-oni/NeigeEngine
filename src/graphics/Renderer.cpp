@@ -153,7 +153,7 @@ void Renderer::init(const std::string& applicationName) {
 	// SSAO
 	if (enableSSAO) {
 		NEIGE_INFO("SSAO init start.");
-		ssao.init(fullscreenViewport);
+		ssao.init(ssaoDownscale, fullscreenViewport);
 		NEIGE_INFO("SSAO init end.");
 	}
 
@@ -173,7 +173,7 @@ void Renderer::init(const std::string& applicationName) {
 	// Bloom
 	if (enableBloom) {
 		NEIGE_INFO("Bloom init start.");
-		bloom.init(fullscreenViewport);
+		bloom.init(bloomDownscale, blurSize, fullscreenViewport);
 		NEIGE_INFO("Bloom init end.");
 	}
 
