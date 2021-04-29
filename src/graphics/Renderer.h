@@ -29,10 +29,6 @@
 #include <map>
 
 struct Renderer : public System {
-	// Envmap
-	GraphicsPipeline skyboxGraphicsPipeline;
-	std::vector<DescriptorSet> skyboxDescriptorSets;
-
 	// Sync
 	std::vector<Fence> fences;
 	std::vector<Semaphore> IAsemaphores;

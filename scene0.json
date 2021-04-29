@@ -2,20 +2,27 @@
     "entities": [
         {
             "camera": {
+                "fov": 45.0,
+                "nearPlane": 0.3,
+                "farPlane": 200.0,
+                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+            },
+			"transform": {
                 "position": [
                     0.0,
                     1.0,
                     0.0
                 ],
-                "to": [
+                "rotation": [
                     1.0,
                     0.0,
                     0.0
                 ],
-                "fov": 45.0,
-                "nearPlane": 0.3,
-                "farPlane": 200.0,
-                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             }
         },
 		{

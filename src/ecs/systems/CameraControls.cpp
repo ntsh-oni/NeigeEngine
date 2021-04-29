@@ -1,5 +1,6 @@
 #include "CameraControls.h"
 #include "../components/Camera.h"
+#include "../components/Transform.h"
 #include "../../inputs/Inputs.h"
 #include "../../graphics/resources/ShaderResources.h"
 #include "../../window/WindowResources.h"
@@ -12,25 +13,25 @@ void CameraControls::init() {
 
 void CameraControls::update(double deltaTime) {
 	for (Entity entity : entities) {
-		auto& cameraCamera = ecs.getComponent<Camera>(entity);
+		auto& cameraTransform = ecs.getComponent<Transform>(entity);
 
 		if (keyboardInputs.wKey == KeyState::HELD) {
-			cameraCamera.position += cameraCamera.to * static_cast<float>(speed * deltaTime);
+			cameraTransform.position += cameraTransform.rotation * static_cast<float>(speed * deltaTime);
 		}
 		if (keyboardInputs.aKey == KeyState::HELD) {
-			cameraCamera.position -= glm::normalize(glm::cross(cameraCamera.to, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+			cameraTransform.position -= glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
 		}
 		if (keyboardInputs.sKey == KeyState::HELD) {
-			cameraCamera.position -= cameraCamera.to * static_cast<float>(speed * deltaTime);
+			cameraTransform.position -= cameraTransform.rotation * static_cast<float>(speed * deltaTime);
 		}
 		if (keyboardInputs.dKey == KeyState::HELD) {
-			cameraCamera.position += glm::normalize(glm::cross(cameraCamera.to, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+			cameraTransform.position += glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
 		}
 		if (keyboardInputs.spaceKey == KeyState::HELD) {
-			cameraCamera.position.y += static_cast<float>(speed * deltaTime);
+			cameraTransform.position.y += static_cast<float>(speed * deltaTime);
 		}
 		if (keyboardInputs.shiftKey == KeyState::HELD) {
-			cameraCamera.position.y -= static_cast<float>(speed * deltaTime);
+			cameraTransform.position.y -= static_cast<float>(speed * deltaTime);
 		}
 		if (mouseView) {
 			if (firstMove) {
@@ -74,9 +75,9 @@ void CameraControls::update(double deltaTime) {
 				window.showCursor(true);
 			}
 		}
-		cameraCamera.to.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-		cameraCamera.to.y = -sin(glm::radians(pitch));
-		cameraCamera.to.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-		cameraCamera.to = glm::normalize(cameraCamera.to);
+		cameraTransform.rotation.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+		cameraTransform.rotation.y = -sin(glm::radians(pitch));
+		cameraTransform.rotation.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+		cameraTransform.rotation = glm::normalize(cameraTransform.rotation);
 	}
 }
