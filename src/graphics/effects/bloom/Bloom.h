@@ -7,8 +7,6 @@
 #include "../../pipelines/GraphicsPipeline.h"
 #include "../../pipelines/Viewport.h"
 
-#define BLOOMDOWNSCALE 4
-
 struct Bloom {
 	Viewport viewport;
 
@@ -24,6 +22,7 @@ struct Bloom {
 	DescriptorSet resizeDescriptorSet;
 	RenderPass resizeRenderPass;
 	Framebuffer resizeFramebuffer;
+	int bloomDownscale = 4;
 
 	// Blur
 	Viewport blurViewport;
@@ -36,9 +35,9 @@ struct Bloom {
 	std::vector<Framebuffer> backBlurFramebuffers;
 	std::vector<VkImageView> blurImageViews;
 	std::vector<VkImageView> backBlurImageViews;
-	int horizontalBlur = 1;
+	int blurSize = 9;
 	
-	void init(Viewport fullscreenViewport);
+	void init(int downscale, int size, Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();

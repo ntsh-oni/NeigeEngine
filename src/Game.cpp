@@ -17,9 +17,13 @@ void Game::init() {
 	rendererMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Renderer>(rendererMask);
 
-	renderer->enableBloom = enableBloom;
-	renderer->enableSSAO = enableSSAO;
-	renderer->enableFXAA = enableFXAA;
+	// Graphics settings
+	renderer->enableBloom = info.enableBloom;
+	renderer->bloomDownscale = info.bloomDownscale;
+	renderer->blurSize = info.blurSize;
+	renderer->enableSSAO = info.enableSSAO;
+	renderer->ssaoDownscale = info.ssaoDownscale;
+	renderer->enableFXAA = info.enableFXAA;
 
 	lighting = ecs.registerSystem<Lighting>();
 	ComponentMask lightingMask;
@@ -43,10 +47,10 @@ void Game::init() {
 }
 
 void Game::launch() {
-	window.init(applicationName);
+	window.init(info.name);
 	cameraControls->init();
 	lighting->init();
-	renderer->init(applicationName);
+	renderer->init(info.name);
 
 	while (!window.windowGotClosed()) {
 		window.pollEvents();
