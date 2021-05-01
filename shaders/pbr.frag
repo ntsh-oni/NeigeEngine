@@ -142,7 +142,7 @@ void main() {
 	float roughnessSample = texture(textures[mI.metallicRoughnessIndex], uv).g;
 	vec3 emissiveSample = texture(textures[mI.emissiveIndex], uv).xyz;
 	float occlusionSample = texture(textures[mI.occlusionIndex], uv).r;
-
+	
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;
 	n = normalize(TBN * n);

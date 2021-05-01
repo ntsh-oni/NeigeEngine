@@ -7,12 +7,23 @@
 #include <vector>
 #include <unordered_map>
 
+// Model AABB
+struct AABB {
+	float minX;
+	float maxX;
+	float minY;
+	float maxY;
+	float minZ;
+	float maxZ;
+};
+
 // Model primitive
 struct Primitive {
 	uint32_t firstIndex;
 	uint32_t indexCount;
 	int32_t vertexOffset;
 	uint64_t materialIndex;
+	AABB aabb;
 };
 
 // Mesh bone

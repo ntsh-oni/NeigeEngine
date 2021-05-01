@@ -76,12 +76,12 @@ void Model::bindBuffers(CommandBuffer* commandBuffer) {
 
 void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures) {
 	if (bindTextures) {
-		texturesDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
 	}
 	for (Mesh& mesh : meshes) {
 		for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
 			if (bindTextures) {
-				int materialIndices[6] = { materials.at(mesh.opaquePrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).normalIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).occlusionIndex };
+				int materialIndices[5] = { materials.at(mesh.opaquePrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).normalIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.opaquePrimitives[i].materialIndex).occlusionIndex };
 				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 5 * sizeof(int), &materialIndices);
 			}
 			vkCmdDrawIndexed(commandBuffer->commandBuffer, mesh.opaquePrimitives[i].indexCount, 1, mesh.indexOffset + mesh.opaquePrimitives[i].firstIndex, mesh.vertexOffset + mesh.opaquePrimitives[i].vertexOffset, 0);
@@ -91,12 +91,12 @@ void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsP
 
 void Model::drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, uint32_t pushConstantOffset) {
 	if (bindTextures) {
-		texturesDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
 	}
 	for (Mesh& mesh : meshes) {
 		for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
 			if (bindTextures) {
-				int materialIndices[6] = { materials.at(mesh.maskPrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.maskPrimitives[i].materialIndex).normalIndex, materials.at(mesh.maskPrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.maskPrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.maskPrimitives[i].materialIndex).occlusionIndex };
+				int materialIndices[5] = { materials.at(mesh.maskPrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.maskPrimitives[i].materialIndex).normalIndex, materials.at(mesh.maskPrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.maskPrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.maskPrimitives[i].materialIndex).occlusionIndex };
 				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, 5 * sizeof(int), &materialIndices);
 				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset + (5 * sizeof(int)), sizeof(float), &mesh.alphaCutoffs[i]);
 			}
@@ -110,12 +110,12 @@ void Model::drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPip
 
 void Model::drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures) {
 	if (bindTextures) {
-		texturesDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
 	}
 	for (Mesh& mesh : meshes) {
 		for (size_t i = 0; i < mesh.blendPrimitives.size(); i++) {
 			if (bindTextures) {
-				int materialIndices[6] = { materials.at(mesh.blendPrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.blendPrimitives[i].materialIndex).normalIndex, materials.at(mesh.blendPrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.blendPrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.blendPrimitives[i].materialIndex).occlusionIndex };
+				int materialIndices[5] = { materials.at(mesh.blendPrimitives[i].materialIndex).diffuseIndex, materials.at(mesh.blendPrimitives[i].materialIndex).normalIndex, materials.at(mesh.blendPrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(mesh.blendPrimitives[i].materialIndex).emissiveIndex, materials.at(mesh.blendPrimitives[i].materialIndex).occlusionIndex };
 				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 5 * sizeof(int), &materialIndices);
 			}
 			vkCmdDrawIndexed(commandBuffer->commandBuffer, mesh.blendPrimitives[i].indexCount, 1, mesh.indexOffset + mesh.blendPrimitives[i].firstIndex, mesh.vertexOffset + mesh.blendPrimitives[i].vertexOffset, 0);

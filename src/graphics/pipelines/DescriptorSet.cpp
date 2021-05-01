@@ -14,7 +14,7 @@ void DescriptorSet::init(GraphicsPipeline* associatedGraphicsPipeline, uint32_t 
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &descriptorSet));
 }
 
-void DescriptorSet::init() {
+void DescriptorSet::initBindless() {
 	// Bindless
 	// Descriptor Pool
 	VkDescriptorPoolSize descriptorPoolSize = {};
@@ -28,7 +28,7 @@ void DescriptorSet::init() {
 	descriptorPoolCreateInfo.maxSets = 1;
 	descriptorPoolCreateInfo.poolSizeCount = 1;
 	descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
-	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &texturesDescriptorPool));
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool));
 
 	// Descriptor Set Layout
 	VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
@@ -51,15 +51,15 @@ void DescriptorSet::init() {
 	descriptorSetLayoutCreateInfo.flags = 0;
 	descriptorSetLayoutCreateInfo.bindingCount = 1;
 	descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
-	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &texturesDescriptorSetLayout));
+	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
 
 	// Allocation
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	descriptorSetAllocateInfo.pNext = nullptr;
-	descriptorSetAllocateInfo.descriptorPool = texturesDescriptorPool;
+	descriptorSetAllocateInfo.descriptorPool = materialsDescriptorPool;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
-	descriptorSetAllocateInfo.pSetLayouts = &texturesDescriptorSetLayout;
+	descriptorSetAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &descriptorSet));
 }
 

@@ -8,7 +8,7 @@ struct DescriptorSet {
 	GraphicsPipeline* graphicsPipeline;
 
 	void init(GraphicsPipeline* graphicsPipeline, uint32_t set);
-	void init();
+	void initBindless();
 	void update(const std::vector<VkWriteDescriptorSet>& writeDescriptorSets);
 	void destroy();
 	void bind(CommandBuffer* commandBuffer, uint32_t set);

@@ -19,6 +19,10 @@ layout(set = 0, binding = 3) uniform Lighting {
 	vec2 spotLightsCutoffs[MAX_SPOT_LIGHTS];
 } lights;
 
+layout(set = 0, binding = 8) uniform Time {
+	float time;
+} time;
+
 layout(set = 0, binding = 4) uniform samplerCube irradianceMap;
 layout(set = 0, binding = 5) uniform samplerCube prefilterMap;
 layout(set = 0, binding = 6) uniform sampler2D brdfLUT;
@@ -35,11 +39,6 @@ layout(push_constant) uniform MaterialIndices {
 	int occlusionIndex;
 } mI;
 
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
-	float alphaCutoff;
-} pC;
-
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
 layout(location = 2) in vec3 fragmentPos;
@@ -47,7 +46,8 @@ layout(location = 3) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + 3) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 3) in mat3 TBN;
 
-layout(location = 0) out vec4 sceneColor;
+layout(location = 0) out vec4 accumulationColor;
+layout(location = 1) out float revealageColor;
 
 #define M_PI 3.1415926535897932384626433832795
 
@@ -141,15 +141,11 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = texture(textures[pC.diffuseIndex], uv);
-	if (colorSample.w <= pC.alphaCutoff) {
-		discard;
-	}
-	vec3 normalSample = texture(textures[pC.normalIndex], uv).xyz;
-	float metallicSample = texture(textures[pC.metallicRoughnessIndex], uv).b;
-	float roughnessSample = texture(textures[pC.metallicRoughnessIndex], uv).g;
-	vec3 emissiveSample = texture(textures[pC.emissiveIndex], uv).xyz;
-	float occlusionSample = texture(textures[pC.occlusionIndex], uv).r;
+	vec4 colorSample = vec4(1.0, 1.0, 1.0, 0.9);
+	vec3 normalSample = texture(textures[mI.normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
+	float metallicSample = 1.0;
+	float roughnessSample = 0.0;
+	float occlusionSample = 1.0;
 
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;
@@ -167,10 +163,9 @@ void main() {
 	int numPointLights = int(lights.numLights.y);
 	int numSpotLights = int(lights.numLights.z);
 	
-	float shadow = 0.0;
 	for (int i = 0; i < numDirLights; i++) {
 		l = normalize(-lights.dirLightsDirection[i]);
-		shadow = shadowValue(dirLightSpaces[i], shadowMapIndex);
+		float shadow = shadowValue(dirLightSpaces[i], shadowMapIndex);
 		tmpColor += shade(n, v, l, lights.dirLightsColor[i], d, metallicSample, roughnessSample) * shadow;
 		shadowMapIndex++;
 	}
@@ -211,8 +206,11 @@ void main() {
 	
 	vec3 ambient = (irradianceDiffuse * diffuse + specular) * occlusionSample;
 	tmpColor += ambient;
-	
-	tmpColor += emissiveSample;
 
-	sceneColor = vec4(tmpColor, 1.0);
+	vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);
+	float a = min(1.0, premultiplied.a) * 8.0 + 0.01;
+	float b = -gl_FragCoord.z * 0.95 + 1.0;
+	float w = clamp(a * a * a * 1e3 * b * b * b, 1e-2, 3e2);
+	accumulationColor = premultiplied * w;
+	revealageColor = colorSample.a;
 }
