@@ -265,7 +265,7 @@ void GraphicsPipeline::init() {
 
 	// Bindless
 	if (sets.size() > 1) {
-		descriptorSetLayouts[1] = texturesDescriptorSetLayout;
+		descriptorSetLayouts[1] = materialsDescriptorSetLayout;
 	}
 
 	// Descriptor pool

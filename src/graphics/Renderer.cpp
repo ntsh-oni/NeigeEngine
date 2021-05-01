@@ -435,13 +435,13 @@ void Renderer::destroy() {
 	if (enableBloom) {
 		bloom.destroy();
 	}
-	if (texturesDescriptorPool != VK_NULL_HANDLE) {
-		vkDestroyDescriptorPool(logicalDevice.device, texturesDescriptorPool, nullptr);
-		texturesDescriptorPool = VK_NULL_HANDLE;
+	if (materialsDescriptorPool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool, nullptr);
+		materialsDescriptorPool = VK_NULL_HANDLE;
 	}
-	if (texturesDescriptorSetLayout != VK_NULL_HANDLE) {
-		vkDestroyDescriptorSetLayout(logicalDevice.device, texturesDescriptorSetLayout, nullptr);
-		texturesDescriptorSetLayout = VK_NULL_HANDLE;
+	if (materialsDescriptorSetLayout != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(logicalDevice.device, materialsDescriptorSetLayout, nullptr);
+		materialsDescriptorSetLayout = VK_NULL_HANDLE;
 	}
 	for (CommandPool& renderingCommandPool : renderingCommandPools) {
 		renderingCommandPool.destroy();
@@ -953,7 +953,7 @@ void Renderer::destroyResources() {
 }
 
 void Renderer::createBindlessDescriptorSet() {
-	texturesDescriptorSet.init();
+	materialsDescriptorSet.initBindless();
 }
 
 void Renderer::updateBindlessDescriptorSet() {
@@ -972,7 +972,7 @@ void Renderer::updateBindlessDescriptorSet() {
 	VkWriteDescriptorSet textureWriteDescriptorSet = {};
 	textureWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	textureWriteDescriptorSet.pNext = nullptr;
-	textureWriteDescriptorSet.dstSet = texturesDescriptorSet.descriptorSet;
+	textureWriteDescriptorSet.dstSet = materialsDescriptorSet.descriptorSet;
 	textureWriteDescriptorSet.dstBinding = 0;
 	textureWriteDescriptorSet.dstArrayElement = 0;
 	textureWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(textures.size());
@@ -982,7 +982,7 @@ void Renderer::updateBindlessDescriptorSet() {
 	textureWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(textureWriteDescriptorSet);
 
-	texturesDescriptorSet.update(writesDescriptorSet);
+	materialsDescriptorSet.update(writesDescriptorSet);
 }
 
 void Renderer::createAlphaCompositingDescriptorSet() {

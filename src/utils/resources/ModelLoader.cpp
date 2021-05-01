@@ -136,6 +136,8 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			size_t jointsStride = 0;
 			size_t weightsStride = 0;
 
+			AABB aabb = {};
+
 			for (size_t k = 0; k < primitive->attributes_count; k++) {
 				cgltf_attribute* attribute = &primitive->attributes[k];
 				std::string attributeName = attribute->name;
@@ -148,6 +150,14 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					position = reinterpret_cast<float*>(offsetBuffer);
 					positionCount = attribute->data->count;
 					positionStride = std::max(buffer_view->stride, sizeof(float) * 3);
+
+					// AABB
+					aabb.minX = accessor->min[0];
+					aabb.maxX = accessor->max[0];
+					aabb.minY = accessor->min[1];
+					aabb.maxY = accessor->max[1];
+					aabb.minZ = accessor->min[2];
+					aabb.maxZ = accessor->max[2];
 				}
 				else if (attributeName == "NORMAL") {
 					normal = reinterpret_cast<float*>(offsetBuffer);
@@ -446,13 +456,13 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 			// Primitive
 			if (alphaMode == cgltf_alpha_mode_opaque) {
-				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
 			}
 			else if (alphaMode == cgltf_alpha_mode_mask) {
-				maskPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+				maskPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
 			}
 			else {
-				blendPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID });
+				blendPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
 			}
 
 			vertices->insert(vertices->end(), primitiveVertices.begin(), primitiveVertices.end());

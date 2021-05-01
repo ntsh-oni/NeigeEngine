@@ -9,6 +9,7 @@
 #include "../effects/shadowmapping/Shadow.h"
 #include "../effects/ssao/SSAO.h"
 #include "../../ecs/ECS.h"
+#include "Buffer.h"
 #include "Image.h"
 #include <string>
 #include <unordered_map>
@@ -16,9 +17,9 @@
 inline std::unordered_map<std::string, Model> models;
 inline std::vector<Texture> textures;
 inline std::vector<Material> materials;
-inline VkDescriptorPool texturesDescriptorPool = VK_NULL_HANDLE;
-inline VkDescriptorSetLayout texturesDescriptorSetLayout = VK_NULL_HANDLE;
-inline DescriptorSet texturesDescriptorSet;
+inline VkDescriptorPool materialsDescriptorPool = VK_NULL_HANDLE;
+inline VkDescriptorSetLayout materialsDescriptorSetLayout = VK_NULL_HANDLE;
+inline DescriptorSet materialsDescriptorSet;
 inline std::unordered_map<std::string, Shader> shaders;
 inline Entity camera;
 inline std::vector<Buffer> cameraBuffers;
