@@ -23,6 +23,7 @@ enum struct ShaderType {
 enum struct Topology {
 	TRIANGLE_LIST,
 	TRIANGLE_STRIP,
+	LINE_LIST,
 	LINE_STRIP,
 	POINT_LIST,
 	WIREFRAME
@@ -70,6 +71,7 @@ struct Set {
 // Specialization constant
 struct SpecializationConstant {
 	uint32_t id;
+	size_t typeSize;
 	std::string type;
 	std::string name;
 };

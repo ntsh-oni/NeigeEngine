@@ -17,8 +17,8 @@ void FXAA::init(Viewport fullscreenViewport) {
 		renderPass.init(attachments, dependencies);
 	}
 
-	graphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
-	graphicsPipeline.fragmentShaderPath = "../shaders/fxaa.frag";
+	graphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
+	graphicsPipeline.fragmentShaderPath = "../shaders/fxaa/fxaa.frag";
 	graphicsPipeline.renderPass = &renderPass;
 	graphicsPipeline.viewport = &viewport;
 	graphicsPipeline.multiSample = false;

@@ -209,8 +209,8 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Scene compositing
 	GraphicsPipeline alphaCompositingGraphicsPipeline;
-	alphaCompositingGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
-	alphaCompositingGraphicsPipeline.fragmentShaderPath = "../shaders/alphaCompositing.frag";
+	alphaCompositingGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
+	alphaCompositingGraphicsPipeline.fragmentShaderPath = "../shaders/wboit/alphaCompositing.frag";
 	alphaCompositingGraphicsPipeline.renderPass = &renderPasses.at("alphaCompositing");
 	alphaCompositingGraphicsPipeline.viewport = &fullscreenViewport;
 	alphaCompositingGraphicsPipeline.multiSample = false;
@@ -223,9 +223,13 @@ void Renderer::init(const std::string& applicationName) {
 	createAlphaCompositingDescriptorSet();
 
 	// Post-process
+	float defaultPostProcessEffect[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
+	ImageTools::loadColor(defaultPostProcessEffect, &defaultPostProcessEffectImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultPostProcessEffectImage.mipmapLevels, &defaultPostProcessEffectImage.memoryInfo);
+	ImageTools::createImageView(&defaultPostProcessEffectImage.imageView, defaultPostProcessEffectImage.image, 0, 1, 0, defaultPostProcessEffectImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+
 	GraphicsPipeline postGraphicsPipeline;
-	postGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
-	postGraphicsPipeline.fragmentShaderPath = (enableBloom && enableSSAO) ? "../shaders/postProcess.frag" : (enableBloom ? "../shaders/postProcessBloomOnly.frag" : (enableSSAO ? "../shaders/postProcessSSAOOnly.frag" : "../shaders/passthrough.frag"));
+	postGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
+	postGraphicsPipeline.fragmentShaderPath = "../shaders/postprocess/postProcess.frag";
 	postGraphicsPipeline.renderPass = &renderPasses.at("post");
 	postGraphicsPipeline.viewport = &fullscreenViewport;
 	postGraphicsPipeline.multiSample = false;
@@ -257,8 +261,8 @@ void Renderer::init(const std::string& applicationName) {
 
 	float defaultEmissive[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultEmissiveImage;
-	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.memoryInfo);
-	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageTools::loadColor(defaultEmissive, &defaultEmissiveImage.image, VK_FORMAT_R8G8B8A8_SRGB, &defaultEmissiveImage.mipmapLevels, &defaultEmissiveImage.memoryInfo);
+	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	textures.push_back({ "defaultEmissive", defaultEmissiveImage });
 
 	float defaultOcclusion[4] = { 1.0, 1.0, 1.0, 0.0 };
@@ -435,6 +439,7 @@ void Renderer::destroy() {
 	if (enableBloom) {
 		bloom.destroy();
 	}
+	defaultPostProcessEffectImage.destroy();
 	if (materialsDescriptorPool != VK_NULL_HANDLE) {
 		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool, nullptr);
 		materialsDescriptorPool = VK_NULL_HANDLE;
@@ -1040,17 +1045,13 @@ void Renderer::createPostProcessDescriptorSet() {
 	sceneInfo.imageView = sceneImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	if (enableBloom) {
-		bloomInfo.sampler = trilinearEdgeBlackSampler;
-		bloomInfo.imageView = bloom.bloomImage.imageView;
-		bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	}
+	bloomInfo.sampler = trilinearEdgeBlackSampler;
+	bloomInfo.imageView = enableBloom ? bloom.bloomImage.imageView : defaultPostProcessEffectImage.imageView;
+	bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	if (enableSSAO) {
-		ssaoInfo.sampler = nearestEdgeBlackSampler;
-		ssaoInfo.imageView = ssao.ssaoBlurredImage.imageView;
-		ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	}
+	ssaoInfo.sampler = nearestEdgeBlackSampler;
+	ssaoInfo.imageView = enableSSAO ? ssao.ssaoBlurredImage.imageView : defaultPostProcessEffectImage.imageView;
+	ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
@@ -1067,35 +1068,31 @@ void Renderer::createPostProcessDescriptorSet() {
 	sceneWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(sceneWriteDescriptorSet);
 
-	if (enableBloom) {
-		VkWriteDescriptorSet bloomWriteDescriptorSet = {};
-		bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		bloomWriteDescriptorSet.pNext = nullptr;
-		bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-		bloomWriteDescriptorSet.dstBinding = 1;
-		bloomWriteDescriptorSet.dstArrayElement = 0;
-		bloomWriteDescriptorSet.descriptorCount = 1;
-		bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
-		bloomWriteDescriptorSet.pBufferInfo = nullptr;
-		bloomWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(bloomWriteDescriptorSet);
-	}
+	VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
+	ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	ssaoWriteDescriptorSet.pNext = nullptr;
+	ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
+	ssaoWriteDescriptorSet.dstBinding = 1;
+	ssaoWriteDescriptorSet.dstArrayElement = 0;
+	ssaoWriteDescriptorSet.descriptorCount = 1;
+	ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
+	ssaoWriteDescriptorSet.pBufferInfo = nullptr;
+	ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
 
-	if (enableSSAO) {
-		VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
-		ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		ssaoWriteDescriptorSet.pNext = nullptr;
-		ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-		ssaoWriteDescriptorSet.dstBinding = enableBloom ? 2 : 1;
-		ssaoWriteDescriptorSet.dstArrayElement = 0;
-		ssaoWriteDescriptorSet.descriptorCount = 1;
-		ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
-		ssaoWriteDescriptorSet.pBufferInfo = nullptr;
-		ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
-	}
+	VkWriteDescriptorSet bloomWriteDescriptorSet = {};
+	bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	bloomWriteDescriptorSet.pNext = nullptr;
+	bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
+	bloomWriteDescriptorSet.dstBinding = 2;
+	bloomWriteDescriptorSet.dstArrayElement = 0;
+	bloomWriteDescriptorSet.descriptorCount = 1;
+	bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
+	bloomWriteDescriptorSet.pBufferInfo = nullptr;
+	bloomWriteDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(bloomWriteDescriptorSet);
 
 	postDescriptorSet.update(writesDescriptorSet);
 }

@@ -86,6 +86,18 @@ bool Shader::compile() {
 					spacePos = typeAndName.find_first_of(' ');
 					if (spacePos != std::string::npos) {
 						specializationConstant.type = typeAndName.substr(0, spacePos);
+						if (specializationConstant.type == "int") {
+							specializationConstant.typeSize = sizeof(int);
+						}
+						else if (specializationConstant.type == "bool") {
+							specializationConstant.typeSize = sizeof(bool);
+						}
+						else if (specializationConstant.type == "float") {
+							specializationConstant.typeSize = sizeof(float);
+						}
+						else {
+							NEIGE_SHADER_ERROR("In shader file " + file + ", specialization constant type \"" + specializationConstant.type + "\" is unsupported.");
+						}
 						specializationConstant.name = typeAndName.substr(spacePos + 1, typeAndName.length() - spacePos - 1);
 					}
 				}

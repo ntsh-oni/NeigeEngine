@@ -22,14 +22,14 @@ void Shadow::init() {
 	ImageTools::createImageView(&defaultShadow.imageView, defaultShadow.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	ImageTools::transitionLayout(defaultShadow.image, physicalDevice.depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
-	opaqueGraphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
+	opaqueGraphicsPipeline.vertexShaderPath = "../shaders/shadowmapping/shadow.vert";
 	opaqueGraphicsPipeline.renderPass = &renderPass;
 	opaqueGraphicsPipeline.viewport = &viewport;
 	opaqueGraphicsPipeline.multiSample = false;
 	opaqueGraphicsPipeline.init();
 
-	maskGraphicsPipeline.vertexShaderPath = "../shaders/shadow.vert";
-	maskGraphicsPipeline.fragmentShaderPath = "../shaders/shadowMask.frag";
+	maskGraphicsPipeline.vertexShaderPath = "../shaders/shadowmapping/shadow.vert";
+	maskGraphicsPipeline.fragmentShaderPath = "../shaders/shadowmapping/shadowMask.frag";
 	maskGraphicsPipeline.renderPass = &renderPass;
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;
