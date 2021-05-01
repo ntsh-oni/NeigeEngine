@@ -27,16 +27,12 @@ layout(set = 0, binding = 7) uniform sampler2DShadow shadowMaps[MAX_DIR_LIGHTS +
 
 layout(set = 1, binding = 0) uniform sampler2D textures[];
 
-layout(push_constant) uniform MaterialIndices {
+layout(push_constant) uniform PushConstants {
 	int diffuseIndex;
 	int normalIndex;
 	int metallicRoughnessIndex;
 	int emissiveIndex;
 	int occlusionIndex;
-} mI;
-
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
 	float alphaCutoff;
 } pC;
 
