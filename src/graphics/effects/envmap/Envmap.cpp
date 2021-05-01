@@ -60,8 +60,8 @@ void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass
 	createBRDFConvolution();
 
 	// Skybox
-	skyboxGraphicsPipeline.vertexShaderPath = "../shaders/skybox.vert";
-	skyboxGraphicsPipeline.fragmentShaderPath = "../shaders/skybox.frag";
+	skyboxGraphicsPipeline.vertexShaderPath = "../shaders/envmap/skybox.vert";
+	skyboxGraphicsPipeline.fragmentShaderPath = "../shaders/envmap/skybox.frag";
 	skyboxGraphicsPipeline.renderPass = opaqueSceneRenderPass;
 	skyboxGraphicsPipeline.multiSample = false;
 	skyboxGraphicsPipeline.viewport = fullscreenViewport;
@@ -161,8 +161,8 @@ void Envmap::equiRectangleToCubemap() {
 	}
 
 	GraphicsPipeline equiRecToCubemapGraphicsPipeline;
-	equiRecToCubemapGraphicsPipeline.vertexShaderPath = "../shaders/cubemap.vert";
-	equiRecToCubemapGraphicsPipeline.fragmentShaderPath = "../shaders/equiRecToCubemap.frag";
+	equiRecToCubemapGraphicsPipeline.vertexShaderPath = "../shaders/envmap/cubemap.vert";
+	equiRecToCubemapGraphicsPipeline.fragmentShaderPath = "../shaders/envmap/equiRecToCubemap.frag";
 	equiRecToCubemapGraphicsPipeline.renderPass = &equiRecToCubemapRenderPass;
 	equiRecToCubemapGraphicsPipeline.viewport = &equiRecToCubemapViewport;
 	equiRecToCubemapGraphicsPipeline.multiSample = false;
@@ -269,8 +269,8 @@ void Envmap::createDiffuseIradiance() {
 	}
 
 	GraphicsPipeline convolveGraphicsPipeline;
-	convolveGraphicsPipeline.vertexShaderPath = "../shaders/cubemap.vert";
-	convolveGraphicsPipeline.fragmentShaderPath = "../shaders/convolve.frag";
+	convolveGraphicsPipeline.vertexShaderPath = "../shaders/envmap/cubemap.vert";
+	convolveGraphicsPipeline.fragmentShaderPath = "../shaders/envmap/convolve.frag";
 	convolveGraphicsPipeline.renderPass = &convolveRenderPass;
 	convolveGraphicsPipeline.viewport = &convolveViewport;
 	convolveGraphicsPipeline.multiSample = false;
@@ -361,8 +361,8 @@ void Envmap::createPrefilter() {
 	prefilterRenderPass.init(attachments, dependencies);
 
 	GraphicsPipeline prefilterGraphicsPipeline;
-	prefilterGraphicsPipeline.vertexShaderPath = "../shaders/cubemap.vert";
-	prefilterGraphicsPipeline.fragmentShaderPath = "../shaders/prefilter.frag";
+	prefilterGraphicsPipeline.vertexShaderPath = "../shaders/envmap/cubemap.vert";
+	prefilterGraphicsPipeline.fragmentShaderPath = "../shaders/envmap/prefilter.frag";
 	prefilterGraphicsPipeline.renderPass = &prefilterRenderPass;
 	prefilterGraphicsPipeline.multiSample = false;
 
@@ -512,8 +512,8 @@ void Envmap::createBRDFConvolution() {
 	brdfConvolutionFramebuffer.init(&brdfConvolutionRenderPass, framebufferAttachments, BRDFCONVOLUTION_WIDTH, BRDFCONVOLUTION_HEIGHT, 1);
 
 	GraphicsPipeline brdfConvolutionGraphicsPipeline;
-	brdfConvolutionGraphicsPipeline.vertexShaderPath = "../shaders/fullscreenTriangle.vert";
-	brdfConvolutionGraphicsPipeline.fragmentShaderPath = "../shaders/brdfConvolution.frag";
+	brdfConvolutionGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
+	brdfConvolutionGraphicsPipeline.fragmentShaderPath = "../shaders/envmap/brdfConvolution.frag";
 	brdfConvolutionGraphicsPipeline.renderPass = &brdfConvolutionRenderPass;
 	brdfConvolutionGraphicsPipeline.viewport = &brdfConvolutionViewport;
 	brdfConvolutionGraphicsPipeline.multiSample = false;

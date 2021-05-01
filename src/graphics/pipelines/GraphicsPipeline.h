@@ -8,7 +8,7 @@
 #include "Viewport.h"
 #include <vector>
 
-enum Compare {
+enum struct Compare {
 	LESS_OR_EQUAL,
 	LESS,
 	EQUAL
@@ -34,8 +34,9 @@ struct GraphicsPipeline {
 	std::vector<Blending> blendings;
 	bool multiSample = false;
 	bool depthWrite = true;
-	Compare depthCompare = LESS_OR_EQUAL;
+	Compare depthCompare = Compare::LESS_OR_EQUAL;
 	bool backfaceCulling = true;
+	std::vector<void*> specializationConstants;
 
 	void init();
 	void destroy();

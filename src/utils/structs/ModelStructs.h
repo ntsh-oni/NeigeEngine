@@ -15,6 +15,7 @@ struct AABB {
 	float maxY;
 	float minZ;
 	float maxZ;
+	Buffer vertexBuffer;
 };
 
 // Model primitive

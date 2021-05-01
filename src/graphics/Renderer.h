@@ -48,6 +48,7 @@ struct Renderer : public System {
 
 	DescriptorSet alphaCompositingDescriptorSet;
 	DescriptorSet postDescriptorSet;
+	Image defaultPostProcessEffectImage;
 
 	// Command buffers
 	std::vector<CommandPool> renderingCommandPools;
