@@ -7,6 +7,8 @@
 #include "../../utils/resources/BufferTools.h"
 #include "../pipelines/GraphicsPipeline.h"
 #include "../../graphics/resources/Buffer.h"
+#include "../../physics/AABB.h"
+#include <limits>
 #include <vector>
 
 struct Model {
@@ -16,6 +18,7 @@ struct Model {
 	bool gotOpaquePrimitives = false;
 	bool gotMaskPrimitives = false;
 	bool gotBlendPrimitives = false;
+	AABB aabb = { glm::vec3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()), glm::vec3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()) };
 
 	void init(std::string filePath);
 	void destroy();

@@ -646,12 +646,13 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	ShadowUniformBufferObject subo = {};
 	for (Entity entity : lights) {
 		auto const& lightLight = ecs.getComponent<Light>(entity);
+		auto const& lightTransform = ecs.getComponent<Transform>(entity);
 
 		if (lightLight.type == LightType::DIRECTIONAL) {
-			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightLight.direction, 0.0f);
+			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightTransform.rotation, 0.0f);
 			lubo.dirLightsColor[dirLightCount] = glm::vec4(lightLight.color, 0.0f);
 
-			glm::vec3 eye = -lightLight.direction;
+			glm::vec3 eye = -lightTransform.rotation;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), eye) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(eye)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
 			glm::mat4 shadowProjection = Camera::createOrthoProjection(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f);
 			glm::mat4 shadowView = Camera::createLookAtView(eye + cameraTransform.position + (cameraTransform.rotation * 3.0f), glm::vec3(0.0f, 0.0f, 0.0f) + cameraTransform.position + (cameraTransform.rotation * 3.0f), up);
@@ -660,19 +661,19 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			dirLightCount++;
 		}
 		else if (lightLight.type == LightType::POINT) {
-			lubo.pointLightsPosition[pointLightCount] = glm::vec4(lightLight.position, 0.0f);
+			lubo.pointLightsPosition[pointLightCount] = glm::vec4(lightTransform.position, 0.0f);
 			lubo.pointLightsColor[pointLightCount] = glm::vec4(lightLight.color, 0.0f);
 
 			pointLightCount++;
 		}
 		else if (lightLight.type == LightType::SPOT) {
-			lubo.spotLightsPosition[spotLightCount] = glm::vec4(lightLight.position, 0.0f);
-			lubo.spotLightsDirection[spotLightCount] = glm::vec4(lightLight.direction, 0.0f);
+			lubo.spotLightsPosition[spotLightCount] = glm::vec4(lightTransform.position, 0.0f);
+			lubo.spotLightsDirection[spotLightCount] = glm::vec4(lightTransform.rotation, 0.0f);
 			lubo.spotLightsColor[spotLightCount] = glm::vec4(lightLight.color, 0.0f);
 			lubo.spotLightsCutoffs[spotLightCount] = glm::vec4(glm::cos(glm::radians(lightLight.cutoffs.x)), glm::cos(glm::radians(lightLight.cutoffs.y)), 0.0f, 0.0f);
 
-			glm::vec3 eye = lightLight.position;
-			glm::vec3 to = lightLight.direction;
+			glm::vec3 eye = lightTransform.position;
+			glm::vec3 to = lightTransform.rotation;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), -to) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(-to)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
 			glm::mat4 shadowProjection = Camera::createPerspectiveProjection(120.0f, SHADOWMAP_WIDTH / static_cast<float>(SHADOWMAP_HEIGHT), 0.1f, 20.0f, false);
 			glm::mat4 shadowView = Camera::createLookAtView(eye, eye + to, up);
@@ -720,6 +721,10 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
 		memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
 		objectRenderable.buffers.at(frameInFlightIndex).unmap();
+
+		// Update AABB
+		AABB* modelAABB = &models.at(objectRenderable.modelPath).aabb;
+		objectRenderable.aabb = { modelAABB->min + objectTransform.position, modelAABB->max + objectTransform.position };
 	}
 }
 
@@ -863,10 +868,14 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	}
 
 	// Post-processing
+	GraphicsPipeline* postGraphicsPipeline = &graphicsPipelines.at("post");
+
 	VkFramebuffer postProcessingFramebuffer = enableFXAA ? postFramebuffers[0].framebuffer : postFramebuffers[framebufferIndex].framebuffer;
 	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postProcessingFramebuffer, window.extent);
-	graphicsPipelines.at("post").bind(&renderingCommandBuffers[frameInFlightIndex]);
+	postGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+	VkBool32 parameters[2] = { enableSSAO, enableBloom };
+	postGraphicsPipeline->pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(VkBool32), &parameters);
 
 	vkCmdDraw(renderingCommandBuffers[frameInFlightIndex].commandBuffer, 3, 1, 0, 0);
 

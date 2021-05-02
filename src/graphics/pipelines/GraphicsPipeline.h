@@ -36,7 +36,6 @@ struct GraphicsPipeline {
 	bool depthWrite = true;
 	Compare depthCompare = Compare::LESS_OR_EQUAL;
 	bool backfaceCulling = true;
-	std::vector<void*> specializationConstants;
 
 	void init();
 	void destroy();

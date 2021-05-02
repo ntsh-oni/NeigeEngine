@@ -4,6 +4,7 @@
 #include "../../graphics/pipelines/GraphicsPipeline.h"
 #include "../../graphics/resources/Samplers.h"
 #include "../../graphics/resources/ShaderResources.h"
+#include "../../physics/AABB.h"
 #include "../../utils/structs/ShaderStructs.h"
 #include <string>
 #include <vector>
@@ -412,4 +413,7 @@ struct Renderable {
 
 		shadowMaskDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 	}
+
+	// AABB
+	AABB aabb = {};
 };

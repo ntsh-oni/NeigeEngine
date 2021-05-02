@@ -152,12 +152,12 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					positionStride = std::max(buffer_view->stride, sizeof(float) * 3);
 
 					// AABB
-					aabb.minX = accessor->min[0];
-					aabb.maxX = accessor->max[0];
-					aabb.minY = accessor->min[1];
-					aabb.maxY = accessor->max[1];
-					aabb.minZ = accessor->min[2];
-					aabb.maxZ = accessor->max[2];
+					aabb.min.x = accessor->min[0];
+					aabb.max.x = accessor->max[0];
+					aabb.min.y = accessor->min[1];
+					aabb.max.y = accessor->max[1];
+					aabb.min.z = accessor->min[2];
+					aabb.max.z = accessor->max[2];
 				}
 				else if (attributeName == "NORMAL") {
 					normal = reinterpret_cast<float*>(offsetBuffer);
@@ -207,7 +207,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				vertex.normal = glm::normalize(glm::transpose(glm::inverse(glm::mat3(modelMatrix))) * vertex.normal);
 				vertex.uv = uvCount != 0 ? glm::vec2(uv[uvPos + 0], uv[uvPos + 1]) : glm::vec2(0.5f);
 				vertex.color = colorCount != 0 ? glm::vec3(color[colorPos + 0], color[colorPos + 1], color[colorPos + 2]) : glm::vec3(0.5f);
-				vertex.tangent = tangentCount != 0 ? glm::vec3(tangent[tangentPos + 0], tangent[tangentPos + 1], tangent[tangentPos + 2]) : glm::vec3(0.0f);
+				vertex.tangent = tangentCount != 0 ? glm::vec3(tangent[tangentPos + 0], tangent[tangentPos + 1], tangent[tangentPos + 2]) : glm::vec3(0.5f);
 				vertex.joints = jointsCount != 0 ? glm::vec4(joints[jointsPos + 0], joints[jointsPos + 1], joints[jointsPos + 2], joints[jointsPos + 3]) : glm::vec4(0.0f);
 				vertex.weights = weightsCount != 0 ? glm::vec4(weights[weightsPos + 0], weights[weightsPos + 1], weights[weightsPos + 2], weights[weightsPos + 3]) : glm::vec4(0.0f);
 				primitiveVertices.push_back(vertex);
@@ -289,7 +289,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			}
 
 			// Tangents
-			if (tangentCount == 0) {
+			if (tangentCount == 0 && uvCount != 0) {
 				for (size_t l = 0; l < primitiveIndices.size(); l += 3) {
 					Vertex* vertex0 = &primitiveVertices.at(primitiveIndices.at(l + 0));
 					Vertex* vertex1 = &primitiveVertices.at(primitiveIndices.at(l + 1));

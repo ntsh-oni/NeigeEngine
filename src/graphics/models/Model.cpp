@@ -43,6 +43,7 @@ void Model::init(std::string filePath) {
 	stagingIndexBuffer.destroy();
 
 	for (Mesh& mesh : meshes) {
+		// Bones
 		NEIGE_ASSERT(mesh.boneList.size() <= MAX_BONES, "A mesh has more than " + std::to_string(MAX_BONES) + " bones.");
 
 		BufferTools::createUniformBuffer(mesh.boneBuffer.buffer, sizeof(BoneUniformBufferObject), &mesh.boneBuffer.memoryInfo);
@@ -57,6 +58,91 @@ void Model::init(std::string filePath) {
 		mesh.boneBuffer.map(0, sizeof(BoneUniformBufferObject), &data);
 		memcpy(data, &bubo, sizeof(BoneUniformBufferObject));
 		mesh.boneBuffer.unmap();
+
+		// AABB
+		// Mesh AABB
+		mesh.aabb = { glm::vec3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()), glm::vec3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()) };
+
+		for (Primitive& primitive : mesh.opaquePrimitives) {
+			if (primitive.aabb.min.x < mesh.aabb.min.x) {
+				mesh.aabb.min.x = primitive.aabb.min.x;
+			}
+			if (primitive.aabb.max.x > mesh.aabb.max.x) {
+				mesh.aabb.max.x = primitive.aabb.max.x;
+			}
+			if (primitive.aabb.min.y < mesh.aabb.min.y) {
+				mesh.aabb.min.y = primitive.aabb.min.y;
+			}
+			if (primitive.aabb.max.y > mesh.aabb.max.y) {
+				mesh.aabb.max.y = primitive.aabb.max.y;
+			}
+			if (primitive.aabb.min.z < mesh.aabb.min.z) {
+				mesh.aabb.min.z = primitive.aabb.min.z;
+			}
+			if (primitive.aabb.max.z > mesh.aabb.max.z) {
+				mesh.aabb.max.z = primitive.aabb.max.z;
+			}
+		}
+		for (Primitive& primitive : mesh.maskPrimitives) {
+			if (primitive.aabb.min.x < mesh.aabb.min.x) {
+				mesh.aabb.min.x = primitive.aabb.min.x;
+			}
+			if (primitive.aabb.max.x > mesh.aabb.max.x) {
+				mesh.aabb.max.x = primitive.aabb.max.x;
+			}
+			if (primitive.aabb.min.y < mesh.aabb.min.y) {
+				mesh.aabb.min.y = primitive.aabb.min.y;
+			}
+			if (primitive.aabb.max.y > mesh.aabb.max.y) {
+				mesh.aabb.max.y = primitive.aabb.max.y;
+			}
+			if (primitive.aabb.min.z < mesh.aabb.min.z) {
+				mesh.aabb.min.z = primitive.aabb.min.z;
+			}
+			if (primitive.aabb.max.z > mesh.aabb.max.z) {
+				mesh.aabb.max.z = primitive.aabb.max.z;
+			}
+		}
+		for (Primitive& primitive : mesh.blendPrimitives) {
+			if (primitive.aabb.min.x < mesh.aabb.min.x) {
+				mesh.aabb.min.x = primitive.aabb.min.x;
+			}
+			if (primitive.aabb.max.x > mesh.aabb.max.x) {
+				mesh.aabb.max.x = primitive.aabb.max.x;
+			}
+			if (primitive.aabb.min.y < mesh.aabb.min.y) {
+				mesh.aabb.min.y = primitive.aabb.min.y;
+			}
+			if (primitive.aabb.max.y > mesh.aabb.max.y) {
+				mesh.aabb.max.y = primitive.aabb.max.y;
+			}
+			if (primitive.aabb.min.z < mesh.aabb.min.z) {
+				mesh.aabb.min.z = primitive.aabb.min.z;
+			}
+			if (primitive.aabb.max.z > mesh.aabb.max.z) {
+				mesh.aabb.max.z = primitive.aabb.max.z;
+			}
+		}
+
+		// Model AABB
+		if (mesh.aabb.min.x < aabb.min.x) {
+			aabb.min.x = mesh.aabb.min.x;
+		}
+		if (mesh.aabb.max.x > aabb.max.x) {
+			aabb.max.x = mesh.aabb.max.x;
+		}
+		if (mesh.aabb.min.y < aabb.min.y) {
+			aabb.min.y = mesh.aabb.min.y;
+		}
+		if (mesh.aabb.max.y > aabb.max.y) {
+			aabb.max.y = mesh.aabb.max.y;
+		}
+		if (mesh.aabb.min.z < aabb.min.z) {
+			aabb.min.z = mesh.aabb.min.z;
+		}
+		if (mesh.aabb.max.z > aabb.max.z) {
+			aabb.max.z = mesh.aabb.max.z;
+		}
 	}
 }
 

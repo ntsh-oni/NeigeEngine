@@ -42,6 +42,7 @@ void Game::init() {
 	physics = ecs.registerSystem<Physics>();
 	ComponentMask physicsMask;
 	physicsMask.set(ecs.getComponentId<Transform>());
+	physicsMask.set(ecs.getComponentId<Renderable>());
 	physicsMask.set(ecs.getComponentId<Rigidbody>());
 	ecs.setSystemComponents<Physics>(physicsMask);
 }
@@ -53,10 +54,10 @@ void Game::launch() {
 	renderer->init(info.name);
 
 	while (!window.windowGotClosed()) {
-		window.pollEvents();
-
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - lastFrame;
+
+		window.pollEvents();
 
 		cameraControls->update(deltaTime);
 
