@@ -4,19 +4,9 @@
 #include "../../graphics/pipelines/DescriptorSet.h"
 #include "../../graphics/pipelines/GraphicsPipeline.h"
 #include "../../graphics/resources/Buffer.h"
+#include "../../physics/AABB.h"
 #include <vector>
 #include <unordered_map>
-
-// Model AABB
-struct AABB {
-	float minX;
-	float maxX;
-	float minY;
-	float maxY;
-	float minZ;
-	float maxZ;
-	Buffer vertexBuffer;
-};
 
 // Model primitive
 struct Primitive {
@@ -45,4 +35,5 @@ struct Mesh {
 	Bone skeleton;
 	std::vector<Bone> boneList;
 	Buffer boneBuffer;
+	AABB aabb;
 };

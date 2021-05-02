@@ -323,64 +323,6 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 					NEIGE_ERROR("Light type is missing (valid options: \"DIRECTIONAL\", \"POINT\" or \"SPOT\").");
 				}
 
-				// Position vector
-				if (light.type == LightType::POINT || light.type == LightType::SPOT) {
-					float position[3];
-					simdjson::ondemand::array positionArray;
-					error = component.value()["position"].get(positionArray);
-
-					if (!error) {
-						int index = 0;
-						for (auto value : positionArray) {
-							position[index] = static_cast<float>(value.get_double());
-							index++;
-						}
-
-						if (index == 3) {
-							light.position = glm::vec3(position[0], position[1], position[2]);
-						}
-						else {
-							NEIGE_WARNING("Light position vector is missing " + std::to_string(3 - index) + " values.");
-							light.position = glm::vec3(0.0f, 0.0f, 0.0f);
-						}
-					}
-					else {
-						light.position = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					light.position = glm::vec3(0.0f);
-				}
-
-				// Direction vector
-				if (light.type == LightType::DIRECTIONAL || light.type == LightType::SPOT) {
-					float direction[3];
-					simdjson::ondemand::array directionArray;
-					error = component.value()["direction"].get(directionArray);
-
-					if (!error) {
-						int index = 0;
-						for (auto value : directionArray) {
-							direction[index] = static_cast<float>(value.get_double());
-							index++;
-						}
-
-						if (index == 3) {
-							light.direction = glm::vec3(direction[0], direction[1], direction[2]);
-						}
-						else {
-							NEIGE_WARNING("Light direction vector is missing " + std::to_string(3 - index) + " values.");
-							light.direction = glm::vec3(0.0f, 0.0f, 0.0f);
-						}
-					}
-					else {
-						light.direction = glm::vec3(0.0f, -1.0f, 0.0f);
-					}
-				}
-				else {
-					light.direction = glm::vec3(0.0f);
-				}
-
 				// Color vector
 				float color[3];
 				simdjson::ondemand::array colorArray;

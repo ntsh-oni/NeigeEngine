@@ -4,12 +4,12 @@
             "camera": {
                 "fov": 45.0,
                 "nearPlane": 0.3,
-                "farPlane": 200.0,
-                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+                "farPlane": 500.0,
+                "envmapPath": ""
             },
 			"transform": {
                 "position": [
-                    0.0,
+                    -4.0,
                     1.0,
                     0.0
                 ],
@@ -27,7 +27,44 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/DamagedHelmet.gltf",
+                "modelPath": "../modelfiles/Box.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    20.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+			"rigidbody": {
+                "velocity": [
+					0.0,
+					-0.38,
+					0.0
+				],
+				"acceleration": [
+					0.0,
+					1.0,
+					0.0
+				],
+				"affectedByGravity": true
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/planedoubleface.glb",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
@@ -47,7 +84,37 @@
                     1.0,
                     1.0
                 ]
+            },
+			"rigidbody": {
+                "velocity": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"acceleration": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"affectedByGravity": false
             }
-        }
+        },
+		{
+			"light": {
+				"type": "DIRECTIONAL",
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				],
+			},
+			"transform": {
+                "rotation": [
+                    1.0,
+                    -1.0,
+                    0.0
+                ]
+            }
+		}
     ]
 }
