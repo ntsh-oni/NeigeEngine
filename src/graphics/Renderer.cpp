@@ -721,34 +721,6 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
 		memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
 		objectRenderable.buffers.at(frameInFlightIndex).unmap();
-
-		// Update AABB
-		AABB* modelAABB = &models.at(objectRenderable.modelPath).aabb;
-		std::array<glm::vec3, 8> corners = modelAABB->corners();
-		glm::vec3 minCorner = corners[0] * objectTransform.scale + objectTransform.position;
-		glm::vec3 maxCorner = corners[0] * objectTransform.scale + objectTransform.position;
-		for (size_t i = 1; i < 8; i++) {
-			glm::vec3 cornerTransform = corners[i] * objectTransform.scale + objectTransform.position;
-			if (cornerTransform.x < minCorner.x) {
-				minCorner.x = cornerTransform.x;
-			}
-			if (cornerTransform.x > maxCorner.x) {
-				maxCorner.x = cornerTransform.x;
-			}
-			if (cornerTransform.y < minCorner.y) {
- 				minCorner.y = cornerTransform.y;
-			}
-			if (cornerTransform.y > maxCorner.y) {
-				maxCorner.y = cornerTransform.y;
-			}
-			if (cornerTransform.z < minCorner.z) {
-				minCorner.z = cornerTransform.z;
-			}
-			if (cornerTransform.z > maxCorner.z) {
-				maxCorner.z = cornerTransform.z;
-			}
-		}
-		objectRenderable.aabb = { minCorner, maxCorner };
 	}
 }
 
