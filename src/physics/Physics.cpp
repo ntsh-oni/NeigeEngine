@@ -7,40 +7,42 @@ extern ECS ecs;
 
 void Physics::update(double deltaTime) {
 	for (const auto& entity : entities) {
+		auto& entityRenderable = ecs.getComponent<Renderable>(entity);
 		auto& entityRigidbody = ecs.getComponent<Rigidbody>(entity);
+		auto& entityTransform = ecs.getComponent<Transform>(entity);
 
-		if (entityRigidbody.affectedByGravity) {
-			auto& entityRenderable = ecs.getComponent<Renderable>(entity);
-			auto& entityTransform = ecs.getComponent<Transform>(entity);
+		entityRigidbody.acceleration = entityRigidbody.forces + (entityRigidbody.affectedByGravity ? gravity : glm::vec3(0.0f));
 
-			glm::vec3 newPosition = (entityRigidbody.velocity * static_cast<float>(deltaTime));
-			glm::vec3 newVelocity = (gravity * entityRigidbody.acceleration * static_cast<float>(deltaTime));
+		glm::vec3 newPosition = (entityRigidbody.velocity * static_cast<float>(deltaTime));
+		glm::vec3 newVelocity = (entityRigidbody.acceleration * static_cast<float>(deltaTime));
 
-			// Collisions
-			AABB modelAABB = models.at(entityRenderable.modelPath).aabb;
-			AABB transformedAABB = transformAABB(modelAABB, entityTransform.position + newPosition, entityTransform.rotation, entityTransform.scale);
+		// Collisions
+		AABB modelAABB = models.at(entityRenderable.modelPath).aabb;
+		AABB transformedAABB = transformAABB(modelAABB, entityTransform.position + newPosition, entityTransform.rotation, entityTransform.scale);
 
-			bool collide = false;
-			for (const auto& otherEntity : entities) {
-				if (otherEntity != entity) {
-					auto& otherEntityRenderable = ecs.getComponent<Renderable>(otherEntity);
-					auto& otherEntityTransform = ecs.getComponent<Transform>(otherEntity);
+		bool collide = false;
+		for (const auto& otherEntity : entities) {
+			if (otherEntity != entity) {
+				auto& otherEntityRenderable = ecs.getComponent<Renderable>(otherEntity);
+				auto& otherEntityTransform = ecs.getComponent<Transform>(otherEntity);
 
-					AABB otherModelAABB = models.at(otherEntityRenderable.modelPath).aabb;
-					AABB otherTransformedAABB = transformAABB(otherModelAABB, otherEntityTransform.position, otherEntityTransform.rotation, otherEntityTransform.scale);
+				AABB otherModelAABB = models.at(otherEntityRenderable.modelPath).aabb;
+				AABB otherTransformedAABB = transformAABB(otherModelAABB, otherEntityTransform.position, otherEntityTransform.rotation, otherEntityTransform.scale);
 
-					if (transformedAABB.collision(otherTransformedAABB)) {
-						collide = true;
-						break;
-					}
+				if (transformedAABB.collision(otherTransformedAABB)) {
+					collide = true;
+					break;
 				}
 			}
-
-			if (!collide) {
-				entityTransform.position += newPosition;
-				entityRigidbody.velocity += newVelocity;
-			}
 		}
+
+		if (collide) {
+			newPosition.y = 0.0f;
+			newVelocity.y = 0.0f;
+		}
+
+		entityTransform.position += newPosition;
+		entityRigidbody.velocity += newVelocity;
 	}
 }
 

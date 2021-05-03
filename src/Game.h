@@ -5,9 +5,10 @@
 #include "ecs/components/Light.h"
 #include "ecs/components/Renderable.h"
 #include "ecs/components/Rigidbody.h"
-#include "ecs/systems/Lighting.h"
 #include "ecs/systems/CameraSystem.h"
 #include "ecs/systems/CameraControls.h"
+#include "ecs/systems/Lighting.h"
+#include "ecs/systems/PlayerControls.h"
 #include "graphics/Renderer.h"
 #include "physics/Physics.h"
 #include "window/WindowResources.h"
@@ -30,6 +31,7 @@ struct Game {
 	std::shared_ptr<Lighting> lighting;
 	std::shared_ptr<CameraSystem> cameraSystem;
 	std::shared_ptr<CameraControls> cameraControls;
+	std::shared_ptr<PlayerControls> playerControls;
 	std::shared_ptr<Physics> physics;
 	double lastFrame = 0.0;
 	GameInfo info = {};

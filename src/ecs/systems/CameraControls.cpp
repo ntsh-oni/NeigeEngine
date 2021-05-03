@@ -15,24 +15,7 @@ void CameraControls::update(double deltaTime) {
 	for (Entity entity : entities) {
 		auto& cameraTransform = ecs.getComponent<Transform>(entity);
 
-		if (keyboardInputs.wKey == KeyState::HELD) {
-			cameraTransform.position += cameraTransform.rotation * static_cast<float>(speed * deltaTime);
-		}
-		if (keyboardInputs.aKey == KeyState::HELD) {
-			cameraTransform.position -= glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
-		}
-		if (keyboardInputs.sKey == KeyState::HELD) {
-			cameraTransform.position -= cameraTransform.rotation * static_cast<float>(speed * deltaTime);
-		}
-		if (keyboardInputs.dKey == KeyState::HELD) {
-			cameraTransform.position += glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
-		}
-		if (keyboardInputs.spaceKey == KeyState::HELD) {
-			cameraTransform.position.y += static_cast<float>(speed * deltaTime);
-		}
-		if (keyboardInputs.shiftKey == KeyState::HELD) {
-			cameraTransform.position.y -= static_cast<float>(speed * deltaTime);
-		}
+		// Camera rotation
 		if (mouseView) {
 			if (firstMove) {
 				x = mouseInputs.getXPosition();
@@ -79,5 +62,25 @@ void CameraControls::update(double deltaTime) {
 		cameraTransform.rotation.y = -sin(glm::radians(pitch));
 		cameraTransform.rotation.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
 		cameraTransform.rotation = glm::normalize(cameraTransform.rotation);
+
+		// Camera position
+		if (keyboardInputs.wKey == KeyState::HELD) {
+			cameraTransform.position += cameraTransform.rotation * static_cast<float>(speed * deltaTime);
+		}
+		if (keyboardInputs.aKey == KeyState::HELD) {
+			cameraTransform.position -= glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+		}
+		if (keyboardInputs.sKey == KeyState::HELD) {
+			cameraTransform.position -= cameraTransform.rotation * static_cast<float>(speed * deltaTime);
+		}
+		if (keyboardInputs.dKey == KeyState::HELD) {
+			cameraTransform.position += glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+		}
+		if (keyboardInputs.spaceKey == KeyState::HELD) {
+			cameraTransform.position.y += static_cast<float>(speed * deltaTime);
+		}
+		if (keyboardInputs.shiftKey == KeyState::HELD) {
+			cameraTransform.position.y -= static_cast<float>(speed * deltaTime);
+		}
 	}
 }
