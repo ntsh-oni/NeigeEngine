@@ -65,22 +65,22 @@ void CameraControls::update(double deltaTime) {
 
 		// Camera position
 		if (keyboardInputs.wKey == KeyState::HELD) {
-			cameraTransform.position += cameraTransform.rotation * static_cast<float>(speed * deltaTime);
+			cameraTransform.position += cameraTransform.rotation * speed * static_cast<float>(deltaTime);
 		}
 		if (keyboardInputs.aKey == KeyState::HELD) {
-			cameraTransform.position -= glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+			cameraTransform.position -= glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * speed * static_cast<float>(deltaTime);
 		}
 		if (keyboardInputs.sKey == KeyState::HELD) {
-			cameraTransform.position -= cameraTransform.rotation * static_cast<float>(speed * deltaTime);
+			cameraTransform.position -= cameraTransform.rotation * speed * static_cast<float>(deltaTime);
 		}
 		if (keyboardInputs.dKey == KeyState::HELD) {
-			cameraTransform.position += glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * static_cast<float>(speed * deltaTime);
+			cameraTransform.position += glm::normalize(glm::cross(cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f))) * speed * static_cast<float>(deltaTime);
 		}
 		if (keyboardInputs.spaceKey == KeyState::HELD) {
-			cameraTransform.position.y += static_cast<float>(speed * deltaTime);
+			cameraTransform.position.y += speed * static_cast<float>(deltaTime);
 		}
 		if (keyboardInputs.shiftKey == KeyState::HELD) {
-			cameraTransform.position.y -= static_cast<float>(speed * deltaTime);
+			cameraTransform.position.y -= speed * static_cast<float>(deltaTime);
 		}
 	}
 }

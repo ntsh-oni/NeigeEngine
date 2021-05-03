@@ -158,6 +158,22 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					aabb.max.y = accessor->max[1];
 					aabb.min.z = accessor->min[2];
 					aabb.max.z = accessor->max[2];
+
+					std::array<glm::vec3, 8> corners = aabb.corners();
+					std::vector<float> cornersX;
+					std::vector<float> cornersY;
+					std::vector<float> cornersZ;
+
+					for (size_t i = 0; i < 8; i++) {
+						glm::vec3 cornerTransform = glm::vec3(modelMatrix * glm::vec4(corners[i], 1.0f));
+
+						cornersX.push_back(cornerTransform.x);
+						cornersY.push_back(cornerTransform.y);
+						cornersZ.push_back(cornerTransform.z);
+					}
+					glm::vec3 minCorner = glm::vec3(*std::min_element(cornersX.begin(), cornersX.end()), *std::min_element(cornersY.begin(), cornersY.end()), *std::min_element(cornersZ.begin(), cornersZ.end()));
+					glm::vec3 maxCorner = glm::vec3(*std::max_element(cornersX.begin(), cornersX.end()), *std::max_element(cornersY.begin(), cornersY.end()), *std::max_element(cornersZ.begin(), cornersZ.end()));
+					aabb = { minCorner, maxCorner };
 				}
 				else if (attributeName == "NORMAL") {
 					normal = reinterpret_cast<float*>(offsetBuffer);

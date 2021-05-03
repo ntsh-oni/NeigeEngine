@@ -75,7 +75,7 @@ void Game::launch() {
 
 		lighting->update();
 
-		physics->update(deltaTime);
+		physics->update(deltaTime > (1.0 / 60.0) ? (1.0 / 60.0) : deltaTime);
 
 		renderer->update();
 

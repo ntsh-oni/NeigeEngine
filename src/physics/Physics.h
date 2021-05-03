@@ -1,8 +1,8 @@
 #pragma once
-#include "../ecs/ECS.h"
 #include "../../../external/glm/glm/glm.hpp"
 #include "../../../external/glm/glm/gtc/matrix_transform.hpp"
 #include "../../../external/glm/glm/gtx/string_cast.hpp"
+#include "../ecs/ECS.h"
 #include "AABB.h"
 #include <algorithm>
 #include <vector>
