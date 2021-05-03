@@ -65,9 +65,36 @@
                     0.0
                 ],
                 "rotation": [
-                    30.0,
                     0.0,
-                    70.0
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.5,
+                    4.0,
+					1.5
+                ]
+            },
+			"rigidbody": {
+				"affectedByGravity": true
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/Box.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    -10.0,
+                    30.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    90.0,
+                    0.0
                 ],
                 "scale": [
                     1.5,

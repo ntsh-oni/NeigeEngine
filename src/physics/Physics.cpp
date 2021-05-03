@@ -18,9 +18,10 @@ void Physics::update(double deltaTime) {
 
 		// Collisions
 		AABB modelAABB = models.at(entityRenderable.modelPath).aabb;
-		AABB transformedAABB = transformAABB(modelAABB, entityTransform.position + newPosition, entityTransform.rotation, entityTransform.scale);
+		AABB transformedAABBX = transformAABB(modelAABB, entityTransform.position + glm::vec3(newPosition.x, 0.0f, 0.0f), entityTransform.rotation, entityTransform.scale);
+		AABB transformedAABBY = transformAABB(modelAABB, entityTransform.position + glm::vec3(0.0f, newPosition.y, 0.0f), entityTransform.rotation, entityTransform.scale);
+		AABB transformedAABBZ = transformAABB(modelAABB, entityTransform.position + glm::vec3(0.0f, 0.0f, newPosition.z), entityTransform.rotation, entityTransform.scale);
 
-		bool collide = false;
 		for (const auto& otherEntity : entities) {
 			if (otherEntity != entity) {
 				auto& otherEntityRenderable = ecs.getComponent<Renderable>(otherEntity);
@@ -29,16 +30,24 @@ void Physics::update(double deltaTime) {
 				AABB otherModelAABB = models.at(otherEntityRenderable.modelPath).aabb;
 				AABB otherTransformedAABB = transformAABB(otherModelAABB, otherEntityTransform.position, otherEntityTransform.rotation, otherEntityTransform.scale);
 
-				if (transformedAABB.collision(otherTransformedAABB)) {
-					collide = true;
-					break;
+				// Collision on x-axis
+				if (transformedAABBX.collision(otherTransformedAABB)) {
+					newPosition.x = 0.0f;
+					newVelocity.x = 0.0f;
+				}
+
+				// Collision on y-axis
+				if (transformedAABBY.collision(otherTransformedAABB)) {
+					newPosition.y = 0.0f;
+					newVelocity.y = 0.0f;
+				}
+
+				// Collision on z-axis
+				if (transformedAABBZ.collision(otherTransformedAABB)) {
+					newPosition.z = 0.0f;
+					newVelocity.z = 0.0f;
 				}
 			}
-		}
-
-		if (collide) {
-			newPosition.y = 0.0f;
-			newVelocity.y = 0.0f;
 		}
 
 		entityTransform.position += newPosition;
