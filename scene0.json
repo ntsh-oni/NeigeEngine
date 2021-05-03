@@ -5,7 +5,7 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 500.0,
-                "envmapPath": ""
+                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
             },
 			"transform": {
                 "position": [
@@ -19,9 +19,9 @@
                     0.0
                 ],
                 "scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    0.5,
+                    2.0,
+                    0.5
                 ]
             }
         },
@@ -40,7 +40,7 @@
                 "rotation": [
                     0.0,
                     0.0,
-                    0.0
+                    45.0
                 ],
                 "scale": [
                     2.0,
@@ -49,16 +49,60 @@
                 ]
             },
 			"rigidbody": {
-                "velocity": [
-					0.0,
-					-0.38,
-					0.0
-				],
-				"acceleration": [
-					0.0,
-					1.0,
-					0.0
-				],
+				"affectedByGravity": true
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/Box.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    -10.0,
+                    20.0,
+                    0.0
+                ],
+                "rotation": [
+                    30.0,
+                    0.0,
+                    70.0
+                ],
+                "scale": [
+                    1.5,
+                    4.0,
+					1.5
+                ]
+            },
+			"rigidbody": {
+				"affectedByGravity": true
+            }
+        },
+		{
+            "renderable": {
+                "modelPath": "../modelfiles/Box.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    6.0,
+                    20.0,
+                    -9.0
+                ],
+                "rotation": [
+                    45.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    3.0,
+					1.0
+                ]
+            },
+			"rigidbody": {
 				"affectedByGravity": true
             }
         },
@@ -80,22 +124,12 @@
                     0.0
                 ],
                 "scale": [
+                    10.0,
                     1.0,
-                    3.0,
-                    1.0
+                    10.0
                 ]
             },
 			"rigidbody": {
-                "velocity": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"acceleration": [
-					0.0,
-					0.0,
-					0.0
-				],
 				"affectedByGravity": false
             }
         },
@@ -112,7 +146,7 @@
                 "rotation": [
                     1.0,
                     -1.0,
-                    0.0
+                    1.0
                 ]
             }
 		}

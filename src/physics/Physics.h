@@ -8,7 +8,7 @@
 #include <vector>
 
 struct Physics : public System {
-	glm::vec3 gravity = glm::vec3(0.0f, -1.0f, 0.0);
+	glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0);
 
 	void update(double deltaTime);
 	AABB transformAABB(AABB aabb, glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleRatio);

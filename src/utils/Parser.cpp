@@ -380,54 +380,6 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 			}
 			else if (componentName == "rigidbody") {
 				Rigidbody rigidbody = {};
-				
-				// Velocity vector
-				float velocity[3];
-				simdjson::ondemand::array velocityArray;
-				error = component.value()["velocity"].get(velocityArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : velocityArray) {
-						velocity[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						rigidbody.velocity = glm::vec3(velocity[0], velocity[1], velocity[2]);
-					}
-					else {
-						NEIGE_WARNING("Rigidbody velocity vector is missing " + std::to_string(3 - index) + " values.");
-						rigidbody.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					rigidbody.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
-
-				// Acceleration vector
-				float acceleration[3];
-				simdjson::ondemand::array accelerationArray;
-				error = component.value()["acceleration"].get(accelerationArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : accelerationArray) {
-						acceleration[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						rigidbody.acceleration = glm::vec3(acceleration[0], acceleration[1], acceleration[2]);
-					}
-					else {
-						NEIGE_WARNING("Rigidbody acceleration vector is missing " + std::to_string(3 - index) + " values.");
-						rigidbody.acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					rigidbody.acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
 
 				// Affected by gravity
 				bool affectedByGravity;

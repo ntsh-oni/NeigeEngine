@@ -6,16 +6,16 @@
 	},
 	"graphics": {
 		"ssao": {
-			"enable": true,
+			"enable": false,
 			"downscale": 3
 		},
 		"bloom": {
-			"enable": true,
+			"enable": false,
 			"downscale": 4,
 			"size": 9
 		},
 		"fxaa": {
-			"enable": true
+			"enable": false
 		}
 	}
 }

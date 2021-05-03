@@ -11,6 +11,7 @@ void Game::init() {
 	ecs.registerComponent<Rigidbody>();
 
 	// Register systems
+	// Renderer system
 	renderer = ecs.registerSystem<Renderer>();
 	ComponentMask rendererMask;
 	rendererMask.set(ecs.getComponentId<Renderable>());
@@ -25,11 +26,13 @@ void Game::init() {
 	renderer->ssaoDownscale = info.ssaoDownscale;
 	renderer->enableFXAA = info.enableFXAA;
 
+	// Lighting system
 	lighting = ecs.registerSystem<Lighting>();
 	ComponentMask lightingMask;
 	lightingMask.set(ecs.getComponentId<Light>());
 	ecs.setSystemComponents<Lighting>(lightingMask);
 
+	// Camera systems
 	ComponentMask cameraMask;
 	cameraMask.set(ecs.getComponentId<Camera>());
 
@@ -39,11 +42,20 @@ void Game::init() {
 	cameraControls = ecs.registerSystem<CameraControls>();
 	ecs.setSystemComponents<CameraControls>(cameraMask);
 
+	// Player system
+	playerControls = ecs.registerSystem<PlayerControls>();
+	ComponentMask playerControlsMask;
+	playerControlsMask.set(ecs.getComponentId<Camera>());
+	playerControlsMask.set(ecs.getComponentId<Rigidbody>());
+	playerControlsMask.set(ecs.getComponentId<Transform>());
+	ecs.setSystemComponents<PlayerControls>(playerControlsMask);
+
+	// Physics systems
 	physics = ecs.registerSystem<Physics>();
 	ComponentMask physicsMask;
-	physicsMask.set(ecs.getComponentId<Transform>());
 	physicsMask.set(ecs.getComponentId<Renderable>());
 	physicsMask.set(ecs.getComponentId<Rigidbody>());
+	physicsMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Physics>(physicsMask);
 }
 

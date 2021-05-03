@@ -85,8 +85,8 @@ SET(INPUTS_SOURCES src/inputs/KeyboardInputs.cpp src/inputs/MouseInputs.cpp)
 SET(INPUTS_HEADERS src/inputs/Inputs.h src/inputs/KeyboardInputs.h src/inputs/MouseInputs.h)
 
 SET(ECS_COMPONENTS_HEADERS src/ecs/components/Camera.h src/ecs/components/Light.h src/ecs/components/Renderable.h src/ecs/components/Rigidbody.h src/ecs/components/Transform.h)
-SET(ECS_SYSTEMS_SOURCES src/ecs/systems/CameraControls.cpp src/ecs/systems/CameraSystem.cpp src/ecs/systems/Lighting.cpp)
-SET(ECS_SYSTEMS_HEADERS src/ecs/systems/CameraControls.h src/ecs/systems/CameraSystem.h src/ecs/systems/Lighting.h)
+SET(ECS_SYSTEMS_SOURCES src/ecs/systems/CameraControls.cpp src/ecs/systems/CameraSystem.cpp src/ecs/systems/Lighting.cpp src/ecs/systems/PlayerControls.cpp)
+SET(ECS_SYSTEMS_HEADERS src/ecs/systems/CameraControls.h src/ecs/systems/CameraSystem.h src/ecs/systems/Lighting.h src/ecs/systems/PlayerControls.h)
 SET(ECS_SOURCES ${ECS_SYSTEMS_SOURCES})
 SET(ECS_HEADERS src/ecs/ECS.h ${ECS_COMPONENTS_HEADERS} ${ECS_SYSTEMS_HEADERS})
 
