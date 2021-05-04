@@ -59,7 +59,7 @@ struct Renderer : public System {
 	// Settings
 	bool enableBloom;
 	int bloomDownscale;
-	int blurSize;
+	int bloomBlurSize;
 	bool enableSSAO;
 	int ssaoDownscale;
 	bool enableFXAA;

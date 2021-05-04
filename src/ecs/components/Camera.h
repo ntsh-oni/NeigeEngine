@@ -3,6 +3,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "../../../external/glm/glm/glm.hpp"
 #include "../../../external/glm/glm/gtc/matrix_transform.hpp"
+#include "../../physics/Frustum.h"
 #include <string>
 
 struct Camera {
@@ -13,6 +14,7 @@ struct Camera {
 
 	glm::mat4 view;
 	glm::mat4 projection;
+	Frustum frustum;
 
 	static glm::mat4 createLookAtView(glm::vec3 eye, glm::vec3 center, glm::vec3 up) {
 		return glm::lookAt(eye, center, up);

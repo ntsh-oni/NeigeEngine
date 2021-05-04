@@ -27,137 +27,26 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/Box.gltf",
+                "modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
                     0.0,
-                    20.0,
+                    0.0,
                     0.0
                 ],
                 "rotation": [
                     0.0,
-                    0.0,
-                    45.0
-                ],
-                "scale": [
-                    2.0,
-                    4.0,
-					1.0
-                ]
-            },
-			"rigidbody": {
-				"affectedByGravity": true
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/Box.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    -10.0,
-                    20.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.5,
-                    4.0,
-					1.5
-                ]
-            },
-			"rigidbody": {
-				"affectedByGravity": true
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/Box.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    -10.0,
-                    30.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    90.0,
-                    0.0
-                ],
-                "scale": [
-                    1.5,
-                    4.0,
-					1.5
-                ]
-            },
-			"rigidbody": {
-				"affectedByGravity": true
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/Box.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    6.0,
-                    20.0,
-                    -9.0
-                ],
-                "rotation": [
-                    45.0,
                     0.0,
                     0.0
                 ],
                 "scale": [
                     1.0,
-                    3.0,
+                    1.0,
 					1.0
                 ]
-            },
-			"rigidbody": {
-				"affectedByGravity": true
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/planedoubleface.glb",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    0.0,
-                    -3.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    10.0,
-                    1.0,
-                    10.0
-                ]
-            },
-			"rigidbody": {
-				"affectedByGravity": false
             }
         },
 		{
@@ -173,7 +62,7 @@
                 "rotation": [
                     1.0,
                     -1.0,
-                    1.0
+                    0.0
                 ]
             }
 		}

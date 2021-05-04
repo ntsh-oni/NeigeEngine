@@ -53,11 +53,11 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 		gameInfo.bloomDownscale = static_cast<int>(bloomDownscale);
 	}
 
-	int64_t blurSize;
-	error = document["graphics"]["bloom"]["size"].get(blurSize);
+	int64_t bloomBlurSize;
+	error = document["graphics"]["bloom"]["size"].get(bloomBlurSize);
 
 	if (!error) {
-		gameInfo.blurSize = static_cast<int>(blurSize);
+		gameInfo.bloomBlurSize = static_cast<int>(bloomBlurSize);
 	}
 
 	// SSAO
@@ -69,7 +69,7 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 	}
 
 	int64_t ssaoDownscale;
-	error = document["graphics"]["ssao"]["downscale"].get(ssaoDownscale);
+	error = document["graphics"]["ssao"]["downscale"].get(ssaoDownscale); 
 
 	if (!error) {
 		gameInfo.ssaoDownscale = static_cast<int>(ssaoDownscale);
