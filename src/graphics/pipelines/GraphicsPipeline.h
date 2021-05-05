@@ -36,6 +36,8 @@ struct GraphicsPipeline {
 	bool depthWrite = true;
 	Compare depthCompare = Compare::LESS_OR_EQUAL;
 	bool backfaceCulling = true;
+	int bindless = -1;
+	VkDescriptorSetLayout bindlessDescriptorSetLayout = VK_NULL_HANDLE;
 
 	void init();
 	void destroy();

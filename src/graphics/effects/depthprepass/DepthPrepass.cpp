@@ -31,6 +31,8 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;
 	maskGraphicsPipeline.backfaceCulling = true;
+	maskGraphicsPipeline.bindless = 1;
+	maskGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 	maskGraphicsPipeline.init();
 
 	createResources(fullscreenViewport);
