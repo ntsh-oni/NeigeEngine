@@ -8,6 +8,11 @@
 #include "Viewport.h"
 #include <vector>
 
+struct DescriptorPool {
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+	uint32_t remainingSets = 0;
+};
+
 enum struct Compare {
 	LESS_OR_EQUAL,
 	LESS,
@@ -17,7 +22,8 @@ enum struct Compare {
 struct GraphicsPipeline {
 	VkPipeline pipeline = VK_NULL_HANDLE;
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+	std::vector<DescriptorPool> descriptorPools;
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
 	std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 	std::string vertexShaderPath;
 	std::string fragmentShaderPath;
@@ -41,6 +47,7 @@ struct GraphicsPipeline {
 
 	void init();
 	void destroy();
+	DescriptorPool getDescriptorPool(uint32_t setsToAllocate);
 	void bind(CommandBuffer* commandBuffer);
 	void pushConstant(CommandBuffer* commandBuffer, VkShaderStageFlags stages, uint32_t offset, uint32_t size, const void* data);
 	void destroyPipeline();

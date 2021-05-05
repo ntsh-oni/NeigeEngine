@@ -440,9 +440,9 @@ void Renderer::destroy() {
 		bloom.destroy();
 	}
 	defaultPostProcessEffectImage.destroy();
-	if (materialsDescriptorPool != VK_NULL_HANDLE) {
-		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool, nullptr);
-		materialsDescriptorPool = VK_NULL_HANDLE;
+	if (materialsDescriptorPool.descriptorPool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool.descriptorPool, nullptr);
+		materialsDescriptorPool.descriptorPool = VK_NULL_HANDLE;
 	}
 	if (materialsDescriptorSetLayout != VK_NULL_HANDLE) {
 		vkDestroyDescriptorSetLayout(logicalDevice.device, materialsDescriptorSetLayout, nullptr);
@@ -1029,7 +1029,9 @@ void Renderer::createBindlessDescriptorSet() {
 	descriptorPoolCreateInfo.maxSets = 1;
 	descriptorPoolCreateInfo.poolSizeCount = 1;
 	descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
-	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool));
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool.descriptorPool));
+
+	materialsDescriptorPool.remainingSets = 0;
 
 	// Descriptor Set Layout
 	VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
@@ -1058,10 +1060,12 @@ void Renderer::createBindlessDescriptorSet() {
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	descriptorSetAllocateInfo.pNext = nullptr;
-	descriptorSetAllocateInfo.descriptorPool = materialsDescriptorPool;
+	descriptorSetAllocateInfo.descriptorPool = materialsDescriptorPool.descriptorPool;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
 	descriptorSetAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &materialsDescriptorSet.descriptorSet));
+
+	materialsDescriptorSet.descriptorPool = materialsDescriptorPool;
 }
 
 void Renderer::updateBindlessDescriptorSet() {

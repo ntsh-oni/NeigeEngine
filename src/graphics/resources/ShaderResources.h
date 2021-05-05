@@ -17,7 +17,7 @@
 inline std::unordered_map<std::string, Model> models;
 inline std::vector<Texture> textures;
 inline std::vector<Material> materials;
-inline VkDescriptorPool materialsDescriptorPool = VK_NULL_HANDLE;
+inline DescriptorPool materialsDescriptorPool;
 inline VkDescriptorSetLayout materialsDescriptorSetLayout = VK_NULL_HANDLE;
 inline DescriptorSet materialsDescriptorSet;
 inline std::unordered_map<std::string, Shader> shaders;

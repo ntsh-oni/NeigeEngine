@@ -258,24 +258,32 @@ void GraphicsPipeline::init() {
 	}
 
 	// Descriptor pool
-	if (descriptorPool == VK_NULL_HANDLE) {
-		std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
-		for (std::set<VkDescriptorType>::iterator it = uniqueDescriptorTypes.begin(); it != uniqueDescriptorTypes.end(); it++) {
-			VkDescriptorPoolSize descriptorPoolSize = {};
-			descriptorPoolSize.type = *it;
-			descriptorPoolSize.descriptorCount = 2048;
-			descriptorPoolSizes.push_back(descriptorPoolSize);
-		}
+	if (descriptorPools.empty()) {
+		descriptorPools.resize(1);
+		descriptorPools[0].descriptorPool = VK_NULL_HANDLE;
+		descriptorPools[0].remainingSets = 0;
+	}
+	for (size_t i = 0; i < descriptorPools.size(); i++) {
+		if (descriptorPools[i].descriptorPool == VK_NULL_HANDLE) {
+			for (std::set<VkDescriptorType>::iterator it = uniqueDescriptorTypes.begin(); it != uniqueDescriptorTypes.end(); it++) {
+				VkDescriptorPoolSize descriptorPoolSize = {};
+				descriptorPoolSize.type = *it;
+				descriptorPoolSize.descriptorCount = 2048;
+				descriptorPoolSizes.push_back(descriptorPoolSize);
+			}
 
-		if (descriptorPoolSizes.size() != 0) {
-			VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-			descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			descriptorPoolCreateInfo.pNext = nullptr;
-			descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			descriptorPoolCreateInfo.maxSets = 8192;
-			descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-			descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
-			NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &descriptorPool));
+			if (descriptorPoolSizes.size() != 0) {
+				VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+				descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				descriptorPoolCreateInfo.pNext = nullptr;
+				descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+				descriptorPoolCreateInfo.maxSets = 8192;
+				descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+				descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+				NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &descriptorPools[i].descriptorPool));
+
+				descriptorPools[i].remainingSets = 8192;
+			}
 		}
 	}
 
@@ -436,9 +444,12 @@ void GraphicsPipeline::init() {
 }
 
 void GraphicsPipeline::destroy() {
-	if (descriptorPool != VK_NULL_HANDLE) {
-		vkDestroyDescriptorPool(logicalDevice.device, descriptorPool, nullptr);
-		descriptorPool = VK_NULL_HANDLE;
+	for (size_t i = 0; i < descriptorPools.size(); i++) {
+		if (descriptorPools[i].descriptorPool != VK_NULL_HANDLE) {
+			vkDestroyDescriptorPool(logicalDevice.device, descriptorPools[i].descriptorPool, nullptr);
+			descriptorPools[i].descriptorPool = VK_NULL_HANDLE;
+			descriptorPools[i].remainingSets = 0;
+		}
 	}
 	for (size_t i = 0; i < descriptorSetLayouts.size(); i++) {
 		if (i != bindless && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
@@ -447,6 +458,33 @@ void GraphicsPipeline::destroy() {
 		}
 	}
 	destroyPipeline();
+}
+
+DescriptorPool GraphicsPipeline::getDescriptorPool(uint32_t setsToAllocate) {
+	for (size_t i = 0; i < descriptorPools.size(); i++) {
+		if (descriptorPools[i].descriptorPool != VK_NULL_HANDLE && descriptorPools[i].remainingSets >= setsToAllocate) {
+			descriptorPools[i].remainingSets -= setsToAllocate;
+			return descriptorPools[i];
+		}
+	}
+
+	// Create new descriptor pool
+	DescriptorPool descriptorPool;
+
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolCreateInfo.pNext = nullptr;
+	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	descriptorPoolCreateInfo.maxSets = 8192;
+	descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSizes.data();
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &descriptorPool.descriptorPool));
+
+	descriptorPool.remainingSets = 8192 - setsToAllocate;
+
+	descriptorPools.push_back(descriptorPool);
+
+	return descriptorPool;
 }
 
 void GraphicsPipeline::bind(CommandBuffer* commandBuffer) {
