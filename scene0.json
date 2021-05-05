@@ -27,7 +27,7 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
+                "modelPath": "../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },

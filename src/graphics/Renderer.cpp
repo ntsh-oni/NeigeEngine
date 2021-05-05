@@ -733,35 +733,45 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 		// Frustum culling
 		Model* model = &models.at(objectRenderable.modelPath);
+		AABB transformedAABB = model->aabb.transform(oubo.model);
 
-		for (Mesh& mesh : model->meshes) {
-			mesh.drawableOpaquePrimitives.clear();
-			mesh.drawableMaskPrimitives.clear();
-			mesh.drawableAlphaCutoffs.clear();
-			mesh.drawableBlendPrimitives.clear();
+		// Check intersection with entire model
+		if (cameraCamera.frustum.collision(transformedAABB)) {
+			for (Mesh& mesh : model->meshes) {
+				transformedAABB = mesh.aabb.transform(oubo.model);
 
-			for (Primitive& primitive : mesh.opaquePrimitives) {
-				AABB transformedAABB = primitive.aabb.transform(oubo.model);
-
+				// Check intersection with meshes
 				if (cameraCamera.frustum.collision(transformedAABB)) {
-					mesh.drawableOpaquePrimitives.push_back(primitive);
-				}
-			}
+					mesh.drawableOpaquePrimitives.clear();
+					mesh.drawableMaskPrimitives.clear();
+					mesh.drawableAlphaCutoffs.clear();
+					mesh.drawableBlendPrimitives.clear();
 
-			for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
-				AABB transformedAABB = mesh.maskPrimitives[i].aabb.transform(oubo.model);
+					// Check intersection with primitives
+					for (Primitive& primitive : mesh.opaquePrimitives) {
+						transformedAABB = primitive.aabb.transform(oubo.model);
 
-				if (cameraCamera.frustum.collision(transformedAABB)) {
-					mesh.drawableMaskPrimitives.push_back(mesh.maskPrimitives[i]);
-					mesh.drawableAlphaCutoffs.push_back(mesh.alphaCutoffs[i]);
-				}
-			}
+						if (cameraCamera.frustum.collision(transformedAABB)) {
+							mesh.drawableOpaquePrimitives.push_back(primitive);
+						}
+					}
 
-			for (Primitive& primitive : mesh.blendPrimitives) {
-				AABB transformedAABB = primitive.aabb.transform(oubo.model);
+					for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
+						transformedAABB = mesh.maskPrimitives[i].aabb.transform(oubo.model);
 
-				if (cameraCamera.frustum.collision(transformedAABB)) {
-					mesh.drawableBlendPrimitives.push_back(primitive);
+						if (cameraCamera.frustum.collision(transformedAABB)) {
+							mesh.drawableMaskPrimitives.push_back(mesh.maskPrimitives[i]);
+							mesh.drawableAlphaCutoffs.push_back(mesh.alphaCutoffs[i]);
+						}
+					}
+
+					for (Primitive& primitive : mesh.blendPrimitives) {
+						transformedAABB = primitive.aabb.transform(oubo.model);
+
+						if (cameraCamera.frustum.collision(transformedAABB)) {
+							mesh.drawableBlendPrimitives.push_back(primitive);
+						}
+					}
 				}
 			}
 		}

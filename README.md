@@ -39,6 +39,7 @@ $ make
 - [x] Bloom
 - [x] Weighted Blended Order-Independent Transparency (WBOIT)
 - [x] Alpha cutoff
+- [x] Frustum culling
 - [x] Realtime shaders reloading
 ## Screenshots
 ![Amazon Lumberyard Bistro](https://i.imgur.com/WVOoWP8.png)
