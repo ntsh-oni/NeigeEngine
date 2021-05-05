@@ -529,6 +529,8 @@ void Renderer::loadObject(Entity object) {
 		opaqueGraphicsPipeline.topology = objectRenderable.topology;
 		opaqueGraphicsPipeline.depthCompare = Compare::EQUAL;
 		opaqueGraphicsPipeline.depthWrite = false;
+		opaqueGraphicsPipeline.bindless = 1;
+		opaqueGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 		opaqueGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "o", opaqueGraphicsPipeline);
 	}
@@ -549,6 +551,8 @@ void Renderer::loadObject(Entity object) {
 		maskGraphicsPipeline.depthCompare = Compare::EQUAL;
 		maskGraphicsPipeline.depthWrite = false;
 		maskGraphicsPipeline.backfaceCulling = false;
+		maskGraphicsPipeline.bindless = 1;
+		maskGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 		maskGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "m", maskGraphicsPipeline);
 	}
@@ -571,6 +575,8 @@ void Renderer::loadObject(Entity object) {
 		blendGraphicsPipeline.backfaceCulling = false;
 		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
 		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
+		blendGraphicsPipeline.bindless = 1;
+		blendGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 		blendGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "b", blendGraphicsPipeline);
 	}
@@ -1001,7 +1007,51 @@ void Renderer::destroyResources() {
 }
 
 void Renderer::createBindlessDescriptorSet() {
-	materialsDescriptorSet.initBindless();
+	// Descriptor Pool
+	VkDescriptorPoolSize descriptorPoolSize = {};
+	descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorPoolSize.descriptorCount = 524288;
+
+	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
+	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptorPoolCreateInfo.pNext = nullptr;
+	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	descriptorPoolCreateInfo.maxSets = 1;
+	descriptorPoolCreateInfo.poolSizeCount = 1;
+	descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool));
+
+	// Descriptor Set Layout
+	VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
+	descriptorSetLayoutBinding.binding = 0;
+	descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	descriptorSetLayoutBinding.descriptorCount = 524288;
+	descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutBindingFlagsCreateInfo descriptorSetLayoutBindingFlagsCreateInfo = {};
+	descriptorSetLayoutBindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+	descriptorSetLayoutBindingFlagsCreateInfo.pNext = nullptr;
+	descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = 1;
+	VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+	descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = &flags;
+
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
+	descriptorSetLayoutCreateInfo.flags = 0;
+	descriptorSetLayoutCreateInfo.bindingCount = 1;
+	descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
+
+	// Allocation
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.pNext = nullptr;
+	descriptorSetAllocateInfo.descriptorPool = materialsDescriptorPool;
+	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	descriptorSetAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
+	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &materialsDescriptorSet.descriptorSet));
 }
 
 void Renderer::updateBindlessDescriptorSet() {

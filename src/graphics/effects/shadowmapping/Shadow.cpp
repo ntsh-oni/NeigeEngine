@@ -1,5 +1,6 @@
 #include "Shadow.h"
 #include "../../../graphics/resources/RendererResources.h"
+#include "../../../graphics/resources/ShaderResources.h"
 
 void Shadow::init() {
 	viewport.init(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
@@ -34,6 +35,8 @@ void Shadow::init() {
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;
 	maskGraphicsPipeline.backfaceCulling = false;
+	maskGraphicsPipeline.bindless = 1;
+	maskGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 	maskGraphicsPipeline.init();
 }
 

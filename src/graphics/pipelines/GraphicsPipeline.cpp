@@ -240,10 +240,9 @@ void GraphicsPipeline::init() {
 	}
 
 	// Descriptor set layouts
-	// Set 1 is reserved for bindless
 	descriptorSetLayouts.resize(sets.size());
 	for (size_t i = 0; i < sets.size(); i++) {
-		if (i != 1 && descriptorSetLayouts[i] == VK_NULL_HANDLE) {
+		if (i != bindless && descriptorSetLayouts[i] == VK_NULL_HANDLE) {
 			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorSetLayoutCreateInfo.pNext = nullptr;
@@ -254,8 +253,8 @@ void GraphicsPipeline::init() {
 		}
 	}
 	// Bindless
-	if (sets.size() > 1) {
-		descriptorSetLayouts[1] = materialsDescriptorSetLayout;
+	if (bindless != -1) {
+		descriptorSetLayouts[bindless] = bindlessDescriptorSetLayout;
 	}
 
 	// Descriptor pool
@@ -442,7 +441,7 @@ void GraphicsPipeline::destroy() {
 		descriptorPool = VK_NULL_HANDLE;
 	}
 	for (size_t i = 0; i < descriptorSetLayouts.size(); i++) {
-		if (i != 1 && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
+		if (i != bindless && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
 			vkDestroyDescriptorSetLayout(logicalDevice.device, descriptorSetLayouts[i], nullptr);
 			descriptorSetLayouts[i] = VK_NULL_HANDLE;
 		}
