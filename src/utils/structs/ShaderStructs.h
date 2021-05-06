@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "../../external/glm/glm/glm.hpp"
+#include "../../graphics/resources/Buffer.h"
 #include "../../graphics/resources/Image.h"
 #include "../NeigeDefines.h"
 
@@ -48,6 +49,7 @@ struct Material {
 	int metallicRoughnessIndex = 2;
 	int emissiveIndex = 3;
 	int occlusionIndex = 4;
+	Buffer buffer;
 };
 
 // Input variable
