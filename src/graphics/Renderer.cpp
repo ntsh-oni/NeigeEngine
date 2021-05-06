@@ -265,7 +265,7 @@ void Renderer::init(const std::string& applicationName) {
 	ImageTools::createImageView(&defaultEmissiveImage.imageView, defaultEmissiveImage.image, 0, 1, 0, defaultEmissiveImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	textures.push_back({ "defaultEmissive", defaultEmissiveImage });
 
-	float defaultOcclusion[4] = { 1.0, 1.0, 1.0, 0.0 };
+	float defaultOcclusion[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
 	Image defaultOcclusionImage;
 	ImageTools::loadColor(defaultOcclusion, &defaultOcclusionImage.image, VK_FORMAT_R8G8B8A8_UNORM, &defaultOcclusionImage.mipmapLevels, &defaultOcclusionImage.memoryInfo);
 	ImageTools::createImageView(&defaultOcclusionImage.imageView, defaultOcclusionImage.image, 0, 1, 0, defaultOcclusionImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);

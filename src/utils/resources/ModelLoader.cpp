@@ -464,10 +464,16 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					}
 					primitiveMaterial.occlusionIndex = index;
 				}
+				
+				int materialIndex;
+				if ((materialIndex = findMaterial(primitiveMaterial.diffuseIndex, primitiveMaterial.normalIndex, primitiveMaterial.metallicRoughnessIndex, primitiveMaterial.emissiveIndex, primitiveMaterial.occlusionIndex)) != -1) {
+					materialID = static_cast<uint64_t>(materialIndex);
+				}
+				else {
+					materials.push_back(primitiveMaterial);
 
-				materials.push_back(primitiveMaterial);
-
-				materialID = static_cast<uint64_t>(materials.size() - 1);
+					materialID = static_cast<uint64_t>(materials.size() - 1);
+				}
 			}
 
 			// Primitive
