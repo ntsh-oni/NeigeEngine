@@ -5,7 +5,7 @@
                 "fov": 45.0,
                 "nearPlane": 0.3,
                 "farPlane": 500.0,
-                "envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+                "envmapPath": "../modelfiles/Tokyo_BigSight_3k.hdr"
             },
 			"transform": {
                 "position": [

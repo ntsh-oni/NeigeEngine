@@ -12,7 +12,7 @@
 		"bloom": {
 			"enable": true,
 			"downscale": 4,
-			"size": 9
+			"size": 33
 		},
 		"fxaa": {
 			"enable": true
