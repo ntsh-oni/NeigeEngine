@@ -470,6 +470,14 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					materialID = static_cast<uint64_t>(materialIndex);
 				}
 				else {
+					// Create new material
+					BufferTools::createStorageBuffer(primitiveMaterial.buffer.buffer, 5 * sizeof(int), &primitiveMaterial.buffer.memoryInfo);
+					int materialindices[5] = { primitiveMaterial.diffuseIndex, primitiveMaterial.normalIndex, primitiveMaterial.metallicRoughnessIndex, primitiveMaterial.emissiveIndex, primitiveMaterial.occlusionIndex };
+					void* data;
+					primitiveMaterial.buffer.map(0, 5 * sizeof(int), &data);
+					memcpy(data, materialindices, 5 * sizeof(int));
+					primitiveMaterial.buffer.unmap();
+
 					materials.push_back(primitiveMaterial);
 
 					materialID = static_cast<uint64_t>(materials.size() - 1);

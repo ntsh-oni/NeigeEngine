@@ -19,6 +19,10 @@ layout(set = 0, binding = 3) uniform Lighting {
 	vec2 spotLightsCutoffs[MAX_SPOT_LIGHTS];
 } lights;
 
+layout(set = 0, binding = 8) uniform Time {
+	float time;
+} time;
+
 layout(set = 0, binding = 4) uniform samplerCube irradianceMap;
 layout(set = 0, binding = 5) uniform samplerCube prefilterMap;
 layout(set = 0, binding = 6) uniform sampler2D brdfLUT;
@@ -140,15 +144,11 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = texture(textures[materials[pC.materialIndex].diffuseIndex], uv);
-	if (colorSample.w <= pC.alphaCutoff) {
-		discard;
-	}
-	vec3 normalSample = texture(textures[materials[pC.materialIndex].normalIndex], uv).xyz;
-	float metallicSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).b;
-	float roughnessSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).g;
-	vec3 emissiveSample = texture(textures[materials[pC.materialIndex].emissiveIndex], uv).xyz;
-	float occlusionSample = texture(textures[materials[pC.materialIndex].occlusionIndex], uv).r;
+	vec4 colorSample = vec4(1.0, 1.0, 1.0, 0.9);
+	vec3 normalSample = texture(textures[materials[pC.materialIndex].normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
+	float metallicSample = 1.0;
+	float roughnessSample = 0.0;
+	float occlusionSample = 1.0;
 
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;
@@ -166,10 +166,9 @@ void main() {
 	int numPointLights = int(lights.numLights.y);
 	int numSpotLights = int(lights.numLights.z);
 	
-	float shadow = 0.0;
 	for (int i = 0; i < numDirLights; i++) {
 		l = normalize(-lights.dirLightsDirection[i]);
-		shadow = shadowValue(dirLightSpaces[i], shadowMapIndex);
+		float shadow = shadowValue(dirLightSpaces[i], shadowMapIndex);
 		tmpColor += shade(n, v, l, lights.dirLightsColor[i], d, metallicSample, roughnessSample) * shadow;
 		shadowMapIndex++;
 	}
@@ -210,8 +209,6 @@ void main() {
 	
 	vec3 ambient = (irradianceDiffuse * diffuse + specular) * occlusionSample;
 	tmpColor += ambient;
-	
-	tmpColor += emissiveSample;
 
 	sceneColor = vec4(tmpColor, 1.0);
 }

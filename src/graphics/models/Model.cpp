@@ -168,8 +168,7 @@ void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsP
 		std::vector<Primitive>& selectedPrimitives = culling ? mesh.drawableOpaquePrimitives : mesh.opaquePrimitives;
 		for (Primitive& primitive : selectedPrimitives) {
 			if (bindTextures) {
-				int materialIndices[5] = { materials.at(primitive.materialIndex).diffuseIndex, materials.at(primitive.materialIndex).normalIndex, materials.at(primitive.materialIndex).metallicRoughnessIndex, materials.at(primitive.materialIndex).emissiveIndex, materials.at(primitive.materialIndex).occlusionIndex };
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 5 * sizeof(int), &materialIndices);
+				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &primitive.materialIndex);
 			}
 			vkCmdDrawIndexed(commandBuffer->commandBuffer, primitive.indexCount, 1, mesh.indexOffset + primitive.firstIndex, mesh.vertexOffset + primitive.vertexOffset, 0);
 		}
@@ -185,9 +184,8 @@ void Model::drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPip
 		std::vector<float>& selectedCutoffs = culling ? mesh.drawableAlphaCutoffs : mesh.alphaCutoffs;
 		for (size_t i = 0; i < selectedPrimitives.size(); i++) {
 			if (bindTextures) {
-				int materialIndices[5] = { materials.at(selectedPrimitives[i].materialIndex).diffuseIndex, materials.at(selectedPrimitives[i].materialIndex).normalIndex, materials.at(selectedPrimitives[i].materialIndex).metallicRoughnessIndex, materials.at(selectedPrimitives[i].materialIndex).emissiveIndex, materials.at(selectedPrimitives[i].materialIndex).occlusionIndex };
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, 5 * sizeof(int), &materialIndices);
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset + (5 * sizeof(int)), sizeof(float), &selectedCutoffs[i]);
+				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, sizeof(int), &selectedPrimitives[i].materialIndex);
+				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset + sizeof(int), sizeof(float), &selectedCutoffs[i]);
 			}
 			else {
 				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, sizeof(float), &selectedCutoffs[i]);
@@ -205,8 +203,7 @@ void Model::drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPi
 		std::vector<Primitive>& selectedPrimitives = culling ? mesh.drawableBlendPrimitives : mesh.blendPrimitives;
 		for (Primitive& primitive : selectedPrimitives) {
 			if (bindTextures) {
-				int materialIndices[5] = { materials.at(primitive.materialIndex).diffuseIndex, materials.at(primitive.materialIndex).normalIndex, materials.at(primitive.materialIndex).metallicRoughnessIndex, materials.at(primitive.materialIndex).emissiveIndex, materials.at(primitive.materialIndex).occlusionIndex };
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 5 * sizeof(int), &materialIndices);
+				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &primitive.materialIndex);
 			}
 			vkCmdDrawIndexed(commandBuffer->commandBuffer, primitive.indexCount, 1, mesh.indexOffset + primitive.firstIndex, mesh.vertexOffset + primitive.vertexOffset, 0);
 		}

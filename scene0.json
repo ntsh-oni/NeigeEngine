@@ -27,14 +27,14 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/steampunk_underwater_explorer/scene.gltf",
+                "modelPath": "../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
                     0.0,
-                    -3.0,
+                    0.0,
                     0.0
                 ],
                 "rotation": [
@@ -51,9 +51,9 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/water.gltf",
+                "modelPath": "../modelfiles/DamagedHelmet.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/water.frag"
+                "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
@@ -67,9 +67,9 @@
                     0.0
                 ],
                 "scale": [
-                    100.0,
-                    100.0,
-					100.0
+                    1.0,
+                    1.0,
+					1.0
                 ]
             }
         },

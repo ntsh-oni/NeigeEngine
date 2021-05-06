@@ -26,14 +26,17 @@ layout(set = 0, binding = 6) uniform sampler2D brdfLUT;
 layout(set = 0, binding = 7) uniform sampler2DShadow shadowMaps[MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
 layout(set = 1, binding = 0) uniform sampler2D textures[];
-
-layout(push_constant) uniform MaterialIndices {
+layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int diffuseIndex;
 	int normalIndex;
 	int metallicRoughnessIndex;
 	int emissiveIndex;
 	int occlusionIndex;
-} mI;
+} materials[];
+
+layout(push_constant) uniform PushConstants {
+	int materialIndex;
+} pC;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
@@ -137,12 +140,12 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = texture(textures[mI.diffuseIndex], uv);
-	vec3 normalSample = texture(textures[mI.normalIndex], uv).xyz;
-	float metallicSample = texture(textures[mI.metallicRoughnessIndex], uv).b;
-	float roughnessSample = texture(textures[mI.metallicRoughnessIndex], uv).g;
-	vec3 emissiveSample = texture(textures[mI.emissiveIndex], uv).xyz;
-	float occlusionSample = texture(textures[mI.occlusionIndex], uv).r;
+	vec4 colorSample = texture(textures[materials[pC.materialIndex].diffuseIndex], uv);
+	vec3 normalSample = texture(textures[materials[pC.materialIndex].normalIndex], uv).xyz;
+	float metallicSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).b;
+	float roughnessSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).g;
+	vec3 emissiveSample = texture(textures[materials[pC.materialIndex].emissiveIndex], uv).xyz;
+	float occlusionSample = texture(textures[materials[pC.materialIndex].occlusionIndex], uv).r;
 	
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;

@@ -482,6 +482,9 @@ void Renderer::destroy() {
 	for (size_t i = 0; i < textures.size(); i++) {
 		textures[i].image.destroy();
 	}
+	for (size_t i = 0; i < materials.size(); i++) {
+		materials[i].buffer.destroy();
+	}
 	for (std::unordered_map<std::string, Model>::iterator it = models.begin(); it != models.end(); it++) {
 		Model* model = &it->second;
 		model->destroy();
@@ -1018,9 +1021,13 @@ void Renderer::destroyResources() {
 
 void Renderer::createBindlessDescriptorSet() {
 	// Descriptor Pool
-	VkDescriptorPoolSize descriptorPoolSize = {};
-	descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorPoolSize.descriptorCount = 524288;
+	VkDescriptorPoolSize texturePoolSize = {};
+	texturePoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	texturePoolSize.descriptorCount = 524288;
+
+	VkDescriptorPoolSize materialPoolSize = {};
+	materialPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	materialPoolSize.descriptorCount = 524288;
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1028,32 +1035,41 @@ void Renderer::createBindlessDescriptorSet() {
 	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	descriptorPoolCreateInfo.maxSets = 1;
 	descriptorPoolCreateInfo.poolSizeCount = 1;
-	descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+	std::array<VkDescriptorPoolSize, 2> descriptorPools = { texturePoolSize, materialPoolSize };
+	descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
 	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool.descriptorPool));
 
 	materialsDescriptorPool.remainingSets = 0;
 
 	// Descriptor Set Layout
-	VkDescriptorSetLayoutBinding descriptorSetLayoutBinding = {};
-	descriptorSetLayoutBinding.binding = 0;
-	descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorSetLayoutBinding.descriptorCount = 524288;
-	descriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
+	VkDescriptorSetLayoutBinding textureBinding = {};
+	textureBinding.binding = 0;
+	textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	textureBinding.descriptorCount = 524288;
+	textureBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	textureBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutBinding materialBinding = {};
+	materialBinding.binding = 1;
+	materialBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	materialBinding.descriptorCount = 524288;
+	materialBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	materialBinding.pImmutableSamplers = nullptr;
 
 	VkDescriptorSetLayoutBindingFlagsCreateInfo descriptorSetLayoutBindingFlagsCreateInfo = {};
 	descriptorSetLayoutBindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
 	descriptorSetLayoutBindingFlagsCreateInfo.pNext = nullptr;
-	descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = 1;
-	VkDescriptorBindingFlags flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
-	descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = &flags;
+	descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = 2;
+	std::array<VkDescriptorBindingFlags, 2> flags = { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT, VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT };
+	descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
 	descriptorSetLayoutCreateInfo.flags = 0;
-	descriptorSetLayoutCreateInfo.bindingCount = 1;
-	descriptorSetLayoutCreateInfo.pBindings = &descriptorSetLayoutBinding;
+	descriptorSetLayoutCreateInfo.bindingCount = 2;
+	std::array<VkDescriptorSetLayoutBinding, 2> descriptorSetLayoutBindings = { textureBinding, materialBinding };
+	descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
 	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
 
 	// Allocation
@@ -1079,6 +1095,16 @@ void Renderer::updateBindlessDescriptorSet() {
 		textureInfos.push_back(textureInfo);
 	}
 
+	std::vector<VkDescriptorBufferInfo> materialsInfos;
+	for (Material& material : materials) {
+		VkDescriptorBufferInfo materialInfo = {};
+		materialInfo.buffer = material.buffer.buffer;
+		materialInfo.offset = 0;
+		materialInfo.range = 5 * sizeof(int);
+
+		materialsInfos.push_back(materialInfo);
+	}
+
 	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
 	VkWriteDescriptorSet textureWriteDescriptorSet = {};
@@ -1093,6 +1119,19 @@ void Renderer::updateBindlessDescriptorSet() {
 	textureWriteDescriptorSet.pBufferInfo = nullptr;
 	textureWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(textureWriteDescriptorSet);
+
+	VkWriteDescriptorSet materialWriteDescriptorSet = {};
+	materialWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	materialWriteDescriptorSet.pNext = nullptr;
+	materialWriteDescriptorSet.dstSet = materialsDescriptorSet.descriptorSet;
+	materialWriteDescriptorSet.dstBinding = 1;
+	materialWriteDescriptorSet.dstArrayElement = 0;
+	materialWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(materials.size());
+	materialWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	materialWriteDescriptorSet.pImageInfo = nullptr;
+	materialWriteDescriptorSet.pBufferInfo = materialsInfos.data();
+	materialWriteDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(materialWriteDescriptorSet);
 
 	materialsDescriptorSet.update(writesDescriptorSet);
 }
