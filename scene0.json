@@ -27,14 +27,14 @@
         },
 		{
             "renderable": {
-                "modelPath": "../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
+                "modelPath": "../modelfiles/steampunk_underwater_explorer/scene.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
                 "fragmentShaderPath": "../shaders/pbr.frag"
             },
             "transform": {
                 "position": [
                     0.0,
-                    0.0,
+                    -3.0,
                     0.0
                 ],
                 "rotation": [
@@ -51,14 +51,14 @@
         },
 		{
             "renderable": {
-                "modelPath": "../modelfiles/BoomBox.gltf",
+                "modelPath": "../modelfiles/water.gltf",
                 "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
+                "fragmentShaderPath": "../shaders/water.frag"
             },
             "transform": {
                 "position": [
                     0.0,
-                    3.0,
+                    0.0,
                     0.0
                 ],
                 "rotation": [

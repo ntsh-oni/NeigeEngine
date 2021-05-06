@@ -574,7 +574,7 @@ void Renderer::loadObject(Entity object) {
 		blendGraphicsPipeline.depthWrite = false;
 		blendGraphicsPipeline.backfaceCulling = false;
 		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
-		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
+		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD });
 		blendGraphicsPipeline.bindless = 1;
 		blendGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
 		blendGraphicsPipeline.init();
