@@ -50,6 +50,30 @@
             }
         },
 		{
+            "renderable": {
+                "modelPath": "../modelfiles/BoomBox.gltf",
+                "vertexShaderPath": "../shaders/pbr.vert",
+                "fragmentShaderPath": "../shaders/pbr.frag"
+            },
+            "transform": {
+                "position": [
+                    0.0,
+                    3.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    100.0,
+                    100.0,
+					100.0
+                ]
+            }
+        },
+		{
 			"light": {
 				"type": "DIRECTIONAL",
 				"color": [
