@@ -589,5 +589,20 @@ int ModelLoader::findTexture(std::string key) {
 			return static_cast<int>(i);
 		}
 	}
+
+	return -1;
+}
+
+int ModelLoader::findMaterial(int diffuseIndex, int normalIndex, int metallicRoughnessIndex, int emissiveIndex, int occlusionIndex) {
+	for (size_t i = 0; i < materials.size(); i++) {
+		if (materials[i].diffuseIndex == diffuseIndex
+			&& materials[i].normalIndex == normalIndex
+			&& materials[i].metallicRoughnessIndex == metallicRoughnessIndex
+			&& materials[i].emissiveIndex == emissiveIndex
+			&& materials[i].occlusionIndex == occlusionIndex) {
+			return static_cast<int>(i);
+		}
+	}
+
 	return -1;
 }
