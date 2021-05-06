@@ -43,7 +43,8 @@ layout(location = 1) out float revealageColor;
 #define M_PI 3.1415926535897932384626433832795
 
 void main() {
-	vec4 tmpColor = texture(textures[mI.diffuseIndex], uv);
+	vec4 colorSample = texture(textures[mI.diffuseIndex], uv);
+	vec3 tmpColor = colorSample.rgb;
 
 	vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);
 	float a = min(1.0, premultiplied.a) * 8.0 + 0.01;
