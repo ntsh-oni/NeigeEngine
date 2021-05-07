@@ -242,7 +242,7 @@ void GraphicsPipeline::init() {
 	// Descriptor set layouts
 	descriptorSetLayouts.resize(sets.size());
 	for (size_t i = 0; i < sets.size(); i++) {
-		if (i != bindless && descriptorSetLayouts[i] == VK_NULL_HANDLE) {
+		if (externalSet(i) == -1 && descriptorSetLayouts[i] == VK_NULL_HANDLE) {
 			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
 			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorSetLayoutCreateInfo.pNext = nullptr;
@@ -252,9 +252,9 @@ void GraphicsPipeline::init() {
 			NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayouts[i]));
 		}
 	}
-	// Bindless
-	if (bindless != -1) {
-		descriptorSetLayouts[bindless] = bindlessDescriptorSetLayout;
+	// External sets
+	for (size_t i = 0; i < externalSets.size(); i++) {
+		descriptorSetLayouts[externalSets[i]] = externalDescriptorSetLayouts[i];
 	}
 
 	// Descriptor pool
@@ -452,7 +452,7 @@ void GraphicsPipeline::destroy() {
 		}
 	}
 	for (size_t i = 0; i < descriptorSetLayouts.size(); i++) {
-		if (i != bindless && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
+		if (externalSet(i) == -1 && descriptorSetLayouts[i] != VK_NULL_HANDLE) {
 			vkDestroyDescriptorSetLayout(logicalDevice.device, descriptorSetLayouts[i], nullptr);
 			descriptorSetLayouts[i] = VK_NULL_HANDLE;
 		}
@@ -460,11 +460,11 @@ void GraphicsPipeline::destroy() {
 	destroyPipeline();
 }
 
-DescriptorPool GraphicsPipeline::getDescriptorPool(uint32_t setsToAllocate) {
+DescriptorPool* GraphicsPipeline::getDescriptorPool(uint32_t setsToAllocate) {
 	for (size_t i = 0; i < descriptorPools.size(); i++) {
 		if (descriptorPools[i].descriptorPool != VK_NULL_HANDLE && descriptorPools[i].remainingSets >= setsToAllocate) {
 			descriptorPools[i].remainingSets -= setsToAllocate;
-			return descriptorPools[i];
+			return &descriptorPools[i];
 		}
 	}
 
@@ -484,7 +484,7 @@ DescriptorPool GraphicsPipeline::getDescriptorPool(uint32_t setsToAllocate) {
 
 	descriptorPools.push_back(descriptorPool);
 
-	return descriptorPool;
+	return &descriptorPools[descriptorPools.size() - 1];
 }
 
 void GraphicsPipeline::bind(CommandBuffer* commandBuffer) {
@@ -538,4 +538,14 @@ VkCompareOp GraphicsPipeline::compareToVkCompare() {
 	default:
 		NEIGE_ERROR("Unsupported depth compare operator");
 	}
+}
+
+int GraphicsPipeline::externalSet(size_t index) {
+	for (size_t i = 0; i < externalSets.size(); i++) {
+		if (externalSets[i] == index) {
+			return static_cast<int>(i);
+		}
+	}
+
+	return -1;
 }

@@ -6,7 +6,7 @@
 struct DescriptorSet {
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
 	GraphicsPipeline* graphicsPipeline;
-	DescriptorPool descriptorPool;
+	DescriptorPool* descriptorPool;
 
 	void init(GraphicsPipeline* graphicsPipeline, uint32_t set);
 	void update(const std::vector<VkWriteDescriptorSet>& writeDescriptorSets);

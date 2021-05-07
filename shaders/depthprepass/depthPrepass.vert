@@ -14,8 +14,11 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 uv;
 
 layout(location = 0) out vec2 outUv;
+layout(location = 1) out int outDrawIndex;
 
 void main() {
 	outUv = uv;
+	outDrawIndex = gl_DrawID;
+	
 	gl_Position = camera.projection * camera.view * vec4(vec3(object.model * vec4(position, 1.0)), 1.0);
 }

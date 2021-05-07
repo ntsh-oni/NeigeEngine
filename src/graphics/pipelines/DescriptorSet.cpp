@@ -9,7 +9,7 @@ void DescriptorSet::init(GraphicsPipeline* associatedGraphicsPipeline, uint32_t 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	descriptorSetAllocateInfo.pNext = nullptr;
-	descriptorSetAllocateInfo.descriptorPool = descriptorPool.descriptorPool;
+	descriptorSetAllocateInfo.descriptorPool = descriptorPool->descriptorPool;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
 	descriptorSetAllocateInfo.pSetLayouts = &graphicsPipeline->descriptorSetLayouts[set];
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &descriptorSet));
@@ -20,8 +20,8 @@ void DescriptorSet::update(const std::vector<VkWriteDescriptorSet>& writesDescri
 }
 
 void DescriptorSet::destroy() {
-	vkFreeDescriptorSets(logicalDevice.device, descriptorPool.descriptorPool, 1, &descriptorSet);
-	descriptorPool.remainingSets += 1;
+	vkFreeDescriptorSets(logicalDevice.device, descriptorPool->descriptorPool, 1, &descriptorSet);
+	descriptorPool->remainingSets += 1;
 }
 
 void DescriptorSet::bind(CommandBuffer* commandBuffer, uint32_t set) {

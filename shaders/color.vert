@@ -29,9 +29,11 @@ layout(location = 5) in vec4 joints;
 layout(location = 6) in vec4 weights;
 
 layout(location = 0) out vec2 outUv;
+layout(location = 1) in int outDrawIndex;
 
 void main() {
 	outUv = uv;
+	outDrawIndex = gl_DrawID;
 	
 	gl_Position = camera.projection * camera.view * object.model * vec4(position, 1.0);
 }

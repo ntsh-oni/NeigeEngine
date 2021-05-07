@@ -77,10 +77,10 @@ struct SwapchainSupport {
 	VkPresentModeKHR presentMode() {
 		VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
 		for (const auto& presentMode : presentModes) {
-			if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-				return presentMode;
+			if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+				bestMode = presentMode;
 			}
-			else if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+			else if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
 				return presentMode;
 			}
 		}

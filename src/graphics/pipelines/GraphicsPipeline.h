@@ -42,15 +42,16 @@ struct GraphicsPipeline {
 	bool depthWrite = true;
 	Compare depthCompare = Compare::LESS_OR_EQUAL;
 	bool backfaceCulling = true;
-	int bindless = -1;
-	VkDescriptorSetLayout bindlessDescriptorSetLayout = VK_NULL_HANDLE;
+	std::vector<int> externalSets;
+	std::vector<VkDescriptorSetLayout> externalDescriptorSetLayouts;
 
 	void init();
 	void destroy();
-	DescriptorPool getDescriptorPool(uint32_t setsToAllocate);
+	DescriptorPool* getDescriptorPool(uint32_t setsToAllocate);
 	void bind(CommandBuffer* commandBuffer);
 	void pushConstant(CommandBuffer* commandBuffer, VkShaderStageFlags stages, uint32_t offset, uint32_t size, const void* data);
 	void destroyPipeline();
 	VkPrimitiveTopology topologyToVkTopology();
 	VkCompareOp compareToVkCompare();
+	int externalSet(size_t index);
 };

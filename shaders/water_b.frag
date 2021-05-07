@@ -7,6 +7,11 @@
 
 #define MAX_REFLECTION_LOD 4.0
 
+struct PerDrawMaterial {
+	int materialIndex;
+	float alphaCutoff;
+} perDrawMaterial;
+
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
 	vec3 dirLightsDirection[MAX_DIR_LIGHTS];
@@ -38,16 +43,17 @@ layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int occlusionIndex;
 } materials[];
 
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
-} pC;
+layout(set = 2, binding = 0) restrict readonly buffer PerDraw {
+	PerDrawMaterial perDrawMaterial[];
+} perDraw;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
 layout(location = 2) in vec3 fragmentPos;
-layout(location = 3) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
-layout(location = MAX_DIR_LIGHTS + 3) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
-layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 3) in mat3 TBN;
+layout(location = 3) in flat int drawIndex;
+layout(location = 4) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
+layout(location = MAX_DIR_LIGHTS + 4) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
+layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 4) in mat3 TBN;
 
 layout(location = 0) out vec4 accumulationColor;
 layout(location = 1) out float revealageColor;
@@ -145,7 +151,7 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 
 void main() {
 	vec4 colorSample = vec4(1.0, 1.0, 1.0, 0.9);
-	vec3 normalSample = texture(textures[materials[pC.materialIndex].normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
+	vec3 normalSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
 	float metallicSample = 1.0;
 	float roughnessSample = 0.0;
 	float occlusionSample = 1.0;

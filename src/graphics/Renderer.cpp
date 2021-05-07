@@ -134,7 +134,7 @@ void Renderer::init(const std::string& applicationName) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(double), &buffer.memoryInfo);
 	}
 
-	createBindlessDescriptorSet();
+	createAdditionalDescriptorSets();
 	
 	// Create samplers
 	ImageTools::createImageSampler(&trilinearEdgeBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
@@ -276,7 +276,7 @@ void Renderer::init(const std::string& applicationName) {
 		loadObject(object);
 	}
 
-	updateBindlessDescriptorSet();
+	updateAdditionalDescriptorSets();
 
 	// Command pools and buffers
 	renderingCommandPools.resize(framesInFlight);
@@ -448,6 +448,14 @@ void Renderer::destroy() {
 		vkDestroyDescriptorSetLayout(logicalDevice.device, materialsDescriptorSetLayout, nullptr);
 		materialsDescriptorSetLayout = VK_NULL_HANDLE;
 	}
+	if (perDrawDescriptorPool.descriptorPool != VK_NULL_HANDLE) {
+		vkDestroyDescriptorPool(logicalDevice.device, perDrawDescriptorPool.descriptorPool, nullptr);
+		perDrawDescriptorPool.descriptorPool = VK_NULL_HANDLE;
+	}
+	if (perDrawDescriptorSetLayout != VK_NULL_HANDLE) {
+		vkDestroyDescriptorSetLayout(logicalDevice.device, perDrawDescriptorSetLayout, nullptr);
+		perDrawDescriptorSetLayout = VK_NULL_HANDLE;
+	}
 	for (CommandPool& renderingCommandPool : renderingCommandPools) {
 		renderingCommandPool.destroy();
 	}
@@ -532,8 +540,10 @@ void Renderer::loadObject(Entity object) {
 		opaqueGraphicsPipeline.topology = objectRenderable.topology;
 		opaqueGraphicsPipeline.depthCompare = Compare::EQUAL;
 		opaqueGraphicsPipeline.depthWrite = false;
-		opaqueGraphicsPipeline.bindless = 1;
-		opaqueGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
+		opaqueGraphicsPipeline.externalSets.push_back(1);
+		opaqueGraphicsPipeline.externalSets.push_back(2);
+		opaqueGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
+		opaqueGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
 		opaqueGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "o", opaqueGraphicsPipeline);
 	}
@@ -554,8 +564,10 @@ void Renderer::loadObject(Entity object) {
 		maskGraphicsPipeline.depthCompare = Compare::EQUAL;
 		maskGraphicsPipeline.depthWrite = false;
 		maskGraphicsPipeline.backfaceCulling = false;
-		maskGraphicsPipeline.bindless = 1;
-		maskGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
+		maskGraphicsPipeline.externalSets.push_back(1);
+		maskGraphicsPipeline.externalSets.push_back(2);
+		maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
+		maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
 		maskGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "m", maskGraphicsPipeline);
 	}
@@ -578,8 +590,10 @@ void Renderer::loadObject(Entity object) {
 		blendGraphicsPipeline.backfaceCulling = false;
 		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
 		blendGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD });
-		blendGraphicsPipeline.bindless = 1;
-		blendGraphicsPipeline.bindlessDescriptorSetLayout = materialsDescriptorSetLayout;
+		blendGraphicsPipeline.externalSets.push_back(1);
+		blendGraphicsPipeline.externalSets.push_back(2);
+		blendGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
+		blendGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
 		blendGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "b", blendGraphicsPipeline);
 	}
@@ -737,25 +751,32 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		// Frustum culling
 		Model* model = &models.at(objectRenderable.modelPath);
 		AABB transformedAABB = model->aabb.transform(oubo.model);
+		std::vector<VkDrawIndexedIndirectCommand> opaqueDrawIndirectCommands;
+		std::vector<PerDraw> opaquePerDrawInformation;
+		std::vector<VkDrawIndexedIndirectCommand> maskDrawIndirectCommands;
+		std::vector<PerDraw> maskPerDrawInformation;
+		std::vector<VkDrawIndexedIndirectCommand> blendDrawIndirectCommands;
+		std::vector<PerDraw> blendPerDrawInformation;
 
 		// Check intersection with entire model
 		if (cameraCamera.frustum.collision(transformedAABB)) {
+			size_t opaqueOffset = 0;
+			size_t maskOffset = 0;
+			size_t blendOffset = 0;
+
 			for (Mesh& mesh : model->meshes) {
 				transformedAABB = mesh.aabb.transform(oubo.model);
 
 				// Check intersection with meshes
 				if (cameraCamera.frustum.collision(transformedAABB)) {
-					mesh.drawableOpaquePrimitives.clear();
-					mesh.drawableMaskPrimitives.clear();
-					mesh.drawableAlphaCutoffs.clear();
-					mesh.drawableBlendPrimitives.clear();
 
 					// Check intersection with primitives
-					for (Primitive& primitive : mesh.opaquePrimitives) {
-						transformedAABB = primitive.aabb.transform(oubo.model);
+					for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
+						transformedAABB = mesh.opaquePrimitives[i].aabb.transform(oubo.model);
 
 						if (cameraCamera.frustum.collision(transformedAABB)) {
-							mesh.drawableOpaquePrimitives.push_back(primitive);
+							opaqueDrawIndirectCommands.push_back(model->opaqueDrawIndirectCommands[opaqueOffset + i]);
+							opaquePerDrawInformation.push_back(model->opaqueDrawIndirectInfos[opaqueOffset + i]);
 						}
 					}
 
@@ -763,20 +784,59 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 						transformedAABB = mesh.maskPrimitives[i].aabb.transform(oubo.model);
 
 						if (cameraCamera.frustum.collision(transformedAABB)) {
-							mesh.drawableMaskPrimitives.push_back(mesh.maskPrimitives[i]);
-							mesh.drawableAlphaCutoffs.push_back(mesh.alphaCutoffs[i]);
+							maskDrawIndirectCommands.push_back(model->maskDrawIndirectCommands[maskOffset + i]);
+							maskPerDrawInformation.push_back(model->maskDrawIndirectInfos[maskOffset + i]);
 						}
 					}
 
-					for (Primitive& primitive : mesh.blendPrimitives) {
-						transformedAABB = primitive.aabb.transform(oubo.model);
+					for (size_t i = 0; i < mesh.blendPrimitives.size(); i++) {
+						transformedAABB = mesh.blendPrimitives[i].aabb.transform(oubo.model);
 
 						if (cameraCamera.frustum.collision(transformedAABB)) {
-							mesh.drawableBlendPrimitives.push_back(primitive);
+							blendDrawIndirectCommands.push_back(model->blendDrawIndirectCommands[blendOffset + i]);
+							blendPerDrawInformation.push_back(model->blendDrawIndirectInfos[blendOffset + i]);
 						}
 					}
 				}
+
+				opaqueOffset += mesh.opaquePrimitives.size();
+				maskOffset += mesh.maskPrimitives.size();
+				blendOffset += mesh.blendPrimitives.size();
 			}
+		}
+
+		model->opaqueCulledDrawCount = static_cast<uint32_t>(opaqueDrawIndirectCommands.size());
+		model->maskCulledDrawCount = static_cast<uint32_t>(maskDrawIndirectCommands.size());
+		model->blendCulledDrawCount = static_cast<uint32_t>(blendDrawIndirectCommands.size());
+
+		if (model->opaqueCulledDrawCount != 0) {
+			model->opaqueCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->opaqueCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
+			memcpy(data, opaqueDrawIndirectCommands.data(), model->opaqueCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+			model->opaqueCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
+
+			model->opaqueCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->opaqueCulledDrawCount * sizeof(PerDraw), &data);
+			memcpy(data, opaquePerDrawInformation.data(), model->opaqueCulledDrawCount * sizeof(PerDraw));
+			model->opaqueCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
+		}
+
+		if (model->maskCulledDrawCount != 0) {
+			model->maskCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->maskCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
+			memcpy(data, maskDrawIndirectCommands.data(), model->maskCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+			model->maskCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
+
+			model->maskCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->maskCulledDrawCount * sizeof(PerDraw), &data);
+			memcpy(data, maskPerDrawInformation.data(), model->maskCulledDrawCount * sizeof(PerDraw));
+			model->maskCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
+		}
+
+		if (model->blendCulledDrawCount != 0) {
+			model->blendCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->blendCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
+			memcpy(data, blendDrawIndirectCommands.data(), model->blendCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+			model->blendCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
+
+			model->blendCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->blendCulledDrawCount * sizeof(PerDraw), &data);
+			memcpy(data, blendPerDrawInformation.data(), model->blendCulledDrawCount * sizeof(PerDraw));
+			model->blendCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
 		}
 	}
 }
@@ -802,14 +862,14 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotOpaquePrimitives) {
 			depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
-			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, true);
+			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, frameInFlightIndex, true);
 		}
 
 		// Mask
 		if (model->gotMaskPrimitives) {
 			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, true, 0);
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
 		}
 	}
 
@@ -833,7 +893,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 					shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-					model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, false);
+					model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, frameInFlightIndex, false);
 				}
 
 				// Mask
@@ -841,7 +901,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, false, 16);
+					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, frameInFlightIndex, false, 16);
 				}
 			}
 
@@ -864,7 +924,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true, true);
+			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 
 		// Mask
@@ -873,7 +933,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, true, 0);
+			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
 		}
 	}
 	envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
@@ -895,7 +955,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
 			}
-			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true, true);
+			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 	}
 
@@ -1019,25 +1079,26 @@ void Renderer::destroyResources() {
 	postFramebuffers.shrink_to_fit();
 }
 
-void Renderer::createBindlessDescriptorSet() {
+void Renderer::createAdditionalDescriptorSets() {
+	// Texture and Materials
 	// Descriptor Pool
 	VkDescriptorPoolSize texturePoolSize = {};
 	texturePoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	texturePoolSize.descriptorCount = 524288;
 
 	VkDescriptorPoolSize materialPoolSize = {};
-	materialPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	materialPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	materialPoolSize.descriptorCount = 524288;
 
-	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
-	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolCreateInfo.pNext = nullptr;
-	descriptorPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	descriptorPoolCreateInfo.maxSets = 1;
-	descriptorPoolCreateInfo.poolSizeCount = 1;
+	VkDescriptorPoolCreateInfo materialPoolCreateInfo = {};
+	materialPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	materialPoolCreateInfo.pNext = nullptr;
+	materialPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	materialPoolCreateInfo.maxSets = 1;
+	materialPoolCreateInfo.poolSizeCount = 1;
 	std::array<VkDescriptorPoolSize, 2> descriptorPools = { texturePoolSize, materialPoolSize };
-	descriptorPoolCreateInfo.pPoolSizes = descriptorPools.data();
-	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &descriptorPoolCreateInfo, nullptr, &materialsDescriptorPool.descriptorPool));
+	materialPoolCreateInfo.pPoolSizes = descriptorPools.data();
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &materialPoolCreateInfo, nullptr, &materialsDescriptorPool.descriptorPool));
 
 	materialsDescriptorPool.remainingSets = 0;
 
@@ -1056,35 +1117,68 @@ void Renderer::createBindlessDescriptorSet() {
 	materialBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 	materialBinding.pImmutableSamplers = nullptr;
 
-	VkDescriptorSetLayoutBindingFlagsCreateInfo descriptorSetLayoutBindingFlagsCreateInfo = {};
-	descriptorSetLayoutBindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-	descriptorSetLayoutBindingFlagsCreateInfo.pNext = nullptr;
-	descriptorSetLayoutBindingFlagsCreateInfo.bindingCount = 2;
+	VkDescriptorSetLayoutBindingFlagsCreateInfo materialLayoutBindingFlagsCreateInfo = {};
+	materialLayoutBindingFlagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+	materialLayoutBindingFlagsCreateInfo.pNext = nullptr;
+	materialLayoutBindingFlagsCreateInfo.bindingCount = 2;
 	std::array<VkDescriptorBindingFlags, 2> flags = { VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT, VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT };
-	descriptorSetLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
+	materialLayoutBindingFlagsCreateInfo.pBindingFlags = flags.data();
 
-	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutCreateInfo.pNext = &descriptorSetLayoutBindingFlagsCreateInfo;
-	descriptorSetLayoutCreateInfo.flags = 0;
-	descriptorSetLayoutCreateInfo.bindingCount = 2;
+	VkDescriptorSetLayoutCreateInfo materialSetLayoutCreateInfo = {};
+	materialSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	materialSetLayoutCreateInfo.pNext = &materialLayoutBindingFlagsCreateInfo;
+	materialSetLayoutCreateInfo.flags = 0;
+	materialSetLayoutCreateInfo.bindingCount = 2;
 	std::array<VkDescriptorSetLayoutBinding, 2> descriptorSetLayoutBindings = { textureBinding, materialBinding };
-	descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
-	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &descriptorSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
+	materialSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings.data();
+	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &materialSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
 
 	// Allocation
-	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
-	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptorSetAllocateInfo.pNext = nullptr;
-	descriptorSetAllocateInfo.descriptorPool = materialsDescriptorPool.descriptorPool;
-	descriptorSetAllocateInfo.descriptorSetCount = 1;
-	descriptorSetAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
-	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &materialsDescriptorSet.descriptorSet));
+	VkDescriptorSetAllocateInfo materialAllocateInfo = {};
+	materialAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	materialAllocateInfo.pNext = nullptr;
+	materialAllocateInfo.descriptorPool = materialsDescriptorPool.descriptorPool;
+	materialAllocateInfo.descriptorSetCount = 1;
+	materialAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
+	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &materialAllocateInfo, &materialsDescriptorSet.descriptorSet));
 
-	materialsDescriptorSet.descriptorPool = materialsDescriptorPool;
+	materialsDescriptorSet.descriptorPool = &materialsDescriptorPool;
+
+	// Per draw information
+	// Descriptor Pool
+	VkDescriptorPoolSize perDrawPoolSize = {};
+	perDrawPoolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	perDrawPoolSize.descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo perDrawPoolCreateInfo = {};
+	perDrawPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	perDrawPoolCreateInfo.pNext = nullptr;
+	perDrawPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	perDrawPoolCreateInfo.maxSets = 131072;
+	perDrawPoolCreateInfo.poolSizeCount = 1;
+	perDrawPoolCreateInfo.pPoolSizes = &perDrawPoolSize;
+	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &perDrawPoolCreateInfo, nullptr, &perDrawDescriptorPool.descriptorPool));
+
+	perDrawDescriptorPool.remainingSets = 131072;
+
+	// Descriptor Set Layout
+	VkDescriptorSetLayoutBinding perDrawBinding = {};
+	perDrawBinding.binding = 0;
+	perDrawBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	perDrawBinding.descriptorCount = 1;
+	perDrawBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	perDrawBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo perDrawSetLayoutCreateInfo = {};
+	perDrawSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	perDrawSetLayoutCreateInfo.pNext = nullptr;
+	perDrawSetLayoutCreateInfo.flags = 0;
+	perDrawSetLayoutCreateInfo.bindingCount = 1;
+	perDrawSetLayoutCreateInfo.pBindings = &perDrawBinding;
+	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &perDrawSetLayoutCreateInfo, nullptr, &perDrawDescriptorSetLayout));
 }
 
-void Renderer::updateBindlessDescriptorSet() {
+void Renderer::updateAdditionalDescriptorSets() {
 	std::vector<VkDescriptorImageInfo> textureInfos;
 	for (Texture& texture : textures) {
 		VkDescriptorImageInfo textureInfo = {};

@@ -29,15 +29,18 @@ struct Mesh {
 	uint32_t indexOffset;
 	int32_t vertexOffset;
 	std::vector<Primitive> opaquePrimitives;
-	std::vector<Primitive> drawableOpaquePrimitives;
 	std::vector<Primitive> maskPrimitives;
-	std::vector<Primitive> drawableMaskPrimitives;
 	std::vector<float> alphaCutoffs;
 	std::vector<float> drawableAlphaCutoffs;
 	std::vector<Primitive> blendPrimitives;
-	std::vector<Primitive> drawableBlendPrimitives;
 	Bone skeleton;
 	std::vector<Bone> boneList;
 	Buffer boneBuffer;
 	AABB aabb;
+};
+
+// Per draw information
+struct PerDraw {
+	int materialIndex;
+	float alphaCutoff;
 };
