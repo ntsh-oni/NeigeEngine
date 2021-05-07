@@ -30,5 +30,5 @@ void main() {
 	outUv = uv;
 	outDrawIndex = gl_DrawID;
 	
-	gl_Position = camera.projection * camera.view * object.model * vec4(position, 1.0);
+	gl_Position = camera.projection * camera.view * vec4(vec3(object.model * vec4(position, 1.0)), 1.0);
 }
