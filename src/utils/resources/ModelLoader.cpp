@@ -136,7 +136,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 			size_t jointsStride = 0;
 			size_t weightsStride = 0;
 
-			AABB aabb = {};
+			AABB primitiveAABB = {};
 
 			for (size_t k = 0; k < primitive->attributes_count; k++) {
 				cgltf_attribute* attribute = &primitive->attributes[k];
@@ -152,28 +152,14 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 					positionStride = std::max(buffer_view->stride, sizeof(float) * 3);
 
 					// AABB
-					aabb.min.x = accessor->min[0];
-					aabb.max.x = accessor->max[0];
-					aabb.min.y = accessor->min[1];
-					aabb.max.y = accessor->max[1];
-					aabb.min.z = accessor->min[2];
-					aabb.max.z = accessor->max[2];
+					primitiveAABB.min.x = accessor->min[0];
+					primitiveAABB.max.x = accessor->max[0];
+					primitiveAABB.min.y = accessor->min[1];
+					primitiveAABB.max.y = accessor->max[1];
+					primitiveAABB.min.z = accessor->min[2];
+					primitiveAABB.max.z = accessor->max[2];
 
-					std::array<glm::vec3, 8> corners = aabb.corners();
-					std::vector<float> cornersX;
-					std::vector<float> cornersY;
-					std::vector<float> cornersZ;
-
-					for (size_t i = 0; i < 8; i++) {
-						glm::vec3 cornerTransform = glm::vec3(modelMatrix * glm::vec4(corners[i], 1.0f));
-
-						cornersX.push_back(cornerTransform.x);
-						cornersY.push_back(cornerTransform.y);
-						cornersZ.push_back(cornerTransform.z);
-					}
-					glm::vec3 minCorner = glm::vec3(*std::min_element(cornersX.begin(), cornersX.end()), *std::min_element(cornersY.begin(), cornersY.end()), *std::min_element(cornersZ.begin(), cornersZ.end()));
-					glm::vec3 maxCorner = glm::vec3(*std::max_element(cornersX.begin(), cornersX.end()), *std::max_element(cornersY.begin(), cornersY.end()), *std::max_element(cornersZ.begin(), cornersZ.end()));
-					aabb = { minCorner, maxCorner };
+					primitiveAABB = primitiveAABB.transform(modelMatrix);
 				}
 				else if (attributeName == "NORMAL") {
 					normal = reinterpret_cast<float*>(offsetBuffer);
@@ -486,13 +472,37 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 			// Primitive
 			if (alphaMode == cgltf_alpha_mode_opaque) {
-				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
+				opaquePrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, primitiveAABB });
 			}
 			else if (alphaMode == cgltf_alpha_mode_mask) {
-				maskPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
+				maskPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, primitiveAABB });
 			}
 			else {
-				blendPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, aabb });
+				blendPrimitives.push_back({ firstIndex, indexCount, vertexOffset, materialID, primitiveAABB });
+			}
+
+			if (j == 0) {
+				modelMesh.aabb = primitiveAABB;
+			}
+			else {
+				if (primitiveAABB.min.x < modelMesh.aabb.min.x) {
+					modelMesh.aabb.min.x = primitiveAABB.min.x;
+				}
+				if (primitiveAABB.max.x > modelMesh.aabb.max.x) {
+					modelMesh.aabb.max.x = primitiveAABB.max.x;
+				}
+				if (primitiveAABB.min.y < modelMesh.aabb.min.y) {
+					modelMesh.aabb.min.y = primitiveAABB.min.y;
+				}
+				if (primitiveAABB.max.y > modelMesh.aabb.max.y) {
+					modelMesh.aabb.max.y = primitiveAABB.max.y;
+				}
+				if (primitiveAABB.min.z < modelMesh.aabb.min.z) {
+					modelMesh.aabb.min.z = primitiveAABB.min.z;
+				}
+				if (primitiveAABB.max.z > modelMesh.aabb.max.z) {
+					modelMesh.aabb.max.z = primitiveAABB.max.z;
+				}
 			}
 
 			vertices->insert(vertices->end(), primitiveVertices.begin(), primitiveVertices.end());
