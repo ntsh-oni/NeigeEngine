@@ -7,6 +7,11 @@
 
 #define MAX_REFLECTION_LOD 4.0
 
+struct PerDrawMaterial {
+	int materialIndex;
+	float alphaCutoff;
+} perDrawMaterial;
+
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
 	vec3 dirLightsDirection[MAX_DIR_LIGHTS];
@@ -34,11 +39,12 @@ layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int occlusionIndex;
 } materials[];
 
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
-} pC;
+layout(set = 2, binding = 0) restrict readonly buffer PerDraw {
+	PerDrawMaterial perDrawMaterial[];
+} perDraw;
 
 layout(location = 0) in vec2 uv;
+layout(location = 1) in flat int drawIndex;
 
 layout(location = 0) out vec4 accumulationColor;
 layout(location = 1) out float revealageColor;
@@ -46,7 +52,7 @@ layout(location = 1) out float revealageColor;
 #define M_PI 3.1415926535897932384626433832795
 
 void main() {
-	vec4 colorSample = texture(textures[materials[pC.materialIndex].diffuseIndex], uv);
+	vec4 colorSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].diffuseIndex], uv);
 	vec3 tmpColor = colorSample.rgb;
 
 	vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);

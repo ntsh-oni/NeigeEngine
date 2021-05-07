@@ -1,78 +1,54 @@
 {
-    "entities": [
-        {
-            "camera": {
-                "fov": 45.0,
-                "nearPlane": 0.3,
-                "farPlane": 500.0,
-                "envmapPath": "../modelfiles/Tokyo_BigSight_3k.hdr"
-            },
+	"entities": [
+		{
+			"camera": {
+				"fov": 45.0,
+				"nearPlane": 0.3,
+				"farPlane": 500.0,
+				"envmapPath": "../modelfiles/EmeraldSquare_v4/symmetrical_garden_4k.hdr"
+			},
 			"transform": {
-                "position": [
-                    -4.0,
-                    1.0,
-                    0.0
-                ],
-                "rotation": [
-                    1.0,
-                    0.0,
-                    0.0
-                ],
+				"position": [
+					3.0,
+					1.0,
+					0.0
+				],
+				"rotation": [
+					1.0,
+					0.0,
+					0.0
+				],
                 "scale": [
-                    0.5,
-                    2.0,
-                    0.5
-                ]
-            }
-        },
+					0.5,
+					2.0,
+					0.5
+				]
+			}
+		},
 		{
-            "renderable": {
-                "modelPath": "../../glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
+			"renderable": {
+				"modelPath": "../modelfiles/DamagedHelmet.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
                 "scale": [
-                    1.0,
-                    1.0,
+					1.0,
+					1.0,
 					1.0
-                ]
-            }
-        },
-		{
-            "renderable": {
-                "modelPath": "../modelfiles/DamagedHelmet.gltf",
-                "vertexShaderPath": "../shaders/pbr.vert",
-                "fragmentShaderPath": "../shaders/pbr.frag"
-            },
-            "transform": {
-                "position": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-					1.0
-                ]
-            }
-        },
+				]
+			}
+		},
 		{
 			"light": {
 				"type": "DIRECTIONAL",

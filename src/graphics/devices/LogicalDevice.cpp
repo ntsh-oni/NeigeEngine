@@ -25,6 +25,7 @@ void LogicalDevice::init() {
 	physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
 	physicalDeviceFeatures.sampleRateShading = VK_TRUE;
 	physicalDeviceFeatures.independentBlend = VK_TRUE;
+	physicalDeviceFeatures.multiDrawIndirect = VK_TRUE;
 
 	VkPhysicalDeviceDescriptorIndexingFeatures physicalDeviceDescriptorIndexingFeatures = {};
 	physicalDeviceDescriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;

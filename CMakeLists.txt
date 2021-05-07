@@ -61,8 +61,8 @@ SET(GRAPHICS_RESOURCES_SOURCES src/graphics/resources/Buffer.cpp src/graphics/re
 SET(GRAPHICS_RESOURCES_HEADERS src/graphics/resources/Buffer.h src/graphics/resources/Image.h src/graphics/resources/RendererResources.h src/graphics/resources/Samplers.h src/graphics/resources/ShaderResources.h)
 SET(GRAPHICS_SYNC_SOURCES src/graphics/sync/Fence.cpp src/graphics/sync/Semaphore.cpp)
 SET(GRAPHICS_SYNC_HEADERS src/graphics/sync/Fence.h src/graphics/sync/Semaphore.h)
-SET(GRAPHICS_EFFECTS_SOURCES src/graphics/effects/bloom/Bloom.cpp src/graphics/effects/depthprepass/DepthPrepass.cpp src/graphics/effects/fxaa/FXAA.cpp src/graphics/effects/envmap/Envmap.cpp src/graphics/effects/shadowmapping/Shadow.cpp src/graphics/effects/ssao/SSAO.cpp)
-SET(GRAPHICS_EFFECTS_HEADERS src/graphics/effects/bloom/Bloom.h src/graphics/effects/depthprepass/DepthPrepass.h src/graphics/effects/fxaa/FXAA.h src/graphics/effects/envmap/Envmap.h src/graphics/effects/shadowmapping/Shadow.h src/graphics/effects/ssao/SSAO.h)
+SET(GRAPHICS_EFFECTS_SOURCES src/graphics/effects/bloom/Bloom.cpp src/graphics/effects/depthprepass/DepthPrepass.cpp src/graphics/effects/envmap/Envmap.cpp src/graphics/effects/fxaa/FXAA.cpp src/graphics/effects/shadowmapping/Shadow.cpp src/graphics/effects/ssao/SSAO.cpp)
+SET(GRAPHICS_EFFECTS_HEADERS src/graphics/effects/bloom/Bloom.h src/graphics/effects/depthprepass/DepthPrepass.h src/graphics/effects/envmap/Envmap.h src/graphics/effects/fxaa/FXAA.h src/graphics/effects/shadowmapping/Shadow.h src/graphics/effects/ssao/SSAO.h)
 
 SET(GRAPHICS_SOURCES src/graphics/Renderer.cpp ${GRAPHICS_COMMANDS_SOURCES} ${GRAPHICS_DEVICES_SOURCES} ${GRAPHICS_INSTANCE_SOURCES} ${GRAPHICS_MODELS_SOURCES} ${GRAPHICS_PIPELINES_SOURCES} ${GRAPHICS_RENDERPASSES_SOURCES} ${GRAPHICS_RESOURCES_SOURCES} ${GRAPHICS_SYNC_SOURCES} ${GRAPHICS_EFFECTS_SOURCES})
 SET(GRAPHICS_HEADERS src/graphics/Renderer.h ${GRAPHICS_COMMANDS_HEADERS} ${GRAPHICS_DEVICES_HEADERS} ${GRAPHICS_INSTANCE_HEADERS} ${GRAPHICS_MODELS_HEADERS} ${GRAPHICS_PIPELINES_HEADERS} ${GRAPHICS_RENDERPASSES_HEADERS} ${GRAPHICS_RESOURCES_HEADERS} ${GRAPHICS_SYNC_HEADERS} ${GRAPHICS_EFFECTS_HEADERS})

@@ -1,11 +1,18 @@
 #version 460
 #extension GL_EXT_nonuniform_qualifier : enable
 
+#define MAX_PRIMITIVES 1024
+
 #define MAX_DIR_LIGHTS 10
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
 #define MAX_REFLECTION_LOD 4.0
+
+struct PerDrawMaterial {
+	int materialIndex;
+	float alphaCutoff;
+} perDrawMaterial;
 
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
@@ -34,16 +41,17 @@ layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int occlusionIndex;
 } materials[];
 
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
-} pC;
+layout(set = 2, binding = 0) restrict readonly buffer PerDraw {
+	PerDrawMaterial perDrawMaterial[];
+} perDraw;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 cameraPos;
 layout(location = 2) in vec3 fragmentPos;
-layout(location = 3) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
-layout(location = MAX_DIR_LIGHTS + 3) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
-layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 3) in mat3 TBN;
+layout(location = 3) in flat int drawIndex;
+layout(location = 4) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
+layout(location = MAX_DIR_LIGHTS + 4) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
+layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 4) in mat3 TBN;
 
 layout(location = 0) out vec4 sceneColor;
 
@@ -139,12 +147,12 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = texture(textures[materials[pC.materialIndex].diffuseIndex], uv);
-	vec3 normalSample = texture(textures[materials[pC.materialIndex].normalIndex], uv).xyz;
-	float metallicSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).b;
-	float roughnessSample = texture(textures[materials[pC.materialIndex].metallicRoughnessIndex], uv).g;
-	vec3 emissiveSample = texture(textures[materials[pC.materialIndex].emissiveIndex], uv).xyz;
-	float occlusionSample = texture(textures[materials[pC.materialIndex].occlusionIndex], uv).r;
+	vec4 colorSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].diffuseIndex], uv);
+	vec3 normalSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].normalIndex], uv).xyz;
+	float metallicSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].metallicRoughnessIndex], uv).b;
+	float roughnessSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].metallicRoughnessIndex], uv).g;
+	vec3 emissiveSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].emissiveIndex], uv).xyz;
+	float occlusionSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].occlusionIndex], uv).r;
 	
 	vec3 d = vec3(colorSample);
 	vec3 n = normalSample * 2.0 - 1.0;

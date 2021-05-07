@@ -7,6 +7,11 @@
 
 #define MAX_REFLECTION_LOD 4.0
 
+struct PerDrawMaterial {
+	int materialIndex;
+	float alphaCutoff;
+} perDrawMaterial;
+
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
 	vec3 dirLightsDirection[MAX_DIR_LIGHTS];
@@ -34,18 +39,18 @@ layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int occlusionIndex;
 } materials[];
 
-layout(push_constant) uniform PushConstants {
-	int materialIndex;
-	float alphaCutoff;
-} pC;
+layout(set = 2, binding = 0) restrict readonly buffer PerDraw {
+	PerDrawMaterial perDrawMaterial[];
+} perDraw;
 
 layout(location = 0) in vec2 uv;
+layout(location = 1) in flat int drawIndex;
 
 layout(location = 0) out vec4 sceneColor;
 
 void main() {
-	sceneColor = texture(textures[materials[pC.materialIndex].diffuseIndex], uv);
-	if (sceneColor.w <= pC.alphaCutoff) {
+	sceneColor = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].diffuseIndex], uv);
+	if (sceneColor.w <= perDraw.perDrawMaterial[drawIndex].alphaCutoff) {
 		discard;
 	}
 }

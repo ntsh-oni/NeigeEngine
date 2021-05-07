@@ -20,6 +20,8 @@ inline std::vector<Material> materials;
 inline DescriptorPool materialsDescriptorPool;
 inline VkDescriptorSetLayout materialsDescriptorSetLayout = VK_NULL_HANDLE;
 inline DescriptorSet materialsDescriptorSet;
+inline DescriptorPool perDrawDescriptorPool;
+inline VkDescriptorSetLayout perDrawDescriptorSetLayout = VK_NULL_HANDLE;
 inline std::unordered_map<std::string, Shader> shaders;
 inline Entity camera;
 inline std::vector<Buffer> cameraBuffers;

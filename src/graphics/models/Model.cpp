@@ -11,12 +11,15 @@ void Model::init(std::string filePath) {
 	for (Mesh& mesh : meshes) {
 		if (mesh.opaquePrimitives.size() != 0) {
 			gotOpaquePrimitives = true;
+			opaqueDrawCount += static_cast<uint32_t>(mesh.opaquePrimitives.size());
 		}
 		if (mesh.maskPrimitives.size() != 0) {
 			gotMaskPrimitives = true;
+			maskDrawCount += static_cast<uint32_t>(mesh.maskPrimitives.size());
 		}
 		if (mesh.blendPrimitives.size() != 0) {
 			gotBlendPrimitives = true;
+			blendDrawCount += static_cast<uint32_t>(mesh.blendPrimitives.size());
 		}
 	}
 
@@ -42,6 +45,112 @@ void Model::init(std::string filePath) {
 	BufferTools::copyBuffer(stagingIndexBuffer.buffer, indexBuffer.buffer, size);
 	stagingIndexBuffer.destroy();
 
+	// Indirect
+	if (gotOpaquePrimitives) {
+		opaqueCulledDrawIndirectBuffers.resize(framesInFlight);
+		opaqueCulledDrawIndirectInfoBuffers.resize(framesInFlight);
+		opaqueCulledDrawIndirectInfoDescriptorSets.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			BufferTools::createIndirectBuffer(opaqueCulledDrawIndirectBuffers[i].buffer, opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), &opaqueCulledDrawIndirectBuffers[i].memoryInfo);
+			BufferTools::createStorageBuffer(opaqueCulledDrawIndirectInfoBuffers[i].buffer, opaqueDrawCount * sizeof(PerDraw), &opaqueCulledDrawIndirectInfoBuffers[i].memoryInfo);
+
+			// Descriptor set allocation
+			VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+			descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptorSetAllocateInfo.pNext = nullptr;
+			descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+			descriptorSetAllocateInfo.descriptorSetCount = 1;
+			descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+			NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &opaqueCulledDrawIndirectInfoDescriptorSets[i].descriptorSet));
+
+			opaqueCulledDrawIndirectInfoDescriptorSets[i].descriptorPool = &perDrawDescriptorPool;
+		}
+		BufferTools::createIndirectBuffer(opaqueDrawIndirectBuffer.buffer, opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), &opaqueDrawIndirectBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(opaqueDrawIndirectInfoBuffer.buffer, opaqueDrawCount * sizeof(PerDraw), &opaqueDrawIndirectInfoBuffer.memoryInfo);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+		descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocateInfo.pNext = nullptr;
+		descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		descriptorSetAllocateInfo.descriptorSetCount = 1;
+		descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &opaqueDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		opaqueDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+		perDrawDescriptorPool.remainingSets -= (framesInFlight + 1);
+	}
+
+	if (gotMaskPrimitives) {
+		maskCulledDrawIndirectBuffers.resize(framesInFlight);
+		maskCulledDrawIndirectInfoBuffers.resize(framesInFlight);
+		maskCulledDrawIndirectInfoDescriptorSets.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			BufferTools::createIndirectBuffer(maskCulledDrawIndirectBuffers[i].buffer, maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), &maskCulledDrawIndirectBuffers[i].memoryInfo);
+			BufferTools::createStorageBuffer(maskCulledDrawIndirectInfoBuffers[i].buffer, maskDrawCount * sizeof(PerDraw), &maskCulledDrawIndirectInfoBuffers[i].memoryInfo);
+
+			// Descriptor set allocation
+			VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+			descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptorSetAllocateInfo.pNext = nullptr;
+			descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+			descriptorSetAllocateInfo.descriptorSetCount = 1;
+			descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+			NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &maskCulledDrawIndirectInfoDescriptorSets[i].descriptorSet));
+
+			maskCulledDrawIndirectInfoDescriptorSets[i].descriptorPool = &perDrawDescriptorPool;
+		}
+		BufferTools::createIndirectBuffer(maskDrawIndirectBuffer.buffer, maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), &maskDrawIndirectBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(maskDrawIndirectInfoBuffer.buffer, maskDrawCount * sizeof(PerDraw), &maskDrawIndirectInfoBuffer.memoryInfo);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+		descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocateInfo.pNext = nullptr;
+		descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		descriptorSetAllocateInfo.descriptorSetCount = 1;
+		descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &maskDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		maskDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+		perDrawDescriptorPool.remainingSets -= (framesInFlight + 1);
+	}
+
+	if (gotBlendPrimitives) {
+		blendCulledDrawIndirectBuffers.resize(framesInFlight);
+		blendCulledDrawIndirectInfoBuffers.resize(framesInFlight);
+		blendCulledDrawIndirectInfoDescriptorSets.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			BufferTools::createIndirectBuffer(blendCulledDrawIndirectBuffers[i].buffer, blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), &blendCulledDrawIndirectBuffers[i].memoryInfo);
+			BufferTools::createStorageBuffer(blendCulledDrawIndirectInfoBuffers[i].buffer, blendDrawCount * sizeof(PerDraw), &blendCulledDrawIndirectInfoBuffers[i].memoryInfo);
+
+			// Descriptor set allocation
+			VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+			descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			descriptorSetAllocateInfo.pNext = nullptr;
+			descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+			descriptorSetAllocateInfo.descriptorSetCount = 1;
+			descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+			NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &blendCulledDrawIndirectInfoDescriptorSets[i].descriptorSet));
+
+			blendCulledDrawIndirectInfoDescriptorSets[i].descriptorPool = &perDrawDescriptorPool;
+		}
+		BufferTools::createIndirectBuffer(blendDrawIndirectBuffer.buffer, blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), &blendDrawIndirectBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(blendDrawIndirectInfoBuffer.buffer, blendDrawCount * sizeof(PerDraw), &blendDrawIndirectInfoBuffer.memoryInfo);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
+		descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descriptorSetAllocateInfo.pNext = nullptr;
+		descriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		descriptorSetAllocateInfo.descriptorSetCount = 1;
+		descriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &blendDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		blendDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+		perDrawDescriptorPool.remainingSets -= (framesInFlight + 1);
+	}
+
 	for (Mesh& mesh : meshes) {
 		// Bones
 		NEIGE_ASSERT(mesh.boneList.size() <= MAX_BONES, "A mesh has more than " + std::to_string(MAX_BONES) + " bones.");
@@ -59,7 +168,7 @@ void Model::init(std::string filePath) {
 		memcpy(data, &bubo, sizeof(BoneUniformBufferObject));
 		mesh.boneBuffer.unmap();
 
-		// AABB
+		// AABB and indirect commands
 		// Mesh AABB
 		mesh.aabb = { glm::vec3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()), glm::vec3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()) };
 
@@ -82,26 +191,52 @@ void Model::init(std::string filePath) {
 			if (primitive.aabb.max.z > mesh.aabb.max.z) {
 				mesh.aabb.max.z = primitive.aabb.max.z;
 			}
+
+			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
+			drawIndirectCommand.indexCount = primitive.indexCount;
+			drawIndirectCommand.instanceCount = 1;
+			drawIndirectCommand.firstIndex = mesh.indexOffset + primitive.firstIndex;
+			drawIndirectCommand.vertexOffset = mesh.vertexOffset + primitive.vertexOffset;
+			drawIndirectCommand.firstInstance = 0;
+			opaqueDrawIndirectCommands.push_back(drawIndirectCommand);
+
+			PerDraw perDraw = {};
+			perDraw.materialIndex = static_cast<int>(primitive.materialIndex);
+			perDraw.alphaCutoff = 0.0f;
+			opaqueDrawIndirectInfos.push_back(perDraw);
 		}
-		for (Primitive& primitive : mesh.maskPrimitives) {
-			if (primitive.aabb.min.x < mesh.aabb.min.x) {
-				mesh.aabb.min.x = primitive.aabb.min.x;
+		for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
+			if (mesh.maskPrimitives[i].aabb.min.x < mesh.aabb.min.x) {
+				mesh.aabb.min.x = mesh.maskPrimitives[i].aabb.min.x;
 			}
-			if (primitive.aabb.max.x > mesh.aabb.max.x) {
-				mesh.aabb.max.x = primitive.aabb.max.x;
+			if (mesh.maskPrimitives[i].aabb.max.x > mesh.aabb.max.x) {
+				mesh.aabb.max.x = mesh.maskPrimitives[i].aabb.max.x;
 			}
-			if (primitive.aabb.min.y < mesh.aabb.min.y) {
-				mesh.aabb.min.y = primitive.aabb.min.y;
+			if (mesh.maskPrimitives[i].aabb.min.y < mesh.aabb.min.y) {
+				mesh.aabb.min.y = mesh.maskPrimitives[i].aabb.min.y;
 			}
-			if (primitive.aabb.max.y > mesh.aabb.max.y) {
-				mesh.aabb.max.y = primitive.aabb.max.y;
+			if (mesh.maskPrimitives[i].aabb.max.y > mesh.aabb.max.y) {
+				mesh.aabb.max.y = mesh.maskPrimitives[i].aabb.max.y;
 			}
-			if (primitive.aabb.min.z < mesh.aabb.min.z) {
-				mesh.aabb.min.z = primitive.aabb.min.z;
+			if (mesh.maskPrimitives[i].aabb.min.z < mesh.aabb.min.z) {
+				mesh.aabb.min.z = mesh.maskPrimitives[i].aabb.min.z;
 			}
-			if (primitive.aabb.max.z > mesh.aabb.max.z) {
-				mesh.aabb.max.z = primitive.aabb.max.z;
+			if (mesh.maskPrimitives[i].aabb.max.z > mesh.aabb.max.z) {
+				mesh.aabb.max.z = mesh.maskPrimitives[i].aabb.max.z;
 			}
+
+			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
+			drawIndirectCommand.indexCount = mesh.maskPrimitives[i].indexCount;
+			drawIndirectCommand.instanceCount = 1;
+			drawIndirectCommand.firstIndex = mesh.indexOffset + mesh.maskPrimitives[i].firstIndex;
+			drawIndirectCommand.vertexOffset = mesh.vertexOffset + mesh.maskPrimitives[i].vertexOffset;
+			drawIndirectCommand.firstInstance = 0;
+			maskDrawIndirectCommands.push_back(drawIndirectCommand);
+
+			PerDraw perDraw = {};
+			perDraw.materialIndex = static_cast<int>(mesh.maskPrimitives[i].materialIndex);
+			perDraw.alphaCutoff = mesh.alphaCutoffs[i];
+			maskDrawIndirectInfos.push_back(perDraw);
 		}
 		for (Primitive& primitive : mesh.blendPrimitives) {
 			if (primitive.aabb.min.x < mesh.aabb.min.x) {
@@ -122,6 +257,19 @@ void Model::init(std::string filePath) {
 			if (primitive.aabb.max.z > mesh.aabb.max.z) {
 				mesh.aabb.max.z = primitive.aabb.max.z;
 			}
+
+			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
+			drawIndirectCommand.indexCount = primitive.indexCount;
+			drawIndirectCommand.instanceCount = 1;
+			drawIndirectCommand.firstIndex = mesh.indexOffset + primitive.firstIndex;
+			drawIndirectCommand.vertexOffset = mesh.vertexOffset + primitive.vertexOffset;
+			drawIndirectCommand.firstInstance = 0;
+			blendDrawIndirectCommands.push_back(drawIndirectCommand);
+
+			PerDraw perDraw = {};
+			perDraw.materialIndex = static_cast<int>(primitive.materialIndex);
+			perDraw.alphaCutoff = 0.0f;
+			blendDrawIndirectInfos.push_back(perDraw);
 		}
 
 		// Model AABB
@@ -144,11 +292,209 @@ void Model::init(std::string filePath) {
 			aabb.max.z = mesh.aabb.max.z;
 		}
 	}
+
+	void* indirectData;
+
+	if (gotOpaquePrimitives) {
+		// Buffers
+		opaqueDrawIndirectBuffer.map(0, opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), &indirectData);
+		memcpy(indirectData, opaqueDrawIndirectCommands.data(), opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+		opaqueDrawIndirectBuffer.unmap();
+
+		opaqueDrawIndirectInfoBuffer.map(0, opaqueDrawCount * sizeof(PerDraw), &indirectData);
+		memcpy(indirectData, opaqueDrawIndirectInfos.data(), opaqueDrawCount * sizeof(PerDraw));
+		opaqueDrawIndirectInfoBuffer.unmap();
+		
+		// Descriptor Sets
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			VkDescriptorBufferInfo perDrawInfo = {};
+			perDrawInfo.buffer = opaqueCulledDrawIndirectInfoBuffers[i].buffer;
+			perDrawInfo.offset = 0;
+			perDrawInfo.range = opaqueDrawCount * sizeof(PerDraw);
+
+			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+			VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+			perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			perDrawWriteDescriptorSet.pNext = nullptr;
+			perDrawWriteDescriptorSet.dstSet = opaqueCulledDrawIndirectInfoDescriptorSets[i].descriptorSet;
+			perDrawWriteDescriptorSet.dstBinding = 0;
+			perDrawWriteDescriptorSet.dstArrayElement = 0;
+			perDrawWriteDescriptorSet.descriptorCount = 1;
+			perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			perDrawWriteDescriptorSet.pImageInfo = nullptr;
+			perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+			perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+
+			opaqueCulledDrawIndirectInfoDescriptorSets[i].update(writesDescriptorSet);
+		}
+
+		VkDescriptorBufferInfo perDrawInfo = {};
+		perDrawInfo.buffer = opaqueDrawIndirectInfoBuffer.buffer;
+		perDrawInfo.offset = 0;
+		perDrawInfo.range = opaqueDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawWriteDescriptorSet.pNext = nullptr;
+		perDrawWriteDescriptorSet.dstSet = opaqueDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawWriteDescriptorSet.dstBinding = 0;
+		perDrawWriteDescriptorSet.dstArrayElement = 0;
+		perDrawWriteDescriptorSet.descriptorCount = 1;
+		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+		
+		opaqueDrawIndirectInfoDescriptorSet.update(writesDescriptorSet);
+	}
+
+	if (gotMaskPrimitives) {
+		maskDrawIndirectBuffer.map(0, maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), &indirectData);
+		memcpy(indirectData, maskDrawIndirectCommands.data(), maskDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+		maskDrawIndirectBuffer.unmap();
+
+		maskDrawIndirectInfoBuffer.map(0, maskDrawCount * sizeof(PerDraw), &indirectData);
+		memcpy(indirectData, maskDrawIndirectInfos.data(), maskDrawCount * sizeof(PerDraw));
+		maskDrawIndirectInfoBuffer.unmap();
+
+		// Descriptor Sets
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			VkDescriptorBufferInfo perDrawInfo = {};
+			perDrawInfo.buffer = maskCulledDrawIndirectInfoBuffers[i].buffer;
+			perDrawInfo.offset = 0;
+			perDrawInfo.range = maskDrawCount * sizeof(PerDraw);
+
+			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+			VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+			perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			perDrawWriteDescriptorSet.pNext = nullptr;
+			perDrawWriteDescriptorSet.dstSet = maskCulledDrawIndirectInfoDescriptorSets[i].descriptorSet;
+			perDrawWriteDescriptorSet.dstBinding = 0;
+			perDrawWriteDescriptorSet.dstArrayElement = 0;
+			perDrawWriteDescriptorSet.descriptorCount = 1;
+			perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			perDrawWriteDescriptorSet.pImageInfo = nullptr;
+			perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+			perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+
+			maskCulledDrawIndirectInfoDescriptorSets[i].update(writesDescriptorSet);
+		}
+
+		VkDescriptorBufferInfo perDrawInfo = {};
+		perDrawInfo.buffer = maskDrawIndirectInfoBuffer.buffer;
+		perDrawInfo.offset = 0;
+		perDrawInfo.range = maskDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		
+		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawWriteDescriptorSet.pNext = nullptr;
+		perDrawWriteDescriptorSet.dstSet = maskDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawWriteDescriptorSet.dstBinding = 0;
+		perDrawWriteDescriptorSet.dstArrayElement = 0;
+		perDrawWriteDescriptorSet.descriptorCount = 1;
+		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+
+		maskDrawIndirectInfoDescriptorSet.update(writesDescriptorSet);
+	}
+
+	if (gotBlendPrimitives) {
+		blendDrawIndirectBuffer.map(0, blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), &indirectData);
+		memcpy(indirectData, blendDrawIndirectCommands.data(), blendDrawCount * sizeof(VkDrawIndexedIndirectCommand));
+		blendDrawIndirectBuffer.unmap();
+
+		blendDrawIndirectInfoBuffer.map(0, blendDrawCount * sizeof(PerDraw), &indirectData);
+		memcpy(indirectData, blendDrawIndirectInfos.data(), blendDrawCount * sizeof(PerDraw));
+		blendDrawIndirectInfoBuffer.unmap();
+
+		// Descriptor Sets
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			VkDescriptorBufferInfo perDrawInfo = {};
+			perDrawInfo.buffer = blendCulledDrawIndirectInfoBuffers[i].buffer;
+			perDrawInfo.offset = 0;
+			perDrawInfo.range = blendDrawCount * sizeof(PerDraw);
+
+			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+			VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+			perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			perDrawWriteDescriptorSet.pNext = nullptr;
+			perDrawWriteDescriptorSet.dstSet = blendCulledDrawIndirectInfoDescriptorSets[i].descriptorSet;
+			perDrawWriteDescriptorSet.dstBinding = 0;
+			perDrawWriteDescriptorSet.dstArrayElement = 0;
+			perDrawWriteDescriptorSet.descriptorCount = 1;
+			perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			perDrawWriteDescriptorSet.pImageInfo = nullptr;
+			perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+			perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+			writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+
+			blendCulledDrawIndirectInfoDescriptorSets[i].update(writesDescriptorSet);
+		}
+
+		VkDescriptorBufferInfo perDrawInfo = {};
+		perDrawInfo.buffer = blendDrawIndirectInfoBuffer.buffer;
+		perDrawInfo.offset = 0;
+		perDrawInfo.range = blendDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
+		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawWriteDescriptorSet.pNext = nullptr;
+		perDrawWriteDescriptorSet.dstSet = blendDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawWriteDescriptorSet.dstBinding = 0;
+		perDrawWriteDescriptorSet.dstArrayElement = 0;
+		perDrawWriteDescriptorSet.descriptorCount = 1;
+		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
+		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+
+		blendDrawIndirectInfoDescriptorSet.update(writesDescriptorSet);
+	}
 }
 
 void Model::destroy() {
 	vertexBuffer.destroy();
 	indexBuffer.destroy();
+	if (gotOpaquePrimitives) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			opaqueCulledDrawIndirectBuffers[i].destroy();
+			opaqueCulledDrawIndirectInfoBuffers[i].destroy();
+		}
+		opaqueDrawIndirectBuffer.destroy();
+		opaqueDrawIndirectInfoBuffer.destroy();
+	}
+	if (gotMaskPrimitives) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			maskCulledDrawIndirectBuffers[i].destroy();
+			maskCulledDrawIndirectInfoBuffers[i].destroy();
+		}
+		maskDrawIndirectBuffer.destroy();
+		maskDrawIndirectInfoBuffer.destroy();
+	}
+	if (gotBlendPrimitives) {
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			blendCulledDrawIndirectBuffers[i].destroy();
+			blendCulledDrawIndirectInfoBuffers[i].destroy();
+		}
+		blendDrawIndirectBuffer.destroy();
+		blendDrawIndirectInfoBuffer.destroy();
+	}
 	for (Mesh& mesh : meshes) {
 		mesh.boneBuffer.destroy();
 	}
@@ -160,52 +506,35 @@ void Model::bindBuffers(CommandBuffer* commandBuffer) {
 	vkCmdBindIndexBuffer(commandBuffer->commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 }
 
-void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, bool culling) {
+void Model::drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
 	if (bindTextures) {
 		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		DescriptorSet* selectedDescriptorSet = culling ? &opaqueCulledDrawIndirectInfoDescriptorSets[frameInFlightIndex] : &opaqueDrawIndirectInfoDescriptorSet;
+		selectedDescriptorSet->bind(commandBuffer, graphicsPipeline, 2);
 	}
-	for (Mesh& mesh : meshes) {
-		std::vector<Primitive>& selectedPrimitives = culling ? mesh.drawableOpaquePrimitives : mesh.opaquePrimitives;
-		for (Primitive& primitive : selectedPrimitives) {
-			if (bindTextures) {
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &primitive.materialIndex);
-			}
-			vkCmdDrawIndexed(commandBuffer->commandBuffer, primitive.indexCount, 1, mesh.indexOffset + primitive.firstIndex, mesh.vertexOffset + primitive.vertexOffset, 0);
-		}
-	}
+	VkBuffer selectedBuffer = culling ? opaqueCulledDrawIndirectBuffers[frameInFlightIndex].buffer : opaqueDrawIndirectBuffer.buffer;
+	uint32_t selectedDrawCount = culling ? opaqueCulledDrawCount : opaqueDrawCount;
+	vkCmdDrawIndexedIndirect(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, sizeof(VkDrawIndexedIndirectCommand));
 }
 
-void Model::drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, bool culling, uint32_t pushConstantOffset) {
+void Model::drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling, uint32_t pushConstantOffset) {
 	if (bindTextures) {
 		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		DescriptorSet* selectedDescriptorSet = culling ? &maskCulledDrawIndirectInfoDescriptorSets[frameInFlightIndex] : &maskDrawIndirectInfoDescriptorSet;
+		selectedDescriptorSet->bind(commandBuffer, graphicsPipeline, 2);
 	}
-	for (Mesh& mesh : meshes) {
-		std::vector<Primitive>& selectedPrimitives = culling ? mesh.drawableMaskPrimitives : mesh.maskPrimitives;
-		std::vector<float>& selectedCutoffs = culling ? mesh.drawableAlphaCutoffs : mesh.alphaCutoffs;
-		for (size_t i = 0; i < selectedPrimitives.size(); i++) {
-			if (bindTextures) {
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, sizeof(int), &selectedPrimitives[i].materialIndex);
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset + sizeof(int), sizeof(float), &selectedCutoffs[i]);
-			}
-			else {
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, pushConstantOffset, sizeof(float), &selectedCutoffs[i]);
-			}
-			vkCmdDrawIndexed(commandBuffer->commandBuffer, selectedPrimitives[i].indexCount, 1, mesh.indexOffset + selectedPrimitives[i].firstIndex, mesh.vertexOffset + selectedPrimitives[i].vertexOffset, 0);
-		}
-	}
+	VkBuffer selectedBuffer = culling ? maskCulledDrawIndirectBuffers[frameInFlightIndex].buffer : maskDrawIndirectBuffer.buffer;
+	uint32_t selectedDrawCount = culling ? maskCulledDrawCount : maskDrawCount;
+	vkCmdDrawIndexedIndirect(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, sizeof(VkDrawIndexedIndirectCommand));
 }
 
-void Model::drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, bool culling) {
+void Model::drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* graphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
 	if (bindTextures) {
 		materialsDescriptorSet.bind(commandBuffer, graphicsPipeline, 1);
+		DescriptorSet* selectedDescriptorSet = culling ? &blendCulledDrawIndirectInfoDescriptorSets[frameInFlightIndex] : &blendDrawIndirectInfoDescriptorSet;
+		selectedDescriptorSet->bind(commandBuffer, graphicsPipeline, 2);
 	}
-	for (Mesh& mesh : meshes) {
-		std::vector<Primitive>& selectedPrimitives = culling ? mesh.drawableBlendPrimitives : mesh.blendPrimitives;
-		for (Primitive& primitive : selectedPrimitives) {
-			if (bindTextures) {
-				graphicsPipeline->pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), &primitive.materialIndex);
-			}
-			vkCmdDrawIndexed(commandBuffer->commandBuffer, primitive.indexCount, 1, mesh.indexOffset + primitive.firstIndex, mesh.vertexOffset + primitive.vertexOffset, 0);
-		}
-	}
+	VkBuffer selectedBuffer = culling ? blendCulledDrawIndirectBuffers[frameInFlightIndex].buffer : blendDrawIndirectBuffer.buffer;
+	uint32_t selectedDrawCount = culling ? blendCulledDrawCount : blendDrawCount;
+	vkCmdDrawIndexedIndirect(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, sizeof(VkDrawIndexedIndirectCommand));
 }
