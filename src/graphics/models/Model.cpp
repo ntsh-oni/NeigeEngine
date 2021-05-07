@@ -168,30 +168,8 @@ void Model::init(std::string filePath) {
 		memcpy(data, &bubo, sizeof(BoneUniformBufferObject));
 		mesh.boneBuffer.unmap();
 
-		// AABB and indirect commands
-		// Mesh AABB
-		mesh.aabb = { glm::vec3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()), glm::vec3(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min()) };
-
+		// Indirect commands
 		for (Primitive& primitive : mesh.opaquePrimitives) {
-			if (primitive.aabb.min.x < mesh.aabb.min.x) {
-				mesh.aabb.min.x = primitive.aabb.min.x;
-			}
-			if (primitive.aabb.max.x > mesh.aabb.max.x) {
-				mesh.aabb.max.x = primitive.aabb.max.x;
-			}
-			if (primitive.aabb.min.y < mesh.aabb.min.y) {
-				mesh.aabb.min.y = primitive.aabb.min.y;
-			}
-			if (primitive.aabb.max.y > mesh.aabb.max.y) {
-				mesh.aabb.max.y = primitive.aabb.max.y;
-			}
-			if (primitive.aabb.min.z < mesh.aabb.min.z) {
-				mesh.aabb.min.z = primitive.aabb.min.z;
-			}
-			if (primitive.aabb.max.z > mesh.aabb.max.z) {
-				mesh.aabb.max.z = primitive.aabb.max.z;
-			}
-
 			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
 			drawIndirectCommand.indexCount = primitive.indexCount;
 			drawIndirectCommand.instanceCount = 1;
@@ -206,25 +184,6 @@ void Model::init(std::string filePath) {
 			opaqueDrawIndirectInfos.push_back(perDraw);
 		}
 		for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
-			if (mesh.maskPrimitives[i].aabb.min.x < mesh.aabb.min.x) {
-				mesh.aabb.min.x = mesh.maskPrimitives[i].aabb.min.x;
-			}
-			if (mesh.maskPrimitives[i].aabb.max.x > mesh.aabb.max.x) {
-				mesh.aabb.max.x = mesh.maskPrimitives[i].aabb.max.x;
-			}
-			if (mesh.maskPrimitives[i].aabb.min.y < mesh.aabb.min.y) {
-				mesh.aabb.min.y = mesh.maskPrimitives[i].aabb.min.y;
-			}
-			if (mesh.maskPrimitives[i].aabb.max.y > mesh.aabb.max.y) {
-				mesh.aabb.max.y = mesh.maskPrimitives[i].aabb.max.y;
-			}
-			if (mesh.maskPrimitives[i].aabb.min.z < mesh.aabb.min.z) {
-				mesh.aabb.min.z = mesh.maskPrimitives[i].aabb.min.z;
-			}
-			if (mesh.maskPrimitives[i].aabb.max.z > mesh.aabb.max.z) {
-				mesh.aabb.max.z = mesh.maskPrimitives[i].aabb.max.z;
-			}
-
 			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
 			drawIndirectCommand.indexCount = mesh.maskPrimitives[i].indexCount;
 			drawIndirectCommand.instanceCount = 1;
@@ -239,25 +198,6 @@ void Model::init(std::string filePath) {
 			maskDrawIndirectInfos.push_back(perDraw);
 		}
 		for (Primitive& primitive : mesh.blendPrimitives) {
-			if (primitive.aabb.min.x < mesh.aabb.min.x) {
-				mesh.aabb.min.x = primitive.aabb.min.x;
-			}
-			if (primitive.aabb.max.x > mesh.aabb.max.x) {
-				mesh.aabb.max.x = primitive.aabb.max.x;
-			}
-			if (primitive.aabb.min.y < mesh.aabb.min.y) {
-				mesh.aabb.min.y = primitive.aabb.min.y;
-			}
-			if (primitive.aabb.max.y > mesh.aabb.max.y) {
-				mesh.aabb.max.y = primitive.aabb.max.y;
-			}
-			if (primitive.aabb.min.z < mesh.aabb.min.z) {
-				mesh.aabb.min.z = primitive.aabb.min.z;
-			}
-			if (primitive.aabb.max.z > mesh.aabb.max.z) {
-				mesh.aabb.max.z = primitive.aabb.max.z;
-			}
-
 			VkDrawIndexedIndirectCommand drawIndirectCommand = {};
 			drawIndirectCommand.indexCount = primitive.indexCount;
 			drawIndirectCommand.instanceCount = 1;

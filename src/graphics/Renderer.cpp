@@ -271,6 +271,17 @@ void Renderer::init(const std::string& applicationName) {
 	ImageTools::createImageView(&defaultOcclusionImage.imageView, defaultOcclusionImage.image, 0, 1, 0, defaultOcclusionImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	textures.push_back({ "defaultOcclusion", defaultOcclusionImage });
 
+	// Default material
+	Material defaultMaterial = { 0, 1, 2, 3, 4 };
+	BufferTools::createStorageBuffer(defaultMaterial.buffer.buffer, 5 * sizeof(int), &defaultMaterial.buffer.memoryInfo);
+	int materialindices[5] = { defaultMaterial.diffuseIndex, defaultMaterial.normalIndex, defaultMaterial.metallicRoughnessIndex, defaultMaterial.emissiveIndex, defaultMaterial.occlusionIndex };
+	void* data;
+	defaultMaterial.buffer.map(0, 5 * sizeof(int), &data);
+	memcpy(data, materialindices, 5 * sizeof(int));
+	defaultMaterial.buffer.unmap();
+
+	materials.push_back(defaultMaterial);
+
 	// Object resources
 	for (Entity object : entities) {
 		loadObject(object);
