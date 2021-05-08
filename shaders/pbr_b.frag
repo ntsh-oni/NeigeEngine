@@ -10,7 +10,7 @@
 struct PerDrawMaterial {
 	int materialIndex;
 	float alphaCutoff;
-} perDrawMaterial;
+};
 
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;

@@ -218,7 +218,7 @@ void Envmap::equiRectangleToCubemap() {
 
 		equiRecToCubemapGraphicsPipeline.bind(&commandBuffer);
 		equiRecToCubemapGraphicsPipeline.pushConstant(&commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, 16 * sizeof(float), &viewProj);
-		equiRecToCubemapDescriptorSet.bind(&commandBuffer, 0);
+		equiRecToCubemapDescriptorSet.bind(&commandBuffer, &equiRecToCubemapGraphicsPipeline, 0);
 
 		vkCmdBindVertexBuffers(commandBuffer.commandBuffer, 0, 1, &cubeVertexBuffer.buffer, &offset);
 		vkCmdBindIndexBuffer(commandBuffer.commandBuffer, cubeIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -326,7 +326,7 @@ void Envmap::createDiffuseIradiance() {
 
 		convolveGraphicsPipeline.bind(&commandBuffer);
 		convolveGraphicsPipeline.pushConstant(&commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, 16 * sizeof(float), &viewProj);
-		convolveDescriptorSet.bind(&commandBuffer, 0);
+		convolveDescriptorSet.bind(&commandBuffer, &convolveGraphicsPipeline, 0);
 
 		vkCmdBindVertexBuffers(commandBuffer.commandBuffer, 0, 1, &cubeVertexBuffer.buffer, &offset);
 		vkCmdBindIndexBuffer(commandBuffer.commandBuffer, cubeIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -465,7 +465,7 @@ void Envmap::createPrefilter() {
 
 			prefilterGraphicsPipeline.bind(&commandBuffer);
 			prefilterGraphicsPipeline.pushConstant(&commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, 16 * sizeof(float), &viewProj);
-			prefilterDescriptorSet.bind(&commandBuffer, 0);
+			prefilterDescriptorSet.bind(&commandBuffer, &prefilterGraphicsPipeline, 0);
 
 			vkCmdBindVertexBuffers(commandBuffer.commandBuffer, 0, 1, &cubeVertexBuffer.buffer, &offset);
 			vkCmdBindIndexBuffer(commandBuffer.commandBuffer, cubeIndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);

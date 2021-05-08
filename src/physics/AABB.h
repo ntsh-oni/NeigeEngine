@@ -7,7 +7,9 @@
 
 struct AABB {
 	glm::vec3 min;
+	float padding1 = 0.0f;
 	glm::vec3 max;
+	float padding2 = 0.0f;
 
 	std::array<glm::vec3, 8> corners();
 	AABB transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleRatio);

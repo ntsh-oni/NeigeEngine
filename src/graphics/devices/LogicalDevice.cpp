@@ -27,16 +27,18 @@ void LogicalDevice::init() {
 	physicalDeviceFeatures.independentBlend = VK_TRUE;
 	physicalDeviceFeatures.multiDrawIndirect = VK_TRUE;
 
-	VkPhysicalDeviceDescriptorIndexingFeatures physicalDeviceDescriptorIndexingFeatures = {};
-	physicalDeviceDescriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-	physicalDeviceDescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-	physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
-	physicalDeviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+	VkPhysicalDeviceVulkan12Features physicalDevice12Features = {};
+	physicalDevice12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	physicalDevice12Features.pNext = nullptr;
+	physicalDevice12Features.drawIndirectCount = VK_TRUE;
+	physicalDevice12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+	physicalDevice12Features.runtimeDescriptorArray = VK_TRUE;
+	physicalDevice12Features.descriptorBindingPartiallyBound = VK_TRUE;
 	
 	// Logical device
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceCreateInfo.pNext = &physicalDeviceDescriptorIndexingFeatures;
+	deviceCreateInfo.pNext = &physicalDevice12Features;
 	deviceCreateInfo.flags = 0;
 	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();

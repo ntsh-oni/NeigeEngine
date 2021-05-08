@@ -78,6 +78,12 @@ struct SpecializationConstant {
 	std::string name;
 };
 
+// Descriptor Pool
+struct DescriptorPool {
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+	uint32_t remainingSets = 0;
+};
+
 // Vertex
 struct Vertex {
 	glm::vec3 position;

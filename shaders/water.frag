@@ -10,7 +10,7 @@
 struct PerDrawMaterial {
 	int materialIndex;
 	float alphaCutoff;
-} perDrawMaterial;
+};
 
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
@@ -107,7 +107,7 @@ vec3 brdf(float LdotH, float NdotH, float VdotH, float LdotN, float VdotN, vec3 
 	vec3 fT = fresnel(LdotN, mix(vec3(0.04), diffuse, metallic));
 	vec3 fTIR = fresnel(VdotN, mix(vec3(0.04), diffuse, metallic));
 	float g = smith(LdotN, VdotN, roughness);
-	vec3 dfc = diffuseFresnelCorrection(vec3(1.05));
+	vec3 dfc = diffuseFresnelCorrection(vec3(1.333));
 
 	vec3 lambertian = diffuse / M_PI;
 

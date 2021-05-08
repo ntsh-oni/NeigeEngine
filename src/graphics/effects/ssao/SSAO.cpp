@@ -437,7 +437,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	depthToPositionsRenderPass.begin(commandBuffer, depthToPositionsFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToPositionsGraphicsPipeline.bind(commandBuffer);
-	depthToPositionsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
+	depthToPositionsDescriptorSets[frameInFlightIndex].bind(commandBuffer, &depthToPositionsGraphicsPipeline, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
@@ -447,7 +447,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	depthToNormalsRenderPass.begin(commandBuffer, depthToNormalsFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	depthToNormalsGraphicsPipeline.bind(commandBuffer);
-	depthToNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
+	depthToNormalsDescriptorSets[frameInFlightIndex].bind(commandBuffer, &depthToNormalsGraphicsPipeline, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
@@ -457,7 +457,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	ssaoRenderPass.begin(commandBuffer, ssaoFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoGraphicsPipeline.bind(commandBuffer);
-	ssaoDescriptorSets[frameInFlightIndex].bind(commandBuffer, 0);
+	ssaoDescriptorSets[frameInFlightIndex].bind(commandBuffer, &ssaoGraphicsPipeline, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
@@ -467,7 +467,7 @@ void SSAO::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 	ssaoBlurredRenderPass.begin(commandBuffer, ssaoBlurredFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
 	ssaoBlurredGraphicsPipeline.bind(commandBuffer);
-	ssaoBlurredDescriptorSet.bind(commandBuffer, 0);
+	ssaoBlurredDescriptorSet.bind(commandBuffer, &ssaoBlurredGraphicsPipeline, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 

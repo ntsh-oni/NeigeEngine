@@ -9,7 +9,7 @@
 			},
 			"transform": {
 				"position": [
-					3.0,
+					-3.0,
 					1.0,
 					0.0
 				],
@@ -27,7 +27,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
+				"modelPath": "../modelfiles/EmeraldSquare_v4/EmeraldSquare1024.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -50,21 +50,28 @@
 			}
 		},
 		{
-			"light": {
-				"type": "DIRECTIONAL",
-				"color": [
-					1.0,
-					1.0,
-					1.0
-				],
+			"renderable": {
+				"modelPath": "../modelfiles/BoomBox.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
 			"transform": {
-                "rotation": [
-                    1.0,
-                    -1.0,
-                    0.0
-                ]
-            }
+				"position": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+                "scale": [
+					100.0,
+					100.0,
+					100.0
+				]
+			}
 		}
     ]
 }
