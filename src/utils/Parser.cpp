@@ -53,6 +53,13 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 		gameInfo.bloomDownscale = static_cast<int>(bloomDownscale);
 	}
 
+	double bloomThreshold;
+	error = document["graphics"]["bloom"]["threshold"].get(bloomThreshold);
+
+	if (!error) {
+		gameInfo.bloomThreshold = static_cast<float>(bloomThreshold);
+	}
+
 	int64_t bloomBlurSize;
 	error = document["graphics"]["bloom"]["size"].get(bloomBlurSize);
 

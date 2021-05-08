@@ -21,6 +21,7 @@ void Game::init() {
 	// Graphics settings
 	renderer->enableBloom = info.enableBloom;
 	renderer->bloomDownscale = info.bloomDownscale;
+	renderer->bloomThreshold = info.bloomThreshold;
 	renderer->bloomBlurSize = info.bloomBlurSize;
 	renderer->enableSSAO = info.enableSSAO;
 	renderer->ssaoDownscale = info.ssaoDownscale;

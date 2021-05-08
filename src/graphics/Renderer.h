@@ -55,6 +55,7 @@ struct Renderer : public System {
 	// Settings
 	bool enableBloom;
 	int bloomDownscale;
+	float bloomThreshold;
 	int bloomBlurSize;
 	bool enableSSAO;
 	int ssaoDownscale;
