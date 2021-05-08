@@ -229,7 +229,7 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 	// Resize
 	resizeRenderPass.begin(commandBuffer, resizeFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 	resizeGraphicsPipeline.bind(commandBuffer);
-	resizeDescriptorSet.bind(commandBuffer, 0);
+	resizeDescriptorSet.bind(commandBuffer, &resizeGraphicsPipeline, 0);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
@@ -244,7 +244,7 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 
 		blurRenderPass.begin(commandBuffer, blurFramebuffers[mipLevel].framebuffer, { mipWidths[mipLevel], mipHeights[mipLevel] });
 		blurGraphicsPipeline.bind(commandBuffer);
-		blurDescriptorSets[mipLevel].bind(commandBuffer, 0);
+		blurDescriptorSets[mipLevel].bind(commandBuffer, &blurGraphicsPipeline, 0);
 
 		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(int), &pushConstants);
 
@@ -257,7 +257,7 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 
 		blurRenderPass.begin(commandBuffer, backBlurFramebuffers[mipLevel].framebuffer, { mipWidths[mipLevel], mipHeights[mipLevel] });
 		blurGraphicsPipeline.bind(commandBuffer);
-		backBlurDescriptorSets[mipLevel].bind(commandBuffer, 0);
+		backBlurDescriptorSets[mipLevel].bind(commandBuffer, &blurGraphicsPipeline, 0);
 
 		blurGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(int), &pushConstants);
 

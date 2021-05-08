@@ -18,10 +18,6 @@
 #include "renderpasses/RenderPass.h"
 #include "sync/Fence.h"
 #include "sync/Semaphore.h"
-#include "effects/depthprepass/DepthPrepass.h"
-#include "effects/envmap/Envmap.h"
-#include "effects/shadowmapping/Shadow.h"
-#include "effects/ssao/SSAO.h"
 #include "../ecs/ECS.h"
 #include <iostream>
 #include <vector>

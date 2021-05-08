@@ -105,7 +105,8 @@ void Renderer::init(const std::string& applicationName) {
 		else {
 			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
-			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 0, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 		}
 
 		RenderPass renderPass;
@@ -120,6 +121,11 @@ void Renderer::init(const std::string& applicationName) {
 	cameraBuffers.resize(framesInFlight);
 	for (Buffer& buffer : cameraBuffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(CameraUniformBufferObject), &buffer.memoryInfo);
+	}
+
+	frustumBuffers.resize(framesInFlight);
+	for (Buffer& buffer : frustumBuffers) {
+		BufferTools::createUniformBuffer(buffer.buffer, 6 * 4 * sizeof(float), &buffer.memoryInfo);
 	}
 
 	// Lights
@@ -156,6 +162,10 @@ void Renderer::init(const std::string& applicationName) {
 		ssao.init(ssaoDownscale, fullscreenViewport);
 		NEIGE_INFO("SSAO init end.");
 	}
+
+	NEIGE_INFO("Frustum culling init start.");
+	frustumCulling.init();
+	NEIGE_INFO("Frustum culling init end.");
 
 	// Shadow
 	NEIGE_INFO("Shadowmapping init start.");
@@ -450,6 +460,7 @@ void Renderer::destroy() {
 	if (enableBloom) {
 		bloom.destroy();
 	}
+	frustumCulling.destroy();
 	defaultPostProcessEffectImage.destroy();
 	if (materialsDescriptorPool.descriptorPool != VK_NULL_HANDLE) {
 		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool.descriptorPool, nullptr);
@@ -475,6 +486,9 @@ void Renderer::destroy() {
 		renderPass->destroy();
 	}
 	for (Buffer& buffer : cameraBuffers) {
+		buffer.destroy();
+	}
+	for (Buffer& buffer : frustumBuffers) {
 		buffer.destroy();
 	}
 	for (Buffer& buffer : lightingBuffers) {
@@ -675,6 +689,10 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	// Update camera's frustum
 	cameraCamera.frustum.calculateFrustum(cameraCamera.view, cameraCamera.projection);
 
+	frustumBuffers.at(frameInFlightIndex).map(0, 6 * 4 * sizeof(float), &data);
+	memcpy(data, cameraCamera.frustum.frustum.data(), 6 * 4 * sizeof(float));
+	frustumBuffers.at(frameInFlightIndex).unmap();
+
 	// Lights
 	int dirLightCount = 0;
 	int pointLightCount = 0;
@@ -761,93 +779,42 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 		// Frustum culling
 		Model* model = &models.at(objectRenderable.modelPath);
-		AABB transformedAABB = model->aabb.transform(oubo.model);
-		std::vector<VkDrawIndexedIndirectCommand> opaqueDrawIndirectCommands;
-		std::vector<PerDraw> opaquePerDrawInformation;
-		std::vector<VkDrawIndexedIndirectCommand> maskDrawIndirectCommands;
-		std::vector<PerDraw> maskPerDrawInformation;
-		std::vector<VkDrawIndexedIndirectCommand> blendDrawIndirectCommands;
-		std::vector<PerDraw> blendPerDrawInformation;
 
-		// Check intersection with entire model
-		if (cameraCamera.frustum.collision(transformedAABB)) {
-			size_t opaqueOffset = 0;
-			size_t maskOffset = 0;
-			size_t blendOffset = 0;
+		std::vector<AABB> opaqueAABBs;
+		std::vector<AABB> maskAABBs;
+		std::vector<AABB> blendAABBs;
 
-			for (Mesh& mesh : model->meshes) {
-				transformedAABB = mesh.aabb.transform(oubo.model);
+		// Update AABB
+		for (Mesh& mesh : model->meshes) {
+			for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
+				opaqueAABBs.push_back(mesh.opaquePrimitives[i].aabb.transform(oubo.model));
+			}
 
-				// Check intersection with meshes
-				if (cameraCamera.frustum.collision(transformedAABB)) {
+			for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
+				maskAABBs.push_back(mesh.maskPrimitives[i].aabb.transform(oubo.model));
+			}
 
-					// Check intersection with primitives
-					for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
-						transformedAABB = mesh.opaquePrimitives[i].aabb.transform(oubo.model);
-
-						if (cameraCamera.frustum.collision(transformedAABB)) {
-							opaqueDrawIndirectCommands.push_back(model->opaqueDrawIndirectCommands[opaqueOffset + i]);
-							opaquePerDrawInformation.push_back(model->opaqueDrawIndirectInfos[opaqueOffset + i]);
-						}
-					}
-
-					for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
-						transformedAABB = mesh.maskPrimitives[i].aabb.transform(oubo.model);
-
-						if (cameraCamera.frustum.collision(transformedAABB)) {
-							maskDrawIndirectCommands.push_back(model->maskDrawIndirectCommands[maskOffset + i]);
-							maskPerDrawInformation.push_back(model->maskDrawIndirectInfos[maskOffset + i]);
-						}
-					}
-
-					for (size_t i = 0; i < mesh.blendPrimitives.size(); i++) {
-						transformedAABB = mesh.blendPrimitives[i].aabb.transform(oubo.model);
-
-						if (cameraCamera.frustum.collision(transformedAABB)) {
-							blendDrawIndirectCommands.push_back(model->blendDrawIndirectCommands[blendOffset + i]);
-							blendPerDrawInformation.push_back(model->blendDrawIndirectInfos[blendOffset + i]);
-						}
-					}
-				}
-
-				opaqueOffset += mesh.opaquePrimitives.size();
-				maskOffset += mesh.maskPrimitives.size();
-				blendOffset += mesh.blendPrimitives.size();
+			for (size_t i = 0; i < mesh.blendPrimitives.size(); i++) {
+				blendAABBs.push_back(mesh.blendPrimitives[i].aabb.transform(oubo.model));
 			}
 		}
 
-		model->opaqueCulledDrawCount = static_cast<uint32_t>(opaqueDrawIndirectCommands.size());
-		model->maskCulledDrawCount = static_cast<uint32_t>(maskDrawIndirectCommands.size());
-		model->blendCulledDrawCount = static_cast<uint32_t>(blendDrawIndirectCommands.size());
-
-		if (model->opaqueCulledDrawCount != 0) {
-			model->opaqueCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->opaqueCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-			memcpy(data, opaqueDrawIndirectCommands.data(), model->opaqueCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-			model->opaqueCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
-
-			model->opaqueCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->opaqueCulledDrawCount * sizeof(PerDraw), &data);
-			memcpy(data, opaquePerDrawInformation.data(), model->opaqueCulledDrawCount * sizeof(PerDraw));
-			model->opaqueCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
+		if (model->gotOpaquePrimitives) {
+			model->opaqueAABBBuffers[frameInFlightIndex].map(0, model->opaqueDrawCount * sizeof(AABB), &data);
+			memcpy(data, opaqueAABBs.data(), model->opaqueDrawCount * sizeof(AABB));
+			model->opaqueAABBBuffers[frameInFlightIndex].unmap();
 		}
 
-		if (model->maskCulledDrawCount != 0) {
-			model->maskCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->maskCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-			memcpy(data, maskDrawIndirectCommands.data(), model->maskCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-			model->maskCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
-
-			model->maskCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->maskCulledDrawCount * sizeof(PerDraw), &data);
-			memcpy(data, maskPerDrawInformation.data(), model->maskCulledDrawCount * sizeof(PerDraw));
-			model->maskCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
+		if (model->gotMaskPrimitives) {
+			model->maskAABBBuffers[frameInFlightIndex].map(0, model->maskDrawCount * sizeof(AABB), &data);
+			memcpy(data, maskAABBs.data(), model->maskDrawCount * sizeof(AABB));
+			model->maskAABBBuffers[frameInFlightIndex].unmap();
 		}
 
-		if (model->blendCulledDrawCount != 0) {
-			model->blendCulledDrawIndirectBuffers[frameInFlightIndex].map(0, model->blendCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-			memcpy(data, blendDrawIndirectCommands.data(), model->blendCulledDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-			model->blendCulledDrawIndirectBuffers[frameInFlightIndex].unmap();
-
-			model->blendCulledDrawIndirectInfoBuffers[frameInFlightIndex].map(0, model->blendCulledDrawCount * sizeof(PerDraw), &data);
-			memcpy(data, blendPerDrawInformation.data(), model->blendCulledDrawCount * sizeof(PerDraw));
-			model->blendCulledDrawIndirectInfoBuffers[frameInFlightIndex].unmap();
+		if (model->gotBlendPrimitives) {
+			model->blendAABBBuffers[frameInFlightIndex].map(0, model->blendDrawCount * sizeof(AABB), &data);
+			memcpy(data, blendAABBs.data(), model->blendDrawCount * sizeof(AABB));
+			model->blendAABBBuffers[frameInFlightIndex].unmap();
 		}
 	}
 }
@@ -861,6 +828,51 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	renderingCommandPools[frameInFlightIndex].reset();
 	renderingCommandBuffers[frameInFlightIndex].begin();
 
+	// Frustum culling
+	std::vector<VkBuffer> indirectBuffers;
+	std::vector<VkBuffer> drawCountBuffers;
+	std::vector<VkBuffer> perDrawBuffers;
+	std::vector<uint32_t> drawCounts;
+	
+	// Reset draw count and barriers
+	for (Entity object : entities) {
+		auto& objectRenderable = ecs.getComponent<Renderable>(object);
+		Model* model = &models.at(objectRenderable.modelPath);
+
+		indirectBuffers.insert(indirectBuffers.end(), model->indirectBuffers.begin(), model->indirectBuffers.end());
+		drawCountBuffers.insert(drawCountBuffers.end(), model->drawCountBuffers.begin(), model->drawCountBuffers.end());
+		perDrawBuffers.insert(perDrawBuffers.end(), model->perDrawBuffers.begin(), model->perDrawBuffers.end());
+	}
+
+	frustumCulling.drawCountsReset(&renderingCommandBuffers[frameInFlightIndex], drawCountBuffers);
+
+	frustumCulling.computePipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+
+	for (Entity object : entities) {
+		auto& objectRenderable = ecs.getComponent<Renderable>(object);
+		Model* model = &models.at(objectRenderable.modelPath);
+
+		// Opaque
+		if (model->gotOpaquePrimitives) {
+			model->cullOpaque(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(model->opaqueDrawCount);
+		}
+
+		// Mask
+		if (model->gotMaskPrimitives) {
+			model->cullMask(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(model->maskDrawCount);
+		}
+
+		// Blend
+		if (model->gotBlendPrimitives) {
+			model->cullBlend(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(model->blendDrawCount);
+		}
+	}
+
+	frustumCulling.computeIndirectFragmentBarrier(&renderingCommandBuffers[frameInFlightIndex], indirectBuffers, drawCountBuffers, perDrawBuffers, drawCounts);
+
 	// Depth prepass
 	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffer.framebuffer, window.extent);
 
@@ -872,14 +884,14 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		// Opaque
 		if (model->gotOpaquePrimitives) {
 			depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, 0);
 			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, frameInFlightIndex, true);
 		}
 
 		// Mask
 		if (model->gotMaskPrimitives) {
 			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, 0);
 			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
 		}
 	}
@@ -902,7 +914,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 				// Opaque
 				if (model->gotOpaquePrimitives) {
 					shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, 0);
 					shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
 					model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, frameInFlightIndex, false);
 				}
@@ -910,7 +922,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 				// Mask
 				if (model->gotMaskPrimitives) {
 					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, 0);
 					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
 					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, frameInFlightIndex, false, 16);
 				}
@@ -933,7 +945,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotOpaquePrimitives) {
 			objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
-				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, 0);
 			}
 			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true, frameInFlightIndex, true);
 		}
@@ -942,13 +954,13 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotMaskPrimitives) {
 			objectRenderable.maskGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
-				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, 0);
 			}
 			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
 		}
 	}
 	envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-	envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+	envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &envmap.skyboxGraphicsPipeline, 0);
 
 	envmap.draw(&renderingCommandBuffers[frameInFlightIndex]);
 
@@ -964,7 +976,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotBlendPrimitives) {
 			objectRenderable.blendGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
-				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, 0);
 			}
 			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true, frameInFlightIndex, true);
 		}
@@ -973,9 +985,11 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	blendSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Alpha compositing
+	GraphicsPipeline* alphaCompositingGraphicsPipeline = &graphicsPipelines.at("alphaCompositing");
+
 	alphaCompositingRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], alphaCompositingFramebuffer.framebuffer, window.extent);
-	graphicsPipelines.at("alphaCompositing").bind(&renderingCommandBuffers[frameInFlightIndex]);
-	alphaCompositingDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+	alphaCompositingGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
+	alphaCompositingDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], alphaCompositingGraphicsPipeline, 0);
 	
 	vkCmdDraw(renderingCommandBuffers[frameInFlightIndex].commandBuffer, 3, 1, 0, 0);
 
@@ -997,7 +1011,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	VkFramebuffer postProcessingFramebuffer = enableFXAA ? postFramebuffers[0].framebuffer : postFramebuffers[framebufferIndex].framebuffer;
 	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postProcessingFramebuffer, window.extent);
 	postGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
-	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], 0);
+	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], postGraphicsPipeline, 0);
 	VkBool32 parameters[2] = { enableSSAO, enableBloom };
 	postGraphicsPipeline->pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_FRAGMENT_BIT, 0, 2 * sizeof(VkBool32), &parameters);
 

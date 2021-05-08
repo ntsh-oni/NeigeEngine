@@ -4,7 +4,7 @@
 struct PerDrawMaterial {
 	int materialIndex;
 	float alphaCutoff;
-} perDrawMaterial;
+};
 
 layout(set = 1, binding = 0) uniform sampler2D textures[];
 layout(set = 1, binding = 1) restrict readonly buffer Materials {

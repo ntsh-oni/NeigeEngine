@@ -28,7 +28,7 @@ void GraphicsPipeline::init() {
 		vertexShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vertexShaderCreateInfo.pNext = nullptr;
 		vertexShaderCreateInfo.flags = 0;
-		vertexShaderCreateInfo.stage = shader.shaderTypeToVkShaderFlagBits();
+		vertexShaderCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vertexShaderCreateInfo.module = shader.module;
 		vertexShaderCreateInfo.pName = "main";
 		vertexShaderCreateInfo.pSpecializationInfo = nullptr;
@@ -67,7 +67,7 @@ void GraphicsPipeline::init() {
 		fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderCreateInfo.pNext = nullptr;
 		fragmentShaderCreateInfo.flags = 0;
-		fragmentShaderCreateInfo.stage = shader.shaderTypeToVkShaderFlagBits();
+		fragmentShaderCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		fragmentShaderCreateInfo.module = shader.module;
 		fragmentShaderCreateInfo.pName = "main";
 		fragmentShaderCreateInfo.pSpecializationInfo = nullptr;
@@ -109,7 +109,7 @@ void GraphicsPipeline::init() {
 		tesselationControlShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		tesselationControlShaderCreateInfo.pNext = nullptr;
 		tesselationControlShaderCreateInfo.flags = 0;
-		tesselationControlShaderCreateInfo.stage = shader.shaderTypeToVkShaderFlagBits();
+		tesselationControlShaderCreateInfo.stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
 		tesselationControlShaderCreateInfo.module = shader.module;
 		tesselationControlShaderCreateInfo.pName = "main";
 		tesselationControlShaderCreateInfo.pSpecializationInfo = nullptr;
@@ -151,7 +151,7 @@ void GraphicsPipeline::init() {
 		tesselationEvaluationShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		tesselationEvaluationShaderCreateInfo.pNext = nullptr;
 		tesselationEvaluationShaderCreateInfo.flags = 0;
-		tesselationEvaluationShaderCreateInfo.stage = shader.shaderTypeToVkShaderFlagBits();
+		tesselationEvaluationShaderCreateInfo.stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 		tesselationEvaluationShaderCreateInfo.module = shader.module;
 		tesselationEvaluationShaderCreateInfo.pName = "main";
 		tesselationEvaluationShaderCreateInfo.pSpecializationInfo = nullptr;
@@ -193,7 +193,7 @@ void GraphicsPipeline::init() {
 		geometryShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		geometryShaderCreateInfo.pNext = nullptr;
 		geometryShaderCreateInfo.flags = 0;
-		geometryShaderCreateInfo.stage = shader.shaderTypeToVkShaderFlagBits();
+		geometryShaderCreateInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
 		geometryShaderCreateInfo.module = shader.module;
 		geometryShaderCreateInfo.pName = "main";
 		geometryShaderCreateInfo.pSpecializationInfo = nullptr;

@@ -36,7 +36,7 @@ AABB AABB::transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleRati
 	}
 	glm::vec3 minCorner = glm::vec3(*std::min_element(cornersX.begin(), cornersX.end()), *std::min_element(cornersY.begin(), cornersY.end()), *std::min_element(cornersZ.begin(), cornersZ.end()));
 	glm::vec3 maxCorner = glm::vec3(*std::max_element(cornersX.begin(), cornersX.end()), *std::max_element(cornersY.begin(), cornersY.end()), *std::max_element(cornersZ.begin(), cornersZ.end()));
-	return { minCorner, maxCorner };
+	return { minCorner, 0.0f, maxCorner, 0.0f };
 }
 
 AABB AABB::transform(glm::mat4 transform) {
@@ -54,7 +54,7 @@ AABB AABB::transform(glm::mat4 transform) {
 	}
 	glm::vec3 minCorner = glm::vec3(*std::min_element(cornersX.begin(), cornersX.end()), *std::min_element(cornersY.begin(), cornersY.end()), *std::min_element(cornersZ.begin(), cornersZ.end()));
 	glm::vec3 maxCorner = glm::vec3(*std::max_element(cornersX.begin(), cornersX.end()), *std::max_element(cornersY.begin(), cornersY.end()), *std::max_element(cornersZ.begin(), cornersZ.end()));
-	return { minCorner, maxCorner };
+	return { minCorner, 0.0f, maxCorner, 0.0f };
 }
 
 bool AABB::collision(const glm::vec3& point) {
