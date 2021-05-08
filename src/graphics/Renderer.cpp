@@ -183,7 +183,7 @@ void Renderer::init(const std::string& applicationName) {
 	// Bloom
 	if (enableBloom) {
 		NEIGE_INFO("Bloom init start.");
-		bloom.init(bloomDownscale, bloomBlurSize, fullscreenViewport);
+		bloom.init(bloomDownscale, bloomThreshold, bloomBlurSize, fullscreenViewport);
 		NEIGE_INFO("Bloom init end.");
 	}
 

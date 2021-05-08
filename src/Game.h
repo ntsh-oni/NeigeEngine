@@ -20,6 +20,7 @@ struct GameInfo {
 	uint32_t windowHeight = 300;
 	bool enableBloom = false;
 	int bloomDownscale = 4;
+	float bloomThreshold = 1.5f;
 	int bloomBlurSize = 9;
 	bool enableSSAO = false;
 	int ssaoDownscale = 3;

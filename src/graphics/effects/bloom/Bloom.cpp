@@ -4,7 +4,7 @@
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
-void Bloom::init(int downscale, int size, Viewport fullscreenViewport) {
+void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenViewport) {
 	bloomDownscale = std::max(downscale, 1);
 	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / bloomDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / bloomDownscale, static_cast<uint32_t>(1)));
 
@@ -50,6 +50,7 @@ void Bloom::init(int downscale, int size, Viewport fullscreenViewport) {
 	blurGraphicsPipeline.depthWrite = false;
 	blurGraphicsPipeline.init();
 
+	bloomThreshold = threshold;
 	blurSize = size;
 
 	createResources(fullscreenViewport);
@@ -230,6 +231,7 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 	resizeRenderPass.begin(commandBuffer, resizeFramebuffer.framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 	resizeGraphicsPipeline.bind(commandBuffer);
 	resizeDescriptorSet.bind(commandBuffer, &resizeGraphicsPipeline, 0);
+	resizeGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &bloomThreshold);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 

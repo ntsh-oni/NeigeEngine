@@ -16,6 +16,7 @@ struct Bloom {
 	uint32_t mipLevels;
 	std::vector<uint32_t> mipWidths;
 	std::vector<uint32_t> mipHeights;
+	float bloomThreshold = 1.5f;
 
 	// Resize
 	GraphicsPipeline resizeGraphicsPipeline;
@@ -37,7 +38,7 @@ struct Bloom {
 	std::vector<VkImageView> backBlurImageViews;
 	int blurSize = 9;
 	
-	void init(int downscale, int size, Viewport fullscreenViewport);
+	void init(int downscale, float threshold, int size, Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
