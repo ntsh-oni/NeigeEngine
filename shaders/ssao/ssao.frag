@@ -23,8 +23,8 @@ layout(location = 0) out float outColor;
 void main() {
 	vec2 imageSize = textureSize(positionSampler, 0);
 	const vec2 randomScale = imageSize / 4.0;
-	const float radius = 0.1;
-	const float bias = 0.05;
+	const float radius = 0.25;
+	const float bias = 0.025;
 	
 	vec3 position = texture(positionSampler, uv).xyz;
 	vec3 normal = texture(normalSampler, uv).xyz;

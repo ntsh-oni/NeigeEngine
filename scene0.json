@@ -3,13 +3,13 @@
 		{
 			"camera": {
 				"fov": 45.0,
-				"nearPlane": 0.3,
+				"nearPlane": 0.2,
 				"farPlane": 500.0,
 				"envmapPath": ""
 			},
 			"transform": {
 				"position": [
-					-3.0,
+					-4.0,
 					1.0,
 					0.0
 				],
@@ -27,7 +27,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/blendsphereblue.gltf",
+				"modelPath": "../modelfiles/DamagedHelmet.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -46,54 +46,6 @@
 					1.0,
 					1.0,
 					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/blendspherered.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-                "scale": [
-					3.0,
-					3.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/blendspherered.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-                "scale": [
-					1.0,
-					3.0,
-					3.0
 				]
 			}
 		}
