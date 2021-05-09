@@ -21,7 +21,7 @@ layout(set = 0, binding = 2) uniform Shadow {
 	mat4 spotLightSpaces[MAX_SPOT_LIGHTS];
 } shadow;
 
-layout(set = 1, binding = 4) uniform Bones {
+layout(set = 2, binding = 0) uniform Bones {
 	mat4 transformations[MAX_BONES];
 	mat4 inverseBindMatrices[MAX_BONES];
 } bones;
@@ -37,7 +37,7 @@ layout(location = 6) in vec4 weights;
 layout(location = 0) out vec2 outUv;
 layout(location = 1) out vec3 outCameraPos;
 layout(location = 2) out vec3 outFragmentPos;
-layout(location = 3) out vec4 outWeights;
+layout(location = 3) out int outDrawIndex;
 layout(location = 4) out vec4 outDirLightSpaces[MAX_DIR_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + 4) out vec4 outSpotLightSpaces[MAX_SPOT_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 4) out mat3 outTBN;
@@ -50,7 +50,7 @@ void main() {
 	vec3 N = normalize(vec3(object.model * vec4(normal, 0.0)));
 	outTBN = mat3(T, B, N);
 	outCameraPos = camera.pos;
-	outWeights = weights;
+	outDrawIndex = gl_DrawID;
 	
 	mat4 skinMat = weights.x * bones.transformations[int(joints.x)]
 	+ weights.y * bones.transformations[int(joints.y)]
