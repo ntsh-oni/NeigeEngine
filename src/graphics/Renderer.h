@@ -44,6 +44,8 @@ struct Renderer : public System {
 
 	DescriptorSet alphaCompositingDescriptorSet;
 	DescriptorSet postDescriptorSet;
+
+	Image defaultRevealageAttachment;
 	Image defaultPostProcessEffectImage;
 
 	// Command buffers

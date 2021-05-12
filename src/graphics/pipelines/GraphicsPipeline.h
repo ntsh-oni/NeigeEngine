@@ -39,6 +39,7 @@ struct GraphicsPipeline {
 	bool backfaceCulling = true;
 	std::vector<int> externalSets;
 	std::vector<VkDescriptorSetLayout> externalDescriptorSetLayouts;
+	std::vector<int> specializationConstantValues;
 
 	void init();
 	void destroy();

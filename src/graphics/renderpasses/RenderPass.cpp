@@ -5,7 +5,7 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 	for (size_t i = 0; i < attachments.size(); i++) {
 		attachmentDescriptions.push_back(attachments[i].description);
 		VkAttachmentReference reference = {};
-		reference.attachment = attachmentCount++;
+		reference.attachment = attachments[i].type != AttachmentType::UNUSED ? static_cast<uint32_t>(i) : VK_ATTACHMENT_UNUSED;
 		VkClearValue clearValue = {};
 		switch (attachments[i].type) {
 		case AttachmentType::COLOR:
@@ -26,6 +26,11 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 			resolveAttachmentReference = reference;
 			gotAResolveAttachment = true;
 			break;
+		case AttachmentType::UNUSED:
+			reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+			colorAttachmentReferences.push_back(reference);
+			clearValue.color = { 0.0f, 0.0f, 0.0f, 0.0f };
+			clearValues.push_back(clearValue);
 		}
 	}
 

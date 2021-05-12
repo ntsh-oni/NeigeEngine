@@ -51,6 +51,8 @@ void GraphicsPipeline::init() {
 		uniqueDescriptorTypes.insert(shader.uniqueDescriptorTypes.begin(), shader.uniqueDescriptorTypes.end());
 	}
 
+	VkSpecializationInfo fragmentSpecialization = {};
+	VkSpecializationMapEntry fragmentSpecializationEntry = {};
 	if (fragmentShaderPath != "") {
 		Shader shader;
 		std::unordered_map<std::string, Shader>::const_iterator mapSearch = shaders.find(fragmentShaderPath);
@@ -63,6 +65,17 @@ void GraphicsPipeline::init() {
 		}
 		NEIGE_ASSERT(shader.type == ShaderType::FRAGMENT, "Fragment shader in pipeline is not a fragment shader.");
 
+		if (shader.specializationConstants.size() != 0 && specializationConstantValues.size() != 0) {
+			fragmentSpecializationEntry.constantID = 0;
+			fragmentSpecializationEntry.offset = 0;
+			fragmentSpecializationEntry.size = sizeof(int);
+
+			fragmentSpecialization.mapEntryCount = 1;
+			fragmentSpecialization.pMapEntries = &fragmentSpecializationEntry;
+			fragmentSpecialization.dataSize = sizeof(int);
+			fragmentSpecialization.pData = &specializationConstantValues[0];
+		}
+
 		VkPipelineShaderStageCreateInfo fragmentShaderCreateInfo = {};
 		fragmentShaderCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		fragmentShaderCreateInfo.pNext = nullptr;
@@ -70,7 +83,7 @@ void GraphicsPipeline::init() {
 		fragmentShaderCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		fragmentShaderCreateInfo.module = shader.module;
 		fragmentShaderCreateInfo.pName = "main";
-		fragmentShaderCreateInfo.pSpecializationInfo = nullptr;
+		fragmentShaderCreateInfo.pSpecializationInfo = (shader.specializationConstants.size() != 0 && specializationConstantValues.size() != 0) ? &fragmentSpecialization : nullptr;
 		pipelineStages.push_back(fragmentShaderCreateInfo);
 
 		for (size_t i = 0; i < shader.sets.size(); i++) {

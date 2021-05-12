@@ -12,6 +12,8 @@ struct PerDrawMaterial {
 	float alphaCutoff;
 };
 
+layout(constant_id = 0) const int alphaMode = 0;
+
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
 	vec3 dirLightsDirection[MAX_DIR_LIGHTS];
@@ -46,8 +48,26 @@ layout(set = 2, binding = 0) restrict readonly buffer PerDraw {
 layout(location = 0) in vec2 uv;
 layout(location = 1) in flat int drawIndex;
 
-layout(location = 0) out vec4 sceneColor;
+layout(location = 0) out vec4 outputColor0;
+layout(location = 1) out float outputColor1;
 
 void main() {
-	sceneColor = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].diffuseIndex], uv);
+	vec4 colorSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].diffuseIndex], uv);
+	if (alphaMode == 1) {
+		if (colorSample.w <= perDraw.perDrawMaterial[drawIndex].alphaCutoff) {
+			discard;
+		}
+	}
+	
+	if (alphaMode == 0 || alphaMode == 1) {
+		outputColor0 = vec4(colorSample.rgb, 1.0);
+	}
+	else if (alphaMode == 2) {
+		vec4 premultiplied = vec4(colorSample.rgb * colorSample.a, colorSample.a);
+		float a = min(1.0, premultiplied.a) * 8.0 + 0.01;
+		float b = -gl_FragCoord.z * 0.95 + 1.0;
+		float w = clamp(a * a * a * 1e3 * b * b * b, 1e-2, 3e2);
+		outputColor0 = premultiplied * w;
+		outputColor1 = colorSample.a;
+	}
 }

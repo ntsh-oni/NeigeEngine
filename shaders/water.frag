@@ -12,6 +12,8 @@ struct PerDrawMaterial {
 	float alphaCutoff;
 };
 
+layout(constant_id = 0) const int alphaMode = 0;
+
 layout(set = 0, binding = 3) uniform Lighting {
 	vec3 numLights;
 	vec3 dirLightsDirection[MAX_DIR_LIGHTS];
@@ -55,7 +57,8 @@ layout(location = 4) in vec4 dirLightSpaces[MAX_DIR_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + 4) in vec4 spotLightSpaces[MAX_SPOT_LIGHTS];
 layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 4) in mat3 TBN;
 
-layout(location = 0) out vec4 sceneColor;
+layout(location = 0) out vec4 outputColor0;
+layout(location = 1) out float outputColor1;
 
 #define M_PI 3.1415926535897932384626433832795
 
@@ -215,5 +218,15 @@ void main() {
 	vec3 ambient = (irradianceDiffuse * diffuse + specular) * occlusionSample;
 	tmpColor += ambient;
 
-	sceneColor = vec4(tmpColor, 1.0);
+	if (alphaMode == 0 || alphaMode == 1) {
+		outputColor0 = vec4(tmpColor, 1.0);
+	}
+	else if (alphaMode == 2) {
+		vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);
+		float a = min(1.0, premultiplied.a) * 8.0 + 0.01;
+		float b = -gl_FragCoord.z * 0.95 + 1.0;
+		float w = clamp(a * a * a * 1e3 * b * b * b, 1e-2, 3e2);
+		outputColor0 = premultiplied * w;
+		outputColor1 = colorSample.a;
+	}
 }
