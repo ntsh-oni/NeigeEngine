@@ -15,7 +15,6 @@ struct RenderPass {
 	VkAttachmentReference resolveAttachmentReference;
 	bool gotAResolveAttachment = false;
 	std::vector<VkClearValue> clearValues;
-	uint32_t attachmentCount = 0;
 
 	void init(std::vector<RenderPassAttachment> attachments, std::vector<SubpassDependency> subpassDependencies);
 	void destroy();

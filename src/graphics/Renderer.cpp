@@ -46,6 +46,7 @@ void Renderer::init(const std::string& applicationName) {
 	{
 		std::vector<RenderPassAttachment> attachments;
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+		attachments.push_back(RenderPassAttachment(AttachmentType::UNUSED, VK_FORMAT_R8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 0.0f)));
 		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ClearDepthValue(1.0f, 0)));
 		
 		std::vector<SubpassDependency> dependencies;
@@ -176,6 +177,10 @@ void Renderer::init(const std::string& applicationName) {
 	NEIGE_INFO("Environment map init start.");
 	envmap.init(cameraCamera.envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
 	NEIGE_INFO("Environment map init end.");
+
+	// Default revealage attachment
+	ImageTools::loadValue(0.0f, &defaultRevealageAttachment.image, VK_FORMAT_R8_UNORM, &defaultRevealageAttachment.mipmapLevels, &defaultRevealageAttachment.memoryInfo);
+	ImageTools::createImageView(&defaultRevealageAttachment.imageView, defaultRevealageAttachment.image, 0, 1, 0, defaultRevealageAttachment.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	// Image and famebuffers
 	createResources();
@@ -462,7 +467,8 @@ void Renderer::destroy() {
 	}
 	frustumCulling.destroy();
 	defaultPostProcessEffectImage.destroy();
-	if (materialsDescriptorPool.descriptorPool != VK_NULL_HANDLE) {
+	defaultRevealageAttachment.destroy();
+;	if (materialsDescriptorPool.descriptorPool != VK_NULL_HANDLE) {
 		vkDestroyDescriptorPool(logicalDevice.device, materialsDescriptorPool.descriptorPool, nullptr);
 		materialsDescriptorPool.descriptorPool = VK_NULL_HANDLE;
 	}
@@ -569,16 +575,16 @@ void Renderer::loadObject(Entity object) {
 		opaqueGraphicsPipeline.externalSets.push_back(2);
 		opaqueGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
 		opaqueGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
+		opaqueGraphicsPipeline.specializationConstantValues.push_back(0);
 		opaqueGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "o", opaqueGraphicsPipeline);
 	}
 
 	// Mask
-	std::string maskFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_m.frag";
-	if (model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end() && FileTools::exists(maskFragmentShader)) {
+	if (model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end()) {
 		GraphicsPipeline maskGraphicsPipeline;
 		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		maskGraphicsPipeline.fragmentShaderPath = maskFragmentShader;
+		maskGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
 		maskGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
 		maskGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
 		maskGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
@@ -593,16 +599,16 @@ void Renderer::loadObject(Entity object) {
 		maskGraphicsPipeline.externalSets.push_back(2);
 		maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
 		maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
+		maskGraphicsPipeline.specializationConstantValues.push_back(1);
 		maskGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "m", maskGraphicsPipeline);
 	}
 
 	// Blend
-	std::string blendFragmentShader = objectRenderable.fragmentShaderPath.substr(0, objectRenderable.fragmentShaderPath.length() - 5) + "_b.frag";
-	if (model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end() && FileTools::exists(blendFragmentShader)) {
+	if (model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end()) {
 		GraphicsPipeline blendGraphicsPipeline;
 		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		blendGraphicsPipeline.fragmentShaderPath = blendFragmentShader;
+		blendGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
 		blendGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
 		blendGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
 		blendGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
@@ -619,6 +625,7 @@ void Renderer::loadObject(Entity object) {
 		blendGraphicsPipeline.externalSets.push_back(2);
 		blendGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
 		blendGraphicsPipeline.externalDescriptorSetLayouts.push_back(perDrawDescriptorSetLayout);
+		blendGraphicsPipeline.specializationConstantValues.push_back(2);
 		blendGraphicsPipeline.init();
 		graphicsPipelines.emplace(objectRenderable.lookupString + "b", blendGraphicsPipeline);
 	}
@@ -659,7 +666,6 @@ void Renderer::loadObject(Entity object) {
 
 	if (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
-
 			// Depth prepass mask
 			objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
 
@@ -1035,6 +1041,7 @@ void Renderer::createResources() {
 	
 		std::vector<VkImageView> framebufferAttachments;
 		framebufferAttachments.push_back(sceneImage.imageView);
+		framebufferAttachments.push_back(defaultRevealageAttachment.imageView);
 		framebufferAttachments.push_back(depthPrepass.image.imageView);
 		opaqueSceneFramebuffer.init(&renderPasses.at("opaqueScene"), framebufferAttachments, window.extent.width, window.extent.height, 1);
 	}

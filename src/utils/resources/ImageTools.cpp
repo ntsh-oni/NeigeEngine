@@ -236,6 +236,30 @@ void ImageTools::loadColorForEnvmap(float* color,
 	stagingBuffer.destroy();
 }
 
+void ImageTools::loadValue(float value,
+	VkImage* imageDestination,
+	VkFormat format,
+	uint32_t* mipLevels,
+	MemoryInfo* memoryInfo) {
+	uint8_t v = static_cast<uint8_t>(round(255.0f * value));
+
+	*mipLevels = 1;
+
+	Buffer stagingBuffer;
+	BufferTools::createStagingBuffer(stagingBuffer.buffer, sizeof(uint8_t), &stagingBuffer.memoryInfo);
+	void* pixelData;
+	stagingBuffer.map(0, sizeof(uint8_t), &pixelData);
+	memcpy(pixelData, &v, sizeof(uint8_t));
+	stagingBuffer.unmap();
+
+	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
+	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(uint8_t));
+	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, *mipLevels, 1);
+
+	stagingBuffer.destroy();
+}
+
 void ImageTools::transitionLayout(VkImage image,
 	VkFormat format,
 	VkImageLayout oldLayout,

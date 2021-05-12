@@ -61,6 +61,11 @@ struct ImageTools {
 		VkFormat format,
 		uint32_t* mipLevels,
 		MemoryInfo* memoryInfo);
+	static void loadValue(float value,
+		VkImage* imageDestination,
+		VkFormat format,
+		uint32_t* mipLevels,
+		MemoryInfo* memoryInfo);
 	static void transitionLayout(VkImage image,
 		VkFormat format,
 		VkImageLayout oldLayout,
