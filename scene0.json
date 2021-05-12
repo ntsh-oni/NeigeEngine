@@ -27,7 +27,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/AlphaBlendModeTest/glTF/AlphaBlendModeTest.gltf",
+				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -42,55 +42,7 @@
 					0.0,
 					0.0
 				],
-                "scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/water.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/water.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					-10.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-                "scale": [
-					100.0,
-					100.0,
-					100.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-                "scale": [
+				"scale": [
 					1.0,
 					1.0,
 					1.0
