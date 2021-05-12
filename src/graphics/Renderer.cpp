@@ -297,12 +297,10 @@ void Renderer::init(const std::string& applicationName) {
 
 	materials.push_back(defaultMaterial);
 
-	// Object resources
+	// Move entities to the unloaded entities queue
 	for (Entity object : entities) {
-		loadObject(object);
+		unloadedEntities.push(object);
 	}
-
-	updateAdditionalDescriptorSets();
 
 	// Command pools and buffers
 	renderingCommandPools.resize(framesInFlight);
@@ -503,11 +501,30 @@ void Renderer::destroy() {
 	for (Buffer& buffer : timeBuffers) {
 		buffer.destroy();
 	}
-	for (Entity entity : entities) {
+	for (Entity entity : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(entity);
+		Model* model = &models.at(objectRenderable.modelPath);
 
-		for (Buffer& buffer : objectRenderable.buffers) {
-			buffer.destroy();
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			objectRenderable.buffers[i].destroy();
+		}
+
+		if (model->gotOpaquePrimitives) {
+			objectRenderable.opaqueCulledDrawIndirectBuffer.destroy();
+			objectRenderable.opaqueCulledDrawCountBuffer.destroy();
+			objectRenderable.opaqueCulledDrawIndirectInfoBuffer.destroy();
+		}
+
+		if (model->gotMaskPrimitives) {
+			objectRenderable.maskCulledDrawIndirectBuffer.destroy();
+			objectRenderable.maskCulledDrawCountBuffer.destroy();
+			objectRenderable.maskCulledDrawIndirectInfoBuffer.destroy();
+		}
+
+		if (model->gotBlendPrimitives) {
+			objectRenderable.blendCulledDrawIndirectBuffer.destroy();
+			objectRenderable.blendCulledDrawCountBuffer.destroy();
+			objectRenderable.blendCulledDrawIndirectInfoBuffer.destroy();
 		}
 	}
 	for (std::unordered_map<std::string, GraphicsPipeline>::iterator it = graphicsPipelines.begin(); it != graphicsPipelines.end(); it++) {
@@ -646,7 +663,7 @@ void Renderer::loadObject(Entity object) {
 		BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
 	}
 
-	if ((model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) || (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) || (model->gotBlendPrimitives && objectRenderable.blendGraphicsPipeline->sets.size() != 0)) {
+	if (model->gotOpaquePrimitives || model->gotMaskPrimitives || model->gotBlendPrimitives) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Descriptor sets
 			GraphicsPipeline* graphicsPipeline = objectRenderable.opaqueGraphicsPipeline ? objectRenderable.opaqueGraphicsPipeline : (objectRenderable.maskGraphicsPipeline ? objectRenderable.maskGraphicsPipeline : objectRenderable.blendGraphicsPipeline);
@@ -654,23 +671,162 @@ void Renderer::loadObject(Entity object) {
 		}
 	}
 
-	if (model->gotOpaquePrimitives && objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
+	if (model->gotOpaquePrimitives) {
+		BufferTools::createBuffer(objectRenderable.opaqueCulledDrawIndirectBuffer.buffer, model->opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.opaqueCulledDrawIndirectBuffer.memoryInfo);
+		BufferTools::createBuffer(objectRenderable.opaqueCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.opaqueCulledDrawCountBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer, model->opaqueDrawCount * sizeof(PerDraw), &objectRenderable.opaqueCulledDrawIndirectInfoBuffer.memoryInfo);
+
+		objectRenderable.indirectBuffers.push_back(objectRenderable.opaqueCulledDrawIndirectBuffer.buffer);
+		objectRenderable.drawCountBuffers.push_back(objectRenderable.opaqueCulledDrawCountBuffer.buffer);
+		objectRenderable.perDrawBuffers.push_back(objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo perDrawCulledDescriptorSetAllocateInfo = {};
+		perDrawCulledDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		perDrawCulledDescriptorSetAllocateInfo.pNext = nullptr;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorSetCount = 1;
+		perDrawCulledDescriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &perDrawCulledDescriptorSetAllocateInfo, &objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+
+		VkDescriptorBufferInfo perCulledDrawInfo = {};
+		perCulledDrawInfo.buffer = objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer;
+		perCulledDrawInfo.offset = 0;
+		perCulledDrawInfo.range = model->opaqueDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+
+		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
+		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawCulledWriteDescriptorSet.pNext = nullptr;
+		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawCulledWriteDescriptorSet.dstBinding = 0;
+		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
+		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
+		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
+		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
+		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+
+		objectRenderable.opaqueFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
-			// Shadow
-			objectRenderable.createShadowEntityDescriptorSet(i);
+			// Frustum culling
+			objectRenderable.createOpaqueFrustumCullingEntityDescriptorSet(i, model->opaqueDrawCount);
 
 			// Depth prepass
 			objectRenderable.createDepthPrepassEntityDescriptorSet(i);
+
+			// Shadow
+			objectRenderable.createShadowEntityDescriptorSet(i);
 		}
 	}
 
-	if (model->gotMaskPrimitives && objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
+	if (model->gotMaskPrimitives) {
+		BufferTools::createBuffer(objectRenderable.maskCulledDrawIndirectBuffer.buffer, model->maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.maskCulledDrawIndirectBuffer.memoryInfo);
+		BufferTools::createBuffer(objectRenderable.maskCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.maskCulledDrawCountBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer, model->maskDrawCount * sizeof(PerDraw), &objectRenderable.maskCulledDrawIndirectInfoBuffer.memoryInfo);
+
+		objectRenderable.indirectBuffers.push_back(objectRenderable.maskCulledDrawIndirectBuffer.buffer);
+		objectRenderable.drawCountBuffers.push_back(objectRenderable.maskCulledDrawCountBuffer.buffer);
+		objectRenderable.perDrawBuffers.push_back(objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo perDrawCulledDescriptorSetAllocateInfo = {};
+		perDrawCulledDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		perDrawCulledDescriptorSetAllocateInfo.pNext = nullptr;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorSetCount = 1;
+		perDrawCulledDescriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &perDrawCulledDescriptorSetAllocateInfo, &objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+
+		VkDescriptorBufferInfo perCulledDrawInfo = {};
+		perCulledDrawInfo.buffer = objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer;
+		perCulledDrawInfo.offset = 0;
+		perCulledDrawInfo.range = model->maskDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+
+		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
+		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawCulledWriteDescriptorSet.pNext = nullptr;
+		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawCulledWriteDescriptorSet.dstBinding = 0;
+		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
+		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
+		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
+		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
+		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+
+		objectRenderable.maskFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
+			// Frustum culling
+			objectRenderable.createMaskFrustumCullingEntityDescriptorSet(i, model->maskDrawCount);
+
 			// Depth prepass mask
 			objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
 
 			// Shadow mask
 			objectRenderable.createShadowMaskEntityDescriptorSet(i);
+		}
+	}
+
+	if (model->gotBlendPrimitives) {
+		BufferTools::createBuffer(objectRenderable.blendCulledDrawIndirectBuffer.buffer, model->blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.blendCulledDrawIndirectBuffer.memoryInfo);
+		BufferTools::createBuffer(objectRenderable.blendCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.blendCulledDrawCountBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer, model->blendDrawCount * sizeof(PerDraw), &objectRenderable.blendCulledDrawIndirectInfoBuffer.memoryInfo);
+
+		objectRenderable.indirectBuffers.push_back(objectRenderable.blendCulledDrawIndirectBuffer.buffer);
+		objectRenderable.drawCountBuffers.push_back(objectRenderable.blendCulledDrawCountBuffer.buffer);
+		objectRenderable.perDrawBuffers.push_back(objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer);
+
+		// Descriptor set allocation
+		VkDescriptorSetAllocateInfo perDrawCulledDescriptorSetAllocateInfo = {};
+		perDrawCulledDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		perDrawCulledDescriptorSetAllocateInfo.pNext = nullptr;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorPool = perDrawDescriptorPool.descriptorPool;
+		perDrawCulledDescriptorSetAllocateInfo.descriptorSetCount = 1;
+		perDrawCulledDescriptorSetAllocateInfo.pSetLayouts = &perDrawDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &perDrawCulledDescriptorSetAllocateInfo, &objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.descriptorSet));
+
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.descriptorPool = &perDrawDescriptorPool;
+
+		VkDescriptorBufferInfo perCulledDrawInfo = {};
+		perCulledDrawInfo.buffer = objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer;
+		perCulledDrawInfo.offset = 0;
+		perCulledDrawInfo.range = model->blendDrawCount * sizeof(PerDraw);
+
+		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+
+		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
+		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		perDrawCulledWriteDescriptorSet.pNext = nullptr;
+		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.descriptorSet;
+		perDrawCulledWriteDescriptorSet.dstBinding = 0;
+		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
+		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
+		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
+		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
+		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
+		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+
+		objectRenderable.blendFrustumCullingDescriptorSets.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			// Frustum culling
+			objectRenderable.createBlendFrustumCullingEntityDescriptorSet(i, model->blendDrawCount);
 		}
 	}
 }
@@ -767,7 +923,23 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	timeBuffers.at(frameInFlightIndex).unmap();
 
 	// Renderables
-	for (Entity object : entities) {
+	// Load entities
+	if (!unloadedEntities.empty()) {
+		Entity entityToLoad = unloadedEntities.front();
+		loadObject(entityToLoad);
+		loadedEntities.emplace(entityToLoad);
+		unloadedEntities.pop();
+		for (uint32_t i = 0; i < framesInFlight; i++) {
+			materialDescriptorSetUpToDate[i] = false;
+		}
+	}
+
+	if (!materialDescriptorSetUpToDate[frameInFlightIndex]) {
+		updateMaterialDescriptorSet(frameInFlightIndex);
+		materialDescriptorSetUpToDate[frameInFlightIndex] = true;
+	}
+
+	for (Entity object : loadedEntities) {
 		auto const& objectTransform = ecs.getComponent<Transform>(object);
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
@@ -782,46 +954,6 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
 		memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
 		objectRenderable.buffers.at(frameInFlightIndex).unmap();
-
-		// Frustum culling
-		Model* model = &models.at(objectRenderable.modelPath);
-
-		std::vector<AABB> opaqueAABBs;
-		std::vector<AABB> maskAABBs;
-		std::vector<AABB> blendAABBs;
-
-		// Update AABB
-		for (Mesh& mesh : model->meshes) {
-			for (size_t i = 0; i < mesh.opaquePrimitives.size(); i++) {
-				opaqueAABBs.push_back(mesh.opaquePrimitives[i].aabb.transform(oubo.model));
-			}
-
-			for (size_t i = 0; i < mesh.maskPrimitives.size(); i++) {
-				maskAABBs.push_back(mesh.maskPrimitives[i].aabb.transform(oubo.model));
-			}
-
-			for (size_t i = 0; i < mesh.blendPrimitives.size(); i++) {
-				blendAABBs.push_back(mesh.blendPrimitives[i].aabb.transform(oubo.model));
-			}
-		}
-
-		if (model->gotOpaquePrimitives) {
-			model->opaqueAABBBuffers[frameInFlightIndex].map(0, model->opaqueDrawCount * sizeof(AABB), &data);
-			memcpy(data, opaqueAABBs.data(), model->opaqueDrawCount * sizeof(AABB));
-			model->opaqueAABBBuffers[frameInFlightIndex].unmap();
-		}
-
-		if (model->gotMaskPrimitives) {
-			model->maskAABBBuffers[frameInFlightIndex].map(0, model->maskDrawCount * sizeof(AABB), &data);
-			memcpy(data, maskAABBs.data(), model->maskDrawCount * sizeof(AABB));
-			model->maskAABBBuffers[frameInFlightIndex].unmap();
-		}
-
-		if (model->gotBlendPrimitives) {
-			model->blendAABBBuffers[frameInFlightIndex].map(0, model->blendDrawCount * sizeof(AABB), &data);
-			memcpy(data, blendAABBs.data(), model->blendDrawCount * sizeof(AABB));
-			model->blendAABBBuffers[frameInFlightIndex].unmap();
-		}
 	}
 }
 
@@ -841,37 +973,39 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	std::vector<uint32_t> drawCounts;
 	
 	// Reset draw count and barriers
-	for (Entity object : entities) {
+	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
-		Model* model = &models.at(objectRenderable.modelPath);
 
-		indirectBuffers.insert(indirectBuffers.end(), model->indirectBuffers.begin(), model->indirectBuffers.end());
-		drawCountBuffers.insert(drawCountBuffers.end(), model->drawCountBuffers.begin(), model->drawCountBuffers.end());
-		perDrawBuffers.insert(perDrawBuffers.end(), model->perDrawBuffers.begin(), model->perDrawBuffers.end());
+		indirectBuffers.insert(indirectBuffers.end(), objectRenderable.indirectBuffers.begin(), objectRenderable.indirectBuffers.end());
+		drawCountBuffers.insert(drawCountBuffers.end(), objectRenderable.drawCountBuffers.begin(), objectRenderable.drawCountBuffers.end());
+		perDrawBuffers.insert(perDrawBuffers.end(), objectRenderable.perDrawBuffers.begin(), objectRenderable.perDrawBuffers.end());
 	}
 
 	frustumCulling.drawCountsReset(&renderingCommandBuffers[frameInFlightIndex], drawCountBuffers);
 
 	frustumCulling.computePipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 
-	for (Entity object : entities) {
+	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
 
 		// Opaque
 		if (model->gotOpaquePrimitives) {
+			objectRenderable.opaqueFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
 			model->cullOpaque(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 			drawCounts.push_back(model->opaqueDrawCount);
 		}
 
 		// Mask
 		if (model->gotMaskPrimitives) {
+			objectRenderable.maskFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
 			model->cullMask(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 			drawCounts.push_back(model->maskDrawCount);
 		}
 
 		// Blend
 		if (model->gotBlendPrimitives) {
+			objectRenderable.blendFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
 			model->cullBlend(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
 			drawCounts.push_back(model->blendDrawCount);
 		}
@@ -882,7 +1016,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	// Depth prepass
 	depthPrepass.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], depthPrepass.framebuffer.framebuffer, window.extent);
 
-	for (Entity object : entities) {
+	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
@@ -891,14 +1025,14 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (model->gotOpaquePrimitives) {
 			depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, 0);
-			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, frameInFlightIndex, true);
+			objectRenderable.drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, frameInFlightIndex, true);
 		}
 
 		// Mask
 		if (model->gotMaskPrimitives) {
 			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, 0);
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
+			objectRenderable.drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 	}
 
@@ -912,7 +1046,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
 			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
 
-			for (Entity object : entities) {
+			for (Entity object : loadedEntities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
 				Model* model = &models.at(objectRenderable.modelPath);
 				model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
@@ -922,7 +1056,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, 0);
 					shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-					model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, frameInFlightIndex, false);
+					objectRenderable.drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, frameInFlightIndex, false);
 				}
 
 				// Mask
@@ -930,7 +1064,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, 0);
 					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
-					model->drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, frameInFlightIndex, false, 16);
+					objectRenderable.drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, frameInFlightIndex, false);
 				}
 			}
 
@@ -942,7 +1076,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	// Opaque scene
 	opaqueSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], opaqueSceneFramebuffer.framebuffer, window.extent);
-	for (Entity object : entities) {
+	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
@@ -953,7 +1087,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, 0);
 			}
-			model->drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true, frameInFlightIndex, true);
+			objectRenderable.drawOpaque(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 
 		// Mask
@@ -962,7 +1096,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, 0);
 			}
-			model->drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, frameInFlightIndex, true, 0);
+			objectRenderable.drawMask(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 	}
 	envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
@@ -974,7 +1108,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	// Blend scene
 	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffer.framebuffer, window.extent);
-	for (Entity object : entities) {
+	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		Model* model = &models.at(objectRenderable.modelPath);
 		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
@@ -984,7 +1118,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, 0);
 			}
-			model->drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true, frameInFlightIndex, true);
+			objectRenderable.drawBlend(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, true, frameInFlightIndex, true);
 		}
 	}
 
@@ -1126,8 +1260,8 @@ void Renderer::createAdditionalDescriptorSets() {
 	materialPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	materialPoolCreateInfo.pNext = nullptr;
 	materialPoolCreateInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	materialPoolCreateInfo.maxSets = 1;
-	materialPoolCreateInfo.poolSizeCount = 1;
+	materialPoolCreateInfo.maxSets = framesInFlight;
+	materialPoolCreateInfo.poolSizeCount = 2;
 	std::array<VkDescriptorPoolSize, 2> descriptorPools = { texturePoolSize, materialPoolSize };
 	materialPoolCreateInfo.pPoolSizes = descriptorPools.data();
 	NEIGE_VK_CHECK(vkCreateDescriptorPool(logicalDevice.device, &materialPoolCreateInfo, nullptr, &materialsDescriptorPool.descriptorPool));
@@ -1166,15 +1300,20 @@ void Renderer::createAdditionalDescriptorSets() {
 	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &materialSetLayoutCreateInfo, nullptr, &materialsDescriptorSetLayout));
 
 	// Allocation
-	VkDescriptorSetAllocateInfo materialAllocateInfo = {};
-	materialAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	materialAllocateInfo.pNext = nullptr;
-	materialAllocateInfo.descriptorPool = materialsDescriptorPool.descriptorPool;
-	materialAllocateInfo.descriptorSetCount = 1;
-	materialAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
-	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &materialAllocateInfo, &materialsDescriptorSet.descriptorSet));
+	materialsDescriptorSets.resize(framesInFlight);
+	materialDescriptorSetUpToDate.resize(framesInFlight);
+	for (uint32_t i = 0; i < framesInFlight; i++) {
+		VkDescriptorSetAllocateInfo materialAllocateInfo = {};
+		materialAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		materialAllocateInfo.pNext = nullptr;
+		materialAllocateInfo.descriptorPool = materialsDescriptorPool.descriptorPool;
+		materialAllocateInfo.descriptorSetCount = 1;
+		materialAllocateInfo.pSetLayouts = &materialsDescriptorSetLayout;
+		NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &materialAllocateInfo, &materialsDescriptorSets[i].descriptorSet));
 
-	materialsDescriptorSet.descriptorPool = &materialsDescriptorPool;
+		materialsDescriptorSets[i].descriptorPool = &materialsDescriptorPool;
+		materialDescriptorSetUpToDate[i] = false;
+	}
 
 	// Per draw information
 	// Descriptor Pool
@@ -1210,7 +1349,7 @@ void Renderer::createAdditionalDescriptorSets() {
 	NEIGE_VK_CHECK(vkCreateDescriptorSetLayout(logicalDevice.device, &perDrawSetLayoutCreateInfo, nullptr, &perDrawDescriptorSetLayout));
 }
 
-void Renderer::updateAdditionalDescriptorSets() {
+void Renderer::updateMaterialDescriptorSet(uint32_t frameInFlightIndex) {
 	std::vector<VkDescriptorImageInfo> textureInfos;
 	for (Texture& texture : textures) {
 		VkDescriptorImageInfo textureInfo = {};
@@ -1236,7 +1375,7 @@ void Renderer::updateAdditionalDescriptorSets() {
 	VkWriteDescriptorSet textureWriteDescriptorSet = {};
 	textureWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	textureWriteDescriptorSet.pNext = nullptr;
-	textureWriteDescriptorSet.dstSet = materialsDescriptorSet.descriptorSet;
+	textureWriteDescriptorSet.dstSet = materialsDescriptorSets[frameInFlightIndex].descriptorSet;
 	textureWriteDescriptorSet.dstBinding = 0;
 	textureWriteDescriptorSet.dstArrayElement = 0;
 	textureWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(textures.size());
@@ -1249,7 +1388,7 @@ void Renderer::updateAdditionalDescriptorSets() {
 	VkWriteDescriptorSet materialWriteDescriptorSet = {};
 	materialWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	materialWriteDescriptorSet.pNext = nullptr;
-	materialWriteDescriptorSet.dstSet = materialsDescriptorSet.descriptorSet;
+	materialWriteDescriptorSet.dstSet = materialsDescriptorSets[frameInFlightIndex].descriptorSet;
 	materialWriteDescriptorSet.dstBinding = 1;
 	materialWriteDescriptorSet.dstArrayElement = 0;
 	materialWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(materials.size());
@@ -1259,7 +1398,7 @@ void Renderer::updateAdditionalDescriptorSets() {
 	materialWriteDescriptorSet.pTexelBufferView = nullptr;
 	writesDescriptorSet.push_back(materialWriteDescriptorSet);
 
-	materialsDescriptorSet.update(writesDescriptorSet);
+	materialsDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 }
 
 void Renderer::createAlphaCompositingDescriptorSet() {

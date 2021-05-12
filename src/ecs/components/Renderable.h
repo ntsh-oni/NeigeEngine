@@ -41,6 +41,32 @@ struct Renderable {
 	std::vector<DescriptorSet> shadowDescriptorSets;
 	std::vector<DescriptorSet> shadowMaskDescriptorSets;
 
+	// Frustum culling
+	std::vector<VkBuffer> indirectBuffers;
+	std::vector<VkBuffer> drawCountBuffers;
+	std::vector<VkBuffer> perDrawBuffers;
+
+	uint32_t opaqueCulledDrawCount = 0;
+	Buffer opaqueCulledDrawCountBuffer;
+	Buffer opaqueCulledDrawIndirectBuffer;
+	Buffer opaqueCulledDrawIndirectInfoBuffer;
+	std::vector<DescriptorSet> opaqueFrustumCullingDescriptorSets;
+	DescriptorSet opaqueCulledDrawIndirectInfoDescriptorSet;
+
+	uint32_t maskCulledDrawCount = 0;
+	Buffer maskCulledDrawCountBuffer;
+	Buffer maskCulledDrawIndirectBuffer;
+	Buffer maskCulledDrawIndirectInfoBuffer;
+	std::vector<DescriptorSet> maskFrustumCullingDescriptorSets;
+	DescriptorSet maskCulledDrawIndirectInfoDescriptorSet;
+
+	uint32_t blendCulledDrawCount = 0;
+	Buffer blendCulledDrawCountBuffer;
+	Buffer blendCulledDrawIndirectBuffer;
+	Buffer blendCulledDrawIndirectInfoBuffer;
+	std::vector<DescriptorSet> blendFrustumCullingDescriptorSets;
+	DescriptorSet blendCulledDrawIndirectInfoDescriptorSet;
+
 	void createEntityDescriptorSet(uint32_t frameInFlightIndex, GraphicsPipeline* graphicsPipeline) {
 		descriptorSets[frameInFlightIndex].init(graphicsPipeline, 0);
 
@@ -237,6 +263,300 @@ struct Renderable {
 		descriptorSets.at(frameInFlightIndex).update(writesDescriptorSet);
 	}
 
+	void createOpaqueFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
+
+		VkDescriptorBufferInfo objectInfo = {};
+		objectInfo.buffer = buffers.at(frameInFlightIndex).buffer;
+		objectInfo.offset = 0;
+		objectInfo.range = sizeof(ObjectUniformBufferObject);
+
+		VkDescriptorBufferInfo inFrustumInfo = {};
+		inFrustumInfo.buffer = frustumBuffers.at(frameInFlightIndex).buffer;
+		inFrustumInfo.offset = 0;
+		inFrustumInfo.range = 6 * 4 * sizeof(float);
+
+		VkDescriptorBufferInfo outDrawIndirectInfo;
+		outDrawIndirectInfo.buffer = opaqueCulledDrawIndirectBuffer.buffer;
+		outDrawIndirectInfo.offset = 0;
+		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+
+		VkDescriptorBufferInfo outPerDrawInfo = {};
+		outPerDrawInfo.buffer = opaqueCulledDrawIndirectInfoBuffer.buffer;
+		outPerDrawInfo.offset = 0;
+		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+
+		VkDescriptorBufferInfo outDrawCountInfo = {};
+		outDrawCountInfo.buffer = opaqueCulledDrawCountBuffer.buffer;
+		outDrawCountInfo.offset = 0;
+		outDrawCountInfo.range = sizeof(uint32_t);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet objectWriteDescriptorSet = {};
+		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		objectWriteDescriptorSet.pNext = nullptr;
+		objectWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		objectWriteDescriptorSet.dstBinding = 0;
+		objectWriteDescriptorSet.dstArrayElement = 0;
+		objectWriteDescriptorSet.descriptorCount = 1;
+		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		objectWriteDescriptorSet.pImageInfo = nullptr;
+		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
+		objectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+
+		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
+		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		inFrustumWriteDescriptorSet.pNext = nullptr;
+		inFrustumWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		inFrustumWriteDescriptorSet.dstBinding = 1;
+		inFrustumWriteDescriptorSet.dstArrayElement = 0;
+		inFrustumWriteDescriptorSet.descriptorCount = 1;
+		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
+		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
+		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
+		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
+		outDrawIndirectWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
+		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
+		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
+		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
+		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+
+		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
+		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outPerDrawWriteDescriptorSet.pNext = nullptr;
+		outPerDrawWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outPerDrawWriteDescriptorSet.dstBinding = 3;
+		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
+		outPerDrawWriteDescriptorSet.descriptorCount = 1;
+		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
+		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
+		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
+		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawCountWriteDescriptorSet.pNext = nullptr;
+		outDrawCountWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawCountWriteDescriptorSet.dstBinding = 4;
+		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
+		outDrawCountWriteDescriptorSet.descriptorCount = 1;
+		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
+		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	}
+
+	void createMaskFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
+
+		VkDescriptorBufferInfo objectInfo = {};
+		objectInfo.buffer = buffers.at(frameInFlightIndex).buffer;
+		objectInfo.offset = 0;
+		objectInfo.range = sizeof(ObjectUniformBufferObject);
+
+		VkDescriptorBufferInfo inFrustumInfo = {};
+		inFrustumInfo.buffer = frustumBuffers.at(frameInFlightIndex).buffer;
+		inFrustumInfo.offset = 0;
+		inFrustumInfo.range = 6 * 4 * sizeof(float);
+
+		VkDescriptorBufferInfo outDrawIndirectInfo;
+		outDrawIndirectInfo.buffer = maskCulledDrawIndirectBuffer.buffer;
+		outDrawIndirectInfo.offset = 0;
+		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+
+		VkDescriptorBufferInfo outPerDrawInfo = {};
+		outPerDrawInfo.buffer = maskCulledDrawIndirectInfoBuffer.buffer;
+		outPerDrawInfo.offset = 0;
+		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+
+		VkDescriptorBufferInfo outDrawCountInfo = {};
+		outDrawCountInfo.buffer = maskCulledDrawCountBuffer.buffer;
+		outDrawCountInfo.offset = 0;
+		outDrawCountInfo.range = sizeof(uint32_t);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet objectWriteDescriptorSet = {};
+		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		objectWriteDescriptorSet.pNext = nullptr;
+		objectWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		objectWriteDescriptorSet.dstBinding = 0;
+		objectWriteDescriptorSet.dstArrayElement = 0;
+		objectWriteDescriptorSet.descriptorCount = 1;
+		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		objectWriteDescriptorSet.pImageInfo = nullptr;
+		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
+		objectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+
+		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
+		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		inFrustumWriteDescriptorSet.pNext = nullptr;
+		inFrustumWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		inFrustumWriteDescriptorSet.dstBinding = 1;
+		inFrustumWriteDescriptorSet.dstArrayElement = 0;
+		inFrustumWriteDescriptorSet.descriptorCount = 1;
+		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
+		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
+		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
+		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
+		outDrawIndirectWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
+		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
+		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
+		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
+		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+
+		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
+		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outPerDrawWriteDescriptorSet.pNext = nullptr;
+		outPerDrawWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outPerDrawWriteDescriptorSet.dstBinding = 3;
+		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
+		outPerDrawWriteDescriptorSet.descriptorCount = 1;
+		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
+		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
+		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
+		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawCountWriteDescriptorSet.pNext = nullptr;
+		outDrawCountWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawCountWriteDescriptorSet.dstBinding = 4;
+		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
+		outDrawCountWriteDescriptorSet.descriptorCount = 1;
+		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
+		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	}
+
+	void createBlendFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
+
+		VkDescriptorBufferInfo objectInfo = {};
+		objectInfo.buffer = buffers.at(frameInFlightIndex).buffer;
+		objectInfo.offset = 0;
+		objectInfo.range = sizeof(ObjectUniformBufferObject);
+
+		VkDescriptorBufferInfo inFrustumInfo = {};
+		inFrustumInfo.buffer = frustumBuffers.at(frameInFlightIndex).buffer;
+		inFrustumInfo.offset = 0;
+		inFrustumInfo.range = 6 * 4 * sizeof(float);
+
+		VkDescriptorBufferInfo outDrawIndirectInfo;
+		outDrawIndirectInfo.buffer = blendCulledDrawIndirectBuffer.buffer;
+		outDrawIndirectInfo.offset = 0;
+		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+
+		VkDescriptorBufferInfo outPerDrawInfo = {};
+		outPerDrawInfo.buffer = blendCulledDrawIndirectInfoBuffer.buffer;
+		outPerDrawInfo.offset = 0;
+		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+
+		VkDescriptorBufferInfo outDrawCountInfo = {};
+		outDrawCountInfo.buffer = blendCulledDrawCountBuffer.buffer;
+		outDrawCountInfo.offset = 0;
+		outDrawCountInfo.range = sizeof(uint32_t);
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet objectWriteDescriptorSet = {};
+		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		objectWriteDescriptorSet.pNext = nullptr;
+		objectWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		objectWriteDescriptorSet.dstBinding = 0;
+		objectWriteDescriptorSet.dstArrayElement = 0;
+		objectWriteDescriptorSet.descriptorCount = 1;
+		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		objectWriteDescriptorSet.pImageInfo = nullptr;
+		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
+		objectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+
+		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
+		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		inFrustumWriteDescriptorSet.pNext = nullptr;
+		inFrustumWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		inFrustumWriteDescriptorSet.dstBinding = 1;
+		inFrustumWriteDescriptorSet.dstArrayElement = 0;
+		inFrustumWriteDescriptorSet.descriptorCount = 1;
+		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
+		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
+		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
+		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
+		outDrawIndirectWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
+		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
+		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
+		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
+		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+
+		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
+		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outPerDrawWriteDescriptorSet.pNext = nullptr;
+		outPerDrawWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outPerDrawWriteDescriptorSet.dstBinding = 3;
+		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
+		outPerDrawWriteDescriptorSet.descriptorCount = 1;
+		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
+		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
+		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+
+		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
+		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		outDrawCountWriteDescriptorSet.pNext = nullptr;
+		outDrawCountWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
+		outDrawCountWriteDescriptorSet.dstBinding = 4;
+		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
+		outDrawCountWriteDescriptorSet.descriptorCount = 1;
+		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
+		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
+		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	}
+
 	void createDepthPrepassEntityDescriptorSet(uint32_t frameInFlightIndex) {
 		depthPrepassDescriptorSets[frameInFlightIndex].init(&depthPrepass.opaqueGraphicsPipeline, 0);
 
@@ -411,5 +731,41 @@ struct Renderable {
 		writesDescriptorSet.push_back(shadowWriteDescriptorSet);
 
 		shadowMaskDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	}
+
+	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
+		Model* model = &models.at(modelPath);
+		if (bindTextures) {
+			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, opaqueGraphicsPipeline, 1);
+			DescriptorSet* selectedDescriptorSet = culling ? &opaqueCulledDrawIndirectInfoDescriptorSet : &model->opaqueDrawIndirectInfoDescriptorSet;
+			selectedDescriptorSet->bind(commandBuffer, opaqueGraphicsPipeline, 2);
+		}
+		VkBuffer selectedBuffer = culling ? opaqueCulledDrawIndirectBuffer.buffer : model->opaqueDrawIndirectBuffer.buffer;
+		VkBuffer selectedDrawCount = culling ? opaqueCulledDrawCountBuffer.buffer : model->opaqueDrawCountBuffer.buffer;
+		vkCmdDrawIndexedIndirectCount(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, 0, model->opaqueDrawCount, sizeof(VkDrawIndexedIndirectCommand));
+	}
+
+	void drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* maskGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
+		Model* model = &models.at(modelPath);
+		if (bindTextures) {
+			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, maskGraphicsPipeline, 1);
+			DescriptorSet* selectedDescriptorSet = culling ? &maskCulledDrawIndirectInfoDescriptorSet : &model->maskDrawIndirectInfoDescriptorSet;
+			selectedDescriptorSet->bind(commandBuffer, maskGraphicsPipeline, 2);
+		}
+		VkBuffer selectedBuffer = culling ? maskCulledDrawIndirectBuffer.buffer : model->maskDrawIndirectBuffer.buffer;
+		VkBuffer selectedDrawCount = culling ? maskCulledDrawCountBuffer.buffer : model->maskDrawCountBuffer.buffer;
+		vkCmdDrawIndexedIndirectCount(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, 0, model->maskDrawCount, sizeof(VkDrawIndexedIndirectCommand));
+	}
+
+	void drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* blendGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
+		Model* model = &models.at(modelPath);
+		if (bindTextures) {
+			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, blendGraphicsPipeline, 1);
+			DescriptorSet* selectedDescriptorSet = culling ? &blendCulledDrawIndirectInfoDescriptorSet : &model->blendDrawIndirectInfoDescriptorSet;
+			selectedDescriptorSet->bind(commandBuffer, blendGraphicsPipeline, 2);
+		}
+		VkBuffer selectedBuffer = culling ? blendCulledDrawIndirectBuffer.buffer : model->blendDrawIndirectBuffer.buffer;
+		VkBuffer selectedDrawCount = culling ? blendCulledDrawCountBuffer.buffer : model->blendDrawCountBuffer.buffer;
+		vkCmdDrawIndexedIndirectCount(commandBuffer->commandBuffer, selectedBuffer, 0, selectedDrawCount, 0, model->blendDrawCount, sizeof(VkDrawIndexedIndirectCommand));
 	}
 };

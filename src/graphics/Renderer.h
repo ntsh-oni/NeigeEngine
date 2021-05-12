@@ -22,9 +22,13 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <queue>
 #include <map>
 
 struct Renderer : public System {
+	std::queue<Entity> unloadedEntities;
+	std::set<Entity> loadedEntities;
+
 	// Sync
 	std::vector<Fence> fences;
 	std::vector<Semaphore> IAsemaphores;
@@ -72,7 +76,7 @@ struct Renderer : public System {
 	void createResources();
 	void destroyResources();
 	void createAdditionalDescriptorSets();
-	void updateAdditionalDescriptorSets();
+	void updateMaterialDescriptorSet(uint32_t frameInFlightIndex);
 	void createAlphaCompositingDescriptorSet();
 	void createPostProcessDescriptorSet();
 	void reloadOnResize();
