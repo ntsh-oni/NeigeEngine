@@ -179,7 +179,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				else if (attributeName == "TANGENT") {
 					tangent = reinterpret_cast<float*>(offsetBuffer);
 					tangentCount = attribute->data->count;
-					tangentStride = std::max(buffer_view->stride, sizeof(float) * 3);
+					tangentStride = std::max(buffer_view->stride, sizeof(float) * 4);
 				}
 				else if (attributeName == "JOINTS_0") {
 					joints = reinterpret_cast<unsigned short*>(offsetBuffer);
@@ -209,7 +209,7 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 				vertex.normal = glm::normalize(glm::transpose(glm::inverse(glm::mat3(modelMatrix))) * vertex.normal);
 				vertex.uv = uvCount != 0 ? glm::vec2(uv[uvPos + 0], uv[uvPos + 1]) : glm::vec2(0.5f);
 				vertex.color = colorCount != 0 ? glm::vec3(color[colorPos + 0], color[colorPos + 1], color[colorPos + 2]) : glm::vec3(0.5f);
-				vertex.tangent = tangentCount != 0 ? glm::vec3(tangent[tangentPos + 0], tangent[tangentPos + 1], tangent[tangentPos + 2]) : glm::vec3(0.5f);
+				vertex.tangent = tangentCount != 0 ? glm::vec4(tangent[tangentPos + 0], tangent[tangentPos + 1], tangent[tangentPos + 2], tangent[tangentPos + 3]) : glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 				vertex.joints = jointsCount != 0 ? glm::vec4(joints[jointsPos + 0], joints[jointsPos + 1], joints[jointsPos + 2], joints[jointsPos + 3]) : glm::vec4(0.0f);
 				vertex.weights = weightsCount != 0 ? glm::vec4(weights[weightsPos + 0], weights[weightsPos + 1], weights[weightsPos + 2], weights[weightsPos + 3]) : glm::vec4(0.0f);
 				primitiveVertices.push_back(vertex);
@@ -307,9 +307,9 @@ void ModelLoader::loadglTFNode(const std::string& filePath, cgltf_node* node, ui
 
 					glm::vec3 localTangent = (dPos1 * dUV2.y - dPos2 * dUV1.y) * r;
 
-					vertex0->tangent += localTangent;
-					vertex1->tangent += localTangent;
-					vertex2->tangent += localTangent;
+					vertex0->tangent += glm::vec4(localTangent, 1.0f);
+					vertex1->tangent += glm::vec4(localTangent, 1.0f);
+					vertex2->tangent += glm::vec4(localTangent, 1.0f);
 				}
 			}
 

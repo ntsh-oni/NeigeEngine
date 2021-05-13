@@ -42,9 +42,9 @@ $ make
 - [x] GPU Frustum culling
 - [x] Realtime shaders reloading
 ## Screenshots
-![Amazon Lumberyard Bistro](https://i.imgur.com/WVOoWP8.png)
+![Amazon Lumberyard Bistro](https://i.imgur.com/uq0IOq4.png)
 <sub>Amazon Lumberyard Bistro</sub>
 
 
-![Damaged Helmet](https://i.imgur.com/oVa6tD7.png)
+![Damaged Helmet](https://i.imgur.com/lQcuwdv.png)
 <sub>Damaged Helmet</sub>
