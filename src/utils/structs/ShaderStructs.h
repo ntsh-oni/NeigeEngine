@@ -90,7 +90,7 @@ struct Vertex {
 	glm::vec3 normal;
 	glm::vec2 uv;
 	glm::vec3 color;
-	glm::vec3 tangent;
+	glm::vec4 tangent;
 	glm::vec4 joints;
 	glm::vec4 weights;
 
@@ -143,7 +143,7 @@ struct Vertex {
 				VkVertexInputAttributeDescription tangentAttribute = {};
 				tangentAttribute.binding = 0;
 				tangentAttribute.location = inputVariables[i].location;
-				tangentAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+				tangentAttribute.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 				tangentAttribute.offset = offsetof(Vertex, tangent);
 				inputAttributeDescriptions.push_back(tangentAttribute);
 			}
