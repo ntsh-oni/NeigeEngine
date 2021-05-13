@@ -6,20 +6,11 @@ SET(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-include_directories(external/cgltf)
-include_directories(external/glm)
-include_directories(external/spirv-reflect)
-include_directories(external/stb)
-
 add_subdirectory(external/glfw)
-link_libraries(glfw)
 
 add_subdirectory(external/glslang)
-link_libraries(glslang)
-link_libraries(SPIRV)
 
 add_subdirectory(external/simdjson)
-link_libraries(simdjson)
 
 IF (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
 	message(STATUS "Looking for Vulkan...")
@@ -30,7 +21,6 @@ IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ELSE()
 	message(STATUS ${Vulkan_LIBRARY})
-	link_libraries(Vulkan::Vulkan)
 ENDIF()
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX -D_USE_MATH_DEFINES")
@@ -96,3 +86,10 @@ SET(SOURCES ${GAME_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${UTILS_SOURC
 SET(HEADERS ${GAME_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
 
 add_executable(${PROJECT_NAME} main.cpp ${SOURCES} ${HEADERS})
+
+target_include_directories(${PROJECT_NAME} PUBLIC external/cgltf)
+target_include_directories(${PROJECT_NAME} PUBLIC external/glm)
+target_include_directories(${PROJECT_NAME} PUBLIC external/spirv-reflect)
+target_include_directories(${PROJECT_NAME} PUBLIC external/stb)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang simdjson SPIRV Vulkan::Vulkan)

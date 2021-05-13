@@ -27,7 +27,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
+				"modelPath": "../modelfiles/BoomBox.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -43,9 +43,9 @@
 					0.0
 				],
 				"scale": [
-					1.0,
-					1.0,
-					1.0
+					100.0,
+					100.0,
+					100.0
 				]
 			}
 		}
