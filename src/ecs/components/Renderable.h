@@ -10,6 +10,7 @@
 #include <iostream>
 
 struct Renderable {
+	// Component paramaters
 	// Model
 	std::string modelPath = "";
 
@@ -19,6 +20,9 @@ struct Renderable {
 	std::string tesselationControlShaderPath = "";
 	std::string tesselationEvaluationShaderPath = "";
 	std::string geometryShaderPath = "";
+
+	// Model
+	Model* model;
 
 	// Pipeline topology
 	Topology topology = Topology::TRIANGLE_LIST;
@@ -263,7 +267,7 @@ struct Renderable {
 		descriptorSets.at(frameInFlightIndex).update(writesDescriptorSet);
 	}
 
-	void createOpaqueFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+	void createOpaqueFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
 		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
 
 		VkDescriptorBufferInfo objectInfo = {};
@@ -279,12 +283,12 @@ struct Renderable {
 		VkDescriptorBufferInfo outDrawIndirectInfo;
 		outDrawIndirectInfo.buffer = opaqueCulledDrawIndirectBuffer.buffer;
 		outDrawIndirectInfo.offset = 0;
-		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+		outDrawIndirectInfo.range = model->opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand);
 
 		VkDescriptorBufferInfo outPerDrawInfo = {};
 		outPerDrawInfo.buffer = opaqueCulledDrawIndirectInfoBuffer.buffer;
 		outPerDrawInfo.offset = 0;
-		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+		outPerDrawInfo.range = model->opaqueDrawCount * sizeof(PerDraw);
 
 		VkDescriptorBufferInfo outDrawCountInfo = {};
 		outDrawCountInfo.buffer = opaqueCulledDrawCountBuffer.buffer;
@@ -361,7 +365,7 @@ struct Renderable {
 		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 	}
 
-	void createMaskFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+	void createMaskFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
 		maskFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
 
 		VkDescriptorBufferInfo objectInfo = {};
@@ -377,12 +381,12 @@ struct Renderable {
 		VkDescriptorBufferInfo outDrawIndirectInfo;
 		outDrawIndirectInfo.buffer = maskCulledDrawIndirectBuffer.buffer;
 		outDrawIndirectInfo.offset = 0;
-		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+		outDrawIndirectInfo.range = model->maskDrawCount * sizeof(VkDrawIndexedIndirectCommand);
 
 		VkDescriptorBufferInfo outPerDrawInfo = {};
 		outPerDrawInfo.buffer = maskCulledDrawIndirectInfoBuffer.buffer;
 		outPerDrawInfo.offset = 0;
-		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+		outPerDrawInfo.range = model->maskDrawCount * sizeof(PerDraw);
 
 		VkDescriptorBufferInfo outDrawCountInfo = {};
 		outDrawCountInfo.buffer = maskCulledDrawCountBuffer.buffer;
@@ -459,7 +463,7 @@ struct Renderable {
 		maskFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 	}
 
-	void createBlendFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex, uint32_t fullDrawCount) {
+	void createBlendFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
 		blendFrustumCullingDescriptorSets[frameInFlightIndex].init(&frustumCulling.computePipeline, 0);
 
 		VkDescriptorBufferInfo objectInfo = {};
@@ -475,12 +479,12 @@ struct Renderable {
 		VkDescriptorBufferInfo outDrawIndirectInfo;
 		outDrawIndirectInfo.buffer = blendCulledDrawIndirectBuffer.buffer;
 		outDrawIndirectInfo.offset = 0;
-		outDrawIndirectInfo.range = fullDrawCount * sizeof(VkDrawIndexedIndirectCommand);
+		outDrawIndirectInfo.range = model->blendDrawCount * sizeof(VkDrawIndexedIndirectCommand);
 
 		VkDescriptorBufferInfo outPerDrawInfo = {};
 		outPerDrawInfo.buffer = blendCulledDrawIndirectInfoBuffer.buffer;
 		outPerDrawInfo.offset = 0;
-		outPerDrawInfo.range = fullDrawCount * sizeof(PerDraw);
+		outPerDrawInfo.range = model->blendDrawCount * sizeof(PerDraw);
 
 		VkDescriptorBufferInfo outDrawCountInfo = {};
 		outDrawCountInfo.buffer = blendCulledDrawCountBuffer.buffer;
@@ -733,8 +737,28 @@ struct Renderable {
 		shadowMaskDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 	}
 
+	void cullOpaque(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
+		model->opaqueFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
+		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->opaqueDrawCount);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+	}
+
+	void cullMask(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
+		model->maskFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
+		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->maskDrawCount);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+	}
+
+	void cullBlend(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
+		model->blendFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
+		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->blendDrawCount);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+	}
+
 	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
-		Model* model = &models.at(modelPath);
 		if (bindTextures) {
 			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, opaqueGraphicsPipeline, 1);
 			DescriptorSet* selectedDescriptorSet = culling ? &opaqueCulledDrawIndirectInfoDescriptorSet : &model->opaqueDrawIndirectInfoDescriptorSet;
@@ -746,7 +770,6 @@ struct Renderable {
 	}
 
 	void drawMask(CommandBuffer* commandBuffer, GraphicsPipeline* maskGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
-		Model* model = &models.at(modelPath);
 		if (bindTextures) {
 			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, maskGraphicsPipeline, 1);
 			DescriptorSet* selectedDescriptorSet = culling ? &maskCulledDrawIndirectInfoDescriptorSet : &model->maskDrawIndirectInfoDescriptorSet;
@@ -758,7 +781,6 @@ struct Renderable {
 	}
 
 	void drawBlend(CommandBuffer* commandBuffer, GraphicsPipeline* blendGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
-		Model* model = &models.at(modelPath);
 		if (bindTextures) {
 			materialsDescriptorSets[frameInFlightIndex].bind(commandBuffer, blendGraphicsPipeline, 1);
 			DescriptorSet* selectedDescriptorSet = culling ? &blendCulledDrawIndirectInfoDescriptorSet : &model->blendDrawIndirectInfoDescriptorSet;

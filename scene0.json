@@ -5,7 +5,7 @@
 				"fov": 45.0,
 				"nearPlane": 0.2,
 				"farPlane": 500.0,
-				"envmapPath": "../modelfiles/EmeraldSquare_v4/symmetrical_garden_4k.hdr"
+				"envmapPath": ""
 			},
 			"transform": {
 				"position": [
@@ -27,7 +27,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/BoomBox.gltf",
+				"modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -43,9 +43,26 @@
 					0.0
 				],
 				"scale": [
-					100.0,
-					100.0,
-					100.0
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"light": {
+				"type": "DIRECTIONAL",
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"transform": {
+				"rotation": [
+					1.0,
+					-1.0,
+					0.0
 				]
 			}
 		}
