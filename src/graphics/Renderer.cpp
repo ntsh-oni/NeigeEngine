@@ -503,25 +503,24 @@ void Renderer::destroy() {
 	}
 	for (Entity entity : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(entity);
-		Model* model = &models.at(objectRenderable.modelPath);
 
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			objectRenderable.buffers[i].destroy();
 		}
 
-		if (model->gotOpaquePrimitives) {
+		if (objectRenderable.model->gotOpaquePrimitives) {
 			objectRenderable.opaqueCulledDrawIndirectBuffer.destroy();
 			objectRenderable.opaqueCulledDrawCountBuffer.destroy();
 			objectRenderable.opaqueCulledDrawIndirectInfoBuffer.destroy();
 		}
 
-		if (model->gotMaskPrimitives) {
+		if (objectRenderable.model->gotMaskPrimitives) {
 			objectRenderable.maskCulledDrawIndirectBuffer.destroy();
 			objectRenderable.maskCulledDrawCountBuffer.destroy();
 			objectRenderable.maskCulledDrawIndirectInfoBuffer.destroy();
 		}
 
-		if (model->gotBlendPrimitives) {
+		if (objectRenderable.model->gotBlendPrimitives) {
 			objectRenderable.blendCulledDrawIndirectBuffer.destroy();
 			objectRenderable.blendCulledDrawCountBuffer.destroy();
 			objectRenderable.blendCulledDrawIndirectInfoBuffer.destroy();
@@ -571,11 +570,11 @@ void Renderer::loadObject(Entity object) {
 		model.init(objectRenderable.modelPath);
 		models.emplace(objectRenderable.modelPath, model);
 	}
-	Model* model = &models.at(objectRenderable.modelPath);
+	objectRenderable.model = &models.at(objectRenderable.modelPath);
 
 	// Graphics pipelines
 	// Opaque
-	if (model->gotOpaquePrimitives && graphicsPipelines.find(objectRenderable.lookupString + "o") == graphicsPipelines.end()) {
+	if (objectRenderable.model->gotOpaquePrimitives && graphicsPipelines.find(objectRenderable.lookupString + "o") == graphicsPipelines.end()) {
 		GraphicsPipeline opaqueGraphicsPipeline;
 		opaqueGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		opaqueGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
@@ -598,7 +597,7 @@ void Renderer::loadObject(Entity object) {
 	}
 
 	// Mask
-	if (model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end()) {
+	if (objectRenderable.model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end()) {
 		GraphicsPipeline maskGraphicsPipeline;
 		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		maskGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
@@ -622,7 +621,7 @@ void Renderer::loadObject(Entity object) {
 	}
 
 	// Blend
-	if (model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end()) {
+	if (objectRenderable.model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end()) {
 		GraphicsPipeline blendGraphicsPipeline;
 		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
 		blendGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
@@ -663,7 +662,7 @@ void Renderer::loadObject(Entity object) {
 		BufferTools::createUniformBuffer(objectRenderable.buffers.at(i).buffer, sizeof(ObjectUniformBufferObject), &objectRenderable.buffers.at(i).memoryInfo);
 	}
 
-	if (model->gotOpaquePrimitives || model->gotMaskPrimitives || model->gotBlendPrimitives) {
+	if (objectRenderable.model->gotOpaquePrimitives || objectRenderable.model->gotMaskPrimitives || objectRenderable.model->gotBlendPrimitives) {
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Descriptor sets
 			GraphicsPipeline* graphicsPipeline = objectRenderable.opaqueGraphicsPipeline ? objectRenderable.opaqueGraphicsPipeline : (objectRenderable.maskGraphicsPipeline ? objectRenderable.maskGraphicsPipeline : objectRenderable.blendGraphicsPipeline);
@@ -671,10 +670,10 @@ void Renderer::loadObject(Entity object) {
 		}
 	}
 
-	if (model->gotOpaquePrimitives) {
-		BufferTools::createBuffer(objectRenderable.opaqueCulledDrawIndirectBuffer.buffer, model->opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.opaqueCulledDrawIndirectBuffer.memoryInfo);
+	if (objectRenderable.model->gotOpaquePrimitives) {
+		BufferTools::createBuffer(objectRenderable.opaqueCulledDrawIndirectBuffer.buffer, objectRenderable.model->opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.opaqueCulledDrawIndirectBuffer.memoryInfo);
 		BufferTools::createBuffer(objectRenderable.opaqueCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.opaqueCulledDrawCountBuffer.memoryInfo);
-		BufferTools::createStorageBuffer(objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer, model->opaqueDrawCount * sizeof(PerDraw), &objectRenderable.opaqueCulledDrawIndirectInfoBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer, objectRenderable.model->opaqueDrawCount * sizeof(PerDraw), &objectRenderable.opaqueCulledDrawIndirectInfoBuffer.memoryInfo);
 
 		objectRenderable.indirectBuffers.push_back(objectRenderable.opaqueCulledDrawIndirectBuffer.buffer);
 		objectRenderable.drawCountBuffers.push_back(objectRenderable.opaqueCulledDrawCountBuffer.buffer);
@@ -694,7 +693,7 @@ void Renderer::loadObject(Entity object) {
 		VkDescriptorBufferInfo perCulledDrawInfo = {};
 		perCulledDrawInfo.buffer = objectRenderable.opaqueCulledDrawIndirectInfoBuffer.buffer;
 		perCulledDrawInfo.offset = 0;
-		perCulledDrawInfo.range = model->opaqueDrawCount * sizeof(PerDraw);
+		perCulledDrawInfo.range = objectRenderable.model->opaqueDrawCount * sizeof(PerDraw);
 
 		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
 
@@ -716,7 +715,7 @@ void Renderer::loadObject(Entity object) {
 		objectRenderable.opaqueFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Frustum culling
-			objectRenderable.createOpaqueFrustumCullingEntityDescriptorSet(i, model->opaqueDrawCount);
+			objectRenderable.createOpaqueFrustumCullingEntityDescriptorSet(i);
 
 			// Depth prepass
 			objectRenderable.createDepthPrepassEntityDescriptorSet(i);
@@ -726,10 +725,10 @@ void Renderer::loadObject(Entity object) {
 		}
 	}
 
-	if (model->gotMaskPrimitives) {
-		BufferTools::createBuffer(objectRenderable.maskCulledDrawIndirectBuffer.buffer, model->maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.maskCulledDrawIndirectBuffer.memoryInfo);
+	if (objectRenderable.model->gotMaskPrimitives) {
+		BufferTools::createBuffer(objectRenderable.maskCulledDrawIndirectBuffer.buffer, objectRenderable.model->maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.maskCulledDrawIndirectBuffer.memoryInfo);
 		BufferTools::createBuffer(objectRenderable.maskCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.maskCulledDrawCountBuffer.memoryInfo);
-		BufferTools::createStorageBuffer(objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer, model->maskDrawCount * sizeof(PerDraw), &objectRenderable.maskCulledDrawIndirectInfoBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer, objectRenderable.model->maskDrawCount * sizeof(PerDraw), &objectRenderable.maskCulledDrawIndirectInfoBuffer.memoryInfo);
 
 		objectRenderable.indirectBuffers.push_back(objectRenderable.maskCulledDrawIndirectBuffer.buffer);
 		objectRenderable.drawCountBuffers.push_back(objectRenderable.maskCulledDrawCountBuffer.buffer);
@@ -749,7 +748,7 @@ void Renderer::loadObject(Entity object) {
 		VkDescriptorBufferInfo perCulledDrawInfo = {};
 		perCulledDrawInfo.buffer = objectRenderable.maskCulledDrawIndirectInfoBuffer.buffer;
 		perCulledDrawInfo.offset = 0;
-		perCulledDrawInfo.range = model->maskDrawCount * sizeof(PerDraw);
+		perCulledDrawInfo.range = objectRenderable.model->maskDrawCount * sizeof(PerDraw);
 
 		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
 
@@ -771,7 +770,7 @@ void Renderer::loadObject(Entity object) {
 		objectRenderable.maskFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Frustum culling
-			objectRenderable.createMaskFrustumCullingEntityDescriptorSet(i, model->maskDrawCount);
+			objectRenderable.createMaskFrustumCullingEntityDescriptorSet(i);
 
 			// Depth prepass mask
 			objectRenderable.createDepthPrepassMaskEntityDescriptorSet(i);
@@ -781,10 +780,10 @@ void Renderer::loadObject(Entity object) {
 		}
 	}
 
-	if (model->gotBlendPrimitives) {
-		BufferTools::createBuffer(objectRenderable.blendCulledDrawIndirectBuffer.buffer, model->blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.blendCulledDrawIndirectBuffer.memoryInfo);
+	if (objectRenderable.model->gotBlendPrimitives) {
+		BufferTools::createBuffer(objectRenderable.blendCulledDrawIndirectBuffer.buffer, objectRenderable.model->blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.blendCulledDrawIndirectBuffer.memoryInfo);
 		BufferTools::createBuffer(objectRenderable.blendCulledDrawCountBuffer.buffer, sizeof(uint32_t), VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &objectRenderable.blendCulledDrawCountBuffer.memoryInfo);
-		BufferTools::createStorageBuffer(objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer, model->blendDrawCount * sizeof(PerDraw), &objectRenderable.blendCulledDrawIndirectInfoBuffer.memoryInfo);
+		BufferTools::createStorageBuffer(objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer, objectRenderable.model->blendDrawCount * sizeof(PerDraw), &objectRenderable.blendCulledDrawIndirectInfoBuffer.memoryInfo);
 
 		objectRenderable.indirectBuffers.push_back(objectRenderable.blendCulledDrawIndirectBuffer.buffer);
 		objectRenderable.drawCountBuffers.push_back(objectRenderable.blendCulledDrawCountBuffer.buffer);
@@ -804,7 +803,7 @@ void Renderer::loadObject(Entity object) {
 		VkDescriptorBufferInfo perCulledDrawInfo = {};
 		perCulledDrawInfo.buffer = objectRenderable.blendCulledDrawIndirectInfoBuffer.buffer;
 		perCulledDrawInfo.offset = 0;
-		perCulledDrawInfo.range = model->blendDrawCount * sizeof(PerDraw);
+		perCulledDrawInfo.range = objectRenderable.model->blendDrawCount * sizeof(PerDraw);
 
 		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
 
@@ -826,7 +825,7 @@ void Renderer::loadObject(Entity object) {
 		objectRenderable.blendFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			// Frustum culling
-			objectRenderable.createBlendFrustumCullingEntityDescriptorSet(i, model->blendDrawCount);
+			objectRenderable.createBlendFrustumCullingEntityDescriptorSet(i);
 		}
 	}
 }
@@ -987,27 +986,26 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
-		Model* model = &models.at(objectRenderable.modelPath);
 
 		// Opaque
-		if (model->gotOpaquePrimitives) {
+		if (objectRenderable.model->gotOpaquePrimitives) {
 			objectRenderable.opaqueFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
-			model->cullOpaque(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
-			drawCounts.push_back(model->opaqueDrawCount);
+			objectRenderable.cullOpaque(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(objectRenderable.model->opaqueDrawCount);
 		}
 
 		// Mask
-		if (model->gotMaskPrimitives) {
+		if (objectRenderable.model->gotMaskPrimitives) {
 			objectRenderable.maskFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
-			model->cullMask(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
-			drawCounts.push_back(model->maskDrawCount);
+			objectRenderable.cullMask(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(objectRenderable.model->maskDrawCount);
 		}
 
 		// Blend
-		if (model->gotBlendPrimitives) {
+		if (objectRenderable.model->gotBlendPrimitives) {
 			objectRenderable.blendFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
-			model->cullBlend(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
-			drawCounts.push_back(model->blendDrawCount);
+			objectRenderable.cullBlend(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+			drawCounts.push_back(objectRenderable.model->blendDrawCount);
 		}
 	}
 
@@ -1018,18 +1016,17 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
-		Model* model = &models.at(objectRenderable.modelPath);
-		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
+		objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 		// Opaque
-		if (model->gotOpaquePrimitives) {
+		if (objectRenderable.model->gotOpaquePrimitives) {
 			depthPrepass.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, 0);
 			objectRenderable.drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.opaqueGraphicsPipeline, false, frameInFlightIndex, true);
 		}
 
 		// Mask
-		if (model->gotMaskPrimitives) {
+		if (objectRenderable.model->gotMaskPrimitives) {
 			depthPrepass.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 			objectRenderable.depthPrepassMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, 0);
 			objectRenderable.drawMask(&renderingCommandBuffers[frameInFlightIndex], &depthPrepass.maskGraphicsPipeline, true, frameInFlightIndex, true);
@@ -1048,11 +1045,10 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 
 			for (Entity object : loadedEntities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
-				Model* model = &models.at(objectRenderable.modelPath);
-				model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
+				objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 				// Opaque
-				if (model->gotOpaquePrimitives) {
+				if (objectRenderable.model->gotOpaquePrimitives) {
 					shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, 0);
 					shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
@@ -1060,7 +1056,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 				}
 
 				// Mask
-				if (model->gotMaskPrimitives) {
+				if (objectRenderable.model->gotMaskPrimitives) {
 					shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 					objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, 0);
 					shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
@@ -1078,11 +1074,10 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	opaqueSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], opaqueSceneFramebuffer.framebuffer, window.extent);
 	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
-		Model* model = &models.at(objectRenderable.modelPath);
-		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
+		objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 		// Opaque
-		if (model->gotOpaquePrimitives) {
+		if (objectRenderable.model->gotOpaquePrimitives) {
 			objectRenderable.opaqueGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.opaqueGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.opaqueGraphicsPipeline, 0);
@@ -1091,7 +1086,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 		}
 
 		// Mask
-		if (model->gotMaskPrimitives) {
+		if (objectRenderable.model->gotMaskPrimitives) {
 			objectRenderable.maskGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.maskGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.maskGraphicsPipeline, 0);
@@ -1110,10 +1105,9 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffer.framebuffer, window.extent);
 	for (Entity object : loadedEntities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
-		Model* model = &models.at(objectRenderable.modelPath);
-		model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
+		objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
-		if (model->gotBlendPrimitives) {
+		if (objectRenderable.model->gotBlendPrimitives) {
 			objectRenderable.blendGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 			if (objectRenderable.blendGraphicsPipeline->sets.size() != 0) {
 				objectRenderable.descriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], objectRenderable.blendGraphicsPipeline, 0);

@@ -17,7 +17,7 @@ void Physics::update(double deltaTime) {
 		glm::vec3 newVelocity = (entityRigidbody.acceleration * static_cast<float>(deltaTime));
 
 		// Collisions
-		AABB modelAABB = models.at(entityRenderable.modelPath).aabb;
+		AABB modelAABB = entityRenderable.model->aabb;
 		AABB transformedAABBX = modelAABB.transform(entityTransform.position + glm::vec3(newPosition.x, 0.0f, 0.0f), entityTransform.rotation, entityTransform.scale);
 		AABB transformedAABBY = modelAABB.transform(entityTransform.position + glm::vec3(0.0f, newPosition.y, 0.0f), entityTransform.rotation, entityTransform.scale);
 		AABB transformedAABBZ = modelAABB.transform(entityTransform.position + glm::vec3(0.0f, 0.0f, newPosition.z), entityTransform.rotation, entityTransform.scale);
@@ -27,7 +27,7 @@ void Physics::update(double deltaTime) {
 				auto& otherEntityRenderable = ecs.getComponent<Renderable>(otherEntity);
 				auto& otherEntityTransform = ecs.getComponent<Transform>(otherEntity);
 
-				AABB otherModelAABB = models.at(otherEntityRenderable.modelPath).aabb;
+				AABB otherModelAABB = entityRenderable.model->aabb;
 				AABB otherTransformedAABB = otherModelAABB.transform(otherEntityTransform.position, otherEntityTransform.rotation, otherEntityTransform.scale);
 
 				// Collision on x-axis

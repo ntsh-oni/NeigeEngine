@@ -560,24 +560,3 @@ void Model::bindBuffers(CommandBuffer* commandBuffer) {
 	vkCmdBindVertexBuffers(commandBuffer->commandBuffer, 0, 1, &vertexBuffer.buffer, &offset);
 	vkCmdBindIndexBuffer(commandBuffer->commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 }
-
-void Model::cullOpaque(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
-	opaqueFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
-	frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &opaqueDrawCount);
-
-	vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
-}
-
-void Model::cullMask(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
-	maskFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
-	frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &maskDrawCount);
-
-	vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
-}
-
-void Model::cullBlend(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
-	blendFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
-	frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &blendDrawCount);
-
-	vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
-}

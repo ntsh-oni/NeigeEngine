@@ -57,7 +57,4 @@ struct Model {
 	void init(std::string filePath);
 	void destroy();
 	void bindBuffers(CommandBuffer* commandBuffer);
-	void cullOpaque(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
-	void cullMask(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
-	void cullBlend(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
 };
