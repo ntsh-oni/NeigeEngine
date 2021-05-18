@@ -23,10 +23,15 @@ int WindowScripting::showMouseCursor(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 1) {
 		bool show = lua_toboolean(L, 1);
+		if (lua_isboolean(L, -1)) {
+			window.showCursor(show);
 
-		window.showCursor(show);
-
-		return 0;
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"showMouseCursor(bool show)\" takes 1 boolean parameter.");
+			return 0;
+		}
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"showMouseCursor(bool show)\" takes 1 boolean parameter.");
