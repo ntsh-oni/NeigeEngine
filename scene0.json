@@ -23,11 +23,14 @@
 					2.0,
 					0.5
 				]
+			},
+			"script": {
+				"scriptPath": "../scripts/test.lua"
 			}
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
+				"modelPath": "../modelfiles/DamagedHelmet.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},

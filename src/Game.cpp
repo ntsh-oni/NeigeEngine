@@ -4,11 +4,12 @@ extern ECS ecs;
 
 void Game::init() {
 	// Register components
-	ecs.registerComponent<Transform>();
 	ecs.registerComponent<Camera>();
-	ecs.registerComponent<Renderable>();
 	ecs.registerComponent<Light>();
+	ecs.registerComponent<Renderable>();
 	ecs.registerComponent<Rigidbody>();
+	ecs.registerComponent<Script>();
+	ecs.registerComponent<Transform>();
 
 	// Register systems
 	// Renderer system
@@ -40,17 +41,6 @@ void Game::init() {
 	cameraSystem = ecs.registerSystem<CameraSystem>();
 	ecs.setSystemComponents<CameraSystem>(cameraMask);
 
-	cameraControls = ecs.registerSystem<CameraControls>();
-	ecs.setSystemComponents<CameraControls>(cameraMask);
-
-	// Player system
-	playerControls = ecs.registerSystem<PlayerControls>();
-	ComponentMask playerControlsMask;
-	playerControlsMask.set(ecs.getComponentId<Camera>());
-	playerControlsMask.set(ecs.getComponentId<Rigidbody>());
-	playerControlsMask.set(ecs.getComponentId<Transform>());
-	ecs.setSystemComponents<PlayerControls>(playerControlsMask);
-
 	// Physics systems
 	physics = ecs.registerSystem<Physics>();
 	ComponentMask physicsMask;
@@ -58,12 +48,19 @@ void Game::init() {
 	physicsMask.set(ecs.getComponentId<Rigidbody>());
 	physicsMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Physics>(physicsMask);
+
+	// Scripting system
+	scripting = ecs.registerSystem<Scripting>();
+	ComponentMask scriptingMask;
+	scriptingMask.set(ecs.getComponentId<Script>());
+	scriptingMask.set(ecs.getComponentId<Transform>());
+	ecs.setSystemComponents<Scripting>(scriptingMask);
 }
 
 void Game::launch() {
 	window.init(info.name);
-	cameraControls->init();
 	lighting->init();
+	scripting->init();
 	renderer->init(info.name);
 
 	while (!window.windowGotClosed()) {
@@ -72,7 +69,7 @@ void Game::launch() {
 
 		window.pollEvents();
 
-		cameraControls->update(deltaTime);
+		scripting->update(deltaTime);
 
 		lighting->update();
 
