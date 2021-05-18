@@ -10,6 +10,7 @@
 - [GLFW](https://www.glfw.org/)
 - [GLM](https://github.com/g-truc/glm)
 - [Glslang](https://github.com/KhronosGroup/glslang)
+- [lua](https://github.com/lua/lua)
 - [simdjson](https://github.com/simdjson/simdjson)
 - [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
 - [stb](https://github.com/nothings/stb)
@@ -29,6 +30,7 @@ $ make
 - [x] Entity component system
 - [x] Keyboard and mouse input
 - [x] glTF import
+- [x] Lua scripting
 - [x] JSON scene format
 ### Graphics Features
 - [x] Physically Based Rendering (PBR) metallic-roughness

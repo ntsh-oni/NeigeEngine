@@ -359,10 +359,10 @@ void Renderer::update() {
 			memoryAllocator.memoryAnalyzer();
 		}
 	}
-
+	/*
 	if (keyboardInputs.fKey == KeyState::PRESSED) {
 		window.toggleFullscreen();
-	}
+	}*/
 
 	if (window.gotResized) {
 		window.gotResized = false;

@@ -13,7 +13,7 @@
 			"enable": true,
 			"downscale": 4,
 			"threshold": 1.5,
-			"size": 9
+			"size": 33
 		},
 		"fxaa": {
 			"enable": true

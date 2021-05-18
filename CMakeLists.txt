@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 SET(NAME NeigeEngine)
 PROJECT(${NAME} VERSION 0.0.1 LANGUAGES CXX)
 
+SET(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -9,6 +10,8 @@ SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/glfw)
 
 add_subdirectory(external/glslang)
+
+add_subdirectory(external/luabuild)
 
 add_subdirectory(external/simdjson)
 
@@ -60,6 +63,9 @@ SET(GRAPHICS_HEADERS src/graphics/Renderer.h ${GRAPHICS_COMMANDS_HEADERS} ${GRAP
 SET(PHYSICS_SOURCES src/physics/AABB.cpp src/physics/Frustum.cpp src/physics/Physics.cpp)
 SET(PHYSICS_HEADERS src/physics/AABB.h src/physics/Frustum.h src/physics/Physics.h)
 
+SET(SCRIPTING_SOURCES src/scripting/EntityScripting.cpp src/scripting/InputScripting.cpp src/scripting/Scripting.cpp src/scripting/TimeScripting.cpp src/scripting/VectorScripting.cpp src/scripting/WindowScripting.cpp)
+SET(SCRIPTING_HEADERS src/scripting/EntityScripting.h src/scripting/InputScripting.h src/scripting/Scripting.h src/scripting/ScriptingResources.h src/scripting/TimeScripting.h src/scripting/VectorScripting.h src/scripting/WindowScripting.h)
+
 SET(UTILS_MEMORYALLOCATOR_SOURCES src/utils/memoryallocator/MemoryAllocator.cpp)
 SET(UTILS_MEMORYALLOCATOR_HEADERS src/utils/memoryallocator/MemoryAllocator.h)
 SET(UTILS_RESOURCES_SOURCES src/utils/resources/BufferTools.cpp src/utils/resources/FileTools.cpp src/utils/resources/ImageTools.cpp src/utils/resources/ModelLoader.cpp)
@@ -74,22 +80,23 @@ SET(WINDOW_HEADERS src/window/Surface.h src/window/WindowResources.h src/window/
 SET(INPUTS_SOURCES src/inputs/KeyboardInputs.cpp src/inputs/MouseInputs.cpp)
 SET(INPUTS_HEADERS src/inputs/Inputs.h src/inputs/KeyboardInputs.h src/inputs/MouseInputs.h)
 
-SET(ECS_COMPONENTS_HEADERS src/ecs/components/Camera.h src/ecs/components/Light.h src/ecs/components/Renderable.h src/ecs/components/Rigidbody.h src/ecs/components/Transform.h)
-SET(ECS_SYSTEMS_SOURCES src/ecs/systems/CameraControls.cpp src/ecs/systems/CameraSystem.cpp src/ecs/systems/Lighting.cpp src/ecs/systems/PlayerControls.cpp)
-SET(ECS_SYSTEMS_HEADERS src/ecs/systems/CameraControls.h src/ecs/systems/CameraSystem.h src/ecs/systems/Lighting.h src/ecs/systems/PlayerControls.h)
+SET(ECS_COMPONENTS_HEADERS src/ecs/components/Camera.h src/ecs/components/Light.h src/ecs/components/Renderable.h src/ecs/components/Rigidbody.h src/ecs/components/Script.h src/ecs/components/Transform.h)
+SET(ECS_SYSTEMS_SOURCES src/ecs/systems/CameraSystem.cpp src/ecs/systems/Lighting.cpp)
+SET(ECS_SYSTEMS_HEADERS src/ecs/systems/CameraSystem.h src/ecs/systems/Lighting.h)
 SET(ECS_SOURCES ${ECS_SYSTEMS_SOURCES})
 SET(ECS_HEADERS src/ecs/ECS.h ${ECS_COMPONENTS_HEADERS} ${ECS_SYSTEMS_HEADERS})
 
 SET(EXTERNAL_SOURCES external/spirv-reflect/spirv_reflect.c)
 
-SET(SOURCES ${GAME_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${UTILS_SOURCES} ${WINDOW_SOURCES} ${INPUTS_SOURCES} ${ECS_SOURCES} ${EXTERNAL_SOURCES})
-SET(HEADERS ${GAME_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
+SET(SOURCES ${GAME_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${SCRIPTING_SOURCES} ${UTILS_SOURCES} ${WINDOW_SOURCES} ${INPUTS_SOURCES} ${ECS_SOURCES} ${EXTERNAL_SOURCES})
+SET(HEADERS ${GAME_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${SCRIPTING_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
 
 add_executable(${PROJECT_NAME} main.cpp ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC external/cgltf)
 target_include_directories(${PROJECT_NAME} PUBLIC external/glm)
+target_include_directories(${PROJECT_NAME} PUBLIC external/lua)
 target_include_directories(${PROJECT_NAME} PUBLIC external/spirv-reflect)
 target_include_directories(${PROJECT_NAME} PUBLIC external/stb)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang simdjson SPIRV Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua simdjson SPIRV Vulkan::Vulkan)

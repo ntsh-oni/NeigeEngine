@@ -63,6 +63,11 @@
 		std::cerr << "\033[1m\033[94mSHADER ERROR :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 
+#define NEIGE_SCRIPT_ERROR(m) \
+	do { \
+		std::cerr << "\033[1m\033[93mSCRIPT ERROR :\033[39m\033[0m " << m << std::endl; \
+	} while(0)
+
 #ifndef NDEBUG
 const bool NEIGE_DEBUG = true;
 #else

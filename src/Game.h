@@ -1,16 +1,16 @@
 #pragma once
 #include "ecs/ECS.h"
-#include "ecs/components/Transform.h"
 #include "ecs/components/Camera.h"
 #include "ecs/components/Light.h"
 #include "ecs/components/Renderable.h"
 #include "ecs/components/Rigidbody.h"
+#include "ecs/components/Script.h"
+#include "ecs/components/Transform.h"
 #include "ecs/systems/CameraSystem.h"
-#include "ecs/systems/CameraControls.h"
 #include "ecs/systems/Lighting.h"
-#include "ecs/systems/PlayerControls.h"
 #include "graphics/Renderer.h"
 #include "physics/Physics.h"
+#include "scripting/Scripting.h"
 #include "window/WindowResources.h"
 #include <string>
 
@@ -31,9 +31,8 @@ struct Game {
 	std::shared_ptr<Renderer> renderer;
 	std::shared_ptr<Lighting> lighting;
 	std::shared_ptr<CameraSystem> cameraSystem;
-	std::shared_ptr<CameraControls> cameraControls;
-	std::shared_ptr<PlayerControls> playerControls;
 	std::shared_ptr<Physics> physics;
+	std::shared_ptr<Scripting> scripting;
 	double lastFrame = 0.0;
 	GameInfo info = {};
 
