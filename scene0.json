@@ -5,7 +5,7 @@
 				"fov": 45.0,
 				"nearPlane": 0.2,
 				"farPlane": 500.0,
-				"envmapPath": ""
+				"envmapPath": "../modelfiles/sunset_forest_8k.hdr"
 			},
 			"transform": {
 				"position": [
@@ -25,12 +25,36 @@
 				]
 			},
 			"script": {
-				"scriptPath": "../scripts/test.lua"
+				"scriptPath": "../scripts/camera.lua"
 			}
 		},
 		{
 			"renderable": {
 				"modelPath": "../modelfiles/DamagedHelmet.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"renderable": {
+				"modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
