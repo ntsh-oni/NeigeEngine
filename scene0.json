@@ -53,30 +53,6 @@
 			}
 		},
 		{
-			"renderable": {
-				"modelPath": "../modelfiles/Bistro_v5_1/bistro1024.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
 			"light": {
 				"type": "DIRECTIONAL",
 				"color": [

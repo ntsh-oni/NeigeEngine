@@ -1,6 +1,7 @@
 #pragma once
 #include "../utils/NeigeDefines.h"
 #include "ScriptingResources.h"
+#include <ctime>
 
 struct TimeScripting {
 	static double deltaTime;
