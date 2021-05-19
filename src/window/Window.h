@@ -3,6 +3,7 @@
 #include "../../external/glfw/include/GLFW/glfw3.h"
 #include "../utils/NeigeDefines.h"
 #include "../utils/structs/RendererStructs.h"
+#include "../inputs/Inputs.h"
 #include "Surface.h"
 #include <string>
 #include <vector>
@@ -54,6 +55,7 @@ struct Window {
 	bool isFullscreen();
 	void toggleFullscreen();
 	void showCursor(bool show);
+	void setCursorPosition(double x, double y);
 	bool windowGotClosed();
 	void pollEvents();
 	void waitEvents();

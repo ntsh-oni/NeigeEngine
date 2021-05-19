@@ -1,27 +1,34 @@
 function init()
 	showMouseCursor(false)
-	mouseX, mouseY = getMousePosition()
+	local width, height = getWindowSize()
+	mouseX = width / 2.0
+	mouseY = height / 2.0
+	setMousePosition(mouseX, mouseY);
 	yaw = 0.0
 	pitch = 0.0
 	mouseView = true
-	firstMove = true
 end
 
 function update()
 	if getKeyState("f") == 0 then
 		toggleFullscreen()
-		mouseX, mouseY = getMousePosition()
+		if mouseView then
+			local width, height = getWindowSize()
+			mouseX = width / 2.0
+			mouseY = height / 2.0
+			setMousePosition(mouseX, mouseY);
+		end
 	end
 	
 	if getKeyState("r") == 0 then
 		mouseView = not mouseView
 		showMouseCursor(not mouseView)
-		mouseX, mouseY = getMousePosition()
-	end
-	
-	if (firstMove) then
-		mouseX, mouseY = getMousePosition()
-		firstMove = false
+		if mouseView then
+			local width, height = getWindowSize()
+			mouseX = width / 2.0
+			mouseY = height / 2.0
+			setMousePosition(mouseX, mouseY);
+		end
 	end
 
 	local speed = 5.0

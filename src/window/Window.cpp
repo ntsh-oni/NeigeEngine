@@ -1,6 +1,5 @@
 #include "Window.h"
 #include "../graphics/resources/RendererResources.h"
-#include "../inputs/Inputs.h"
 
 void Window::init(const std::string& applicationName) {
 	glfwInit();
@@ -425,6 +424,11 @@ void Window::showCursor(bool show) {
 	else {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
+}
+
+void Window::setCursorPosition(double x, double y) {
+	glfwSetCursorPos(window, x, y);
+	mouseInputs.setPosition(x, y);
 }
 
 bool Window::windowGotClosed() {

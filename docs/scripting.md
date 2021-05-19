@@ -1,17 +1,30 @@
+
 # Scripting Documentation
-NeigeEngine uses **LUA** for the scripting. It also define engine-specific functions described in this documentation.
+NeigeEngine uses **Lua** for the scripting. It also define engine-specific functions described in this documentation.
 
 ## Table of contents
-1. [Entity](#entity)
-2. [Vector](#vector)
-3. [Input](#input)
-4. [Window](#window)
-5. [Time](#time)
+1. General functions
+	- [init](#init)
+	- [update](#update)
+2. Specific functions
+	- [Entity](#entity)
+	- [Vector](#vector)
+	- [Input](#input)
+	- [Window](#window)
+	- [Time](#time)
+ 
+## General functions
 
-## Entity
+### init
+**init()** is a function that activates once at the entity's creation. It can be used to define variables usable by the rest of the script.
+
+### update
+**update()** is a function that activates once per frame. Its number of activation per second heavily depends on the user's hardware and the application itself. It is recommended to use the [delta time](#deltatime) when the script depends on the number of frames per second.
+
+### Entity
 Functions related to entities and their components.
 
-### Functions
+#### Functions
 - int **getEntityID()** : Returns the entity calling this script's ID.
 - float, float, float **getTransformComponentPosition**(*int entity*) : Takes an entity ID and returns this entity's transform component position (x, y and z).
 - float, float, float **getTransformComponentRotation**(*int entity*) : Takes an entity ID and returns this entity's transform component rotation (x, y and z).
@@ -20,15 +33,15 @@ Functions related to entities and their components.
 - **setTransformComponentRotation**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Set the entity's transform component rotation.
 - **setTransformComponentScale**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Set the entity's transform component scale.
 
-## Vector
+### Vector
 Functions to manipulate vectors.
 
-### Functions
+#### Functions
 - float, float, [float], [float] **normalize**(*float x, float y, [float z], [float w]*) : Normalize a vector of 2, 3 or 4 floats and returns a vector of the same size.
 - float **dot**(*float x1, float y1, [float z1], [float w1], float x2, float y2, [float z2], [float w2]*) : Computes a dot product between **two vectors of the same size** (2, 3 or 4 floats) and returns a float.
 - float, float, float **cross**(*float x1, float y1, float z1, float x2, float y2, float z2*) : Computes a cross product between **two vectors of 3 floats** and returns a vector of 3 floats.
 
-## Input
+### Input
 Functions related to keyboard and mouse inputs.
 
 Keyboard keys are referenced by name:
@@ -57,22 +70,23 @@ Key/button states are integers:
 - 2 : The key/button has been **released** this frame
 - 3 : The key/button has no state (not pressed, held, nor released)
 
-### Functions
+#### Functions
 - int **getKeyState**(*string key*) : Takes the name of the key as a string and returns its state as an integer.
 - int **getMouseButtonState**(*string button*) : Takes the name of the button as a string and returns its state as an integer.
-- double, double **getMousePosition**() : Returns the x and y position of the mouse. The position is relative to the window (0, 0 is the window's top left corner).
-- **setMousePosition**(*double x, double y*) : Takes two doubles for the x and y positions. The position is relative to the window (0, 0 is the window's top left corner).
 
-## Window
+### Window
 Functions related to the application's window.
 
-### Functions
+#### Functions
 - bool **isWindowFullscreen**() : Returns **true** if the application is in fullscreen, else returns **false**.
 - **showMouseCursor**(*bool show*) : Takes a boolean telling if the mouse cursor should be visible or not.
+- double, double **getMousePosition**() : Returns the x and y position of the mouse. The position is relative to the window (0, 0 is the window's top left corner).
+- **setMousePosition**(*double x, double y*) : Takes two doubles for the x and y positions. The position is relative to the window (0, 0 is the window's top left corner).
 - **toggleFullscreen**() : Puts the application in fullscreen mode if it is not and puts the application in windowed mode if it is in fullscreen mode.
+- int, int **getWindowSize**() : Returns the size of the window (width and height).
 
-##  Time
+###  Time
 Functions related to the time.
 
-### Functions
-- double **getDeltaTime**() : Returns the delta time as a double. The delta time represents the time between the previous and the current frame.
+#### Functions
+- <a id="deltatime"></a>double **getDeltaTime**() : Returns the delta time as a double. The delta time represents the time between the previous and the current frame.
