@@ -34,14 +34,14 @@ void Game::init() {
 	lightingMask.set(ecs.getComponentId<Light>());
 	ecs.setSystemComponents<Lighting>(lightingMask);
 
-	// Camera systems
+	// Camera system
 	ComponentMask cameraMask;
 	cameraMask.set(ecs.getComponentId<Camera>());
 
 	cameraSystem = ecs.registerSystem<CameraSystem>();
 	ecs.setSystemComponents<CameraSystem>(cameraMask);
 
-	// Physics systems
+	// Physics system
 	physics = ecs.registerSystem<Physics>();
 	ComponentMask physicsMask;
 	physicsMask.set(ecs.getComponentId<Renderable>());
@@ -73,7 +73,7 @@ void Game::launch() {
 
 		lighting->update();
 
-		physics->update(deltaTime > (1.0 / 60.0) ? (1.0 / 60.0) : deltaTime);
+		physics->update(std::min<double>(deltaTime, (1.0 / 60.0)));
 
 		renderer->update();
 
