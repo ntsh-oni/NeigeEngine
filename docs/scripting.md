@@ -1,6 +1,6 @@
 
 # Scripting Documentation
-NeigeEngine uses **Lua** for the scripting. It also define engine-specific functions described in this documentation.
+NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
 ## Table of contents
 1. General functions
@@ -26,6 +26,8 @@ Functions related to entities and their components.
 
 #### Functions
 - int **getEntityID()** : Returns the entity calling this script's ID.
+- string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's renderable component model path.
+- string **getScriptComponentScriptPath**(*int entity*) : Takes an entity ID and returns this entity's script component script path.
 - float, float, float **getTransformComponentPosition**(*int entity*) : Takes an entity ID and returns this entity's transform component position (x, y and z).
 - float, float, float **getTransformComponentRotation**(*int entity*) : Takes an entity ID and returns this entity's transform component rotation (x, y and z).
 - float, float, float **getTransformComponentScale**(*int entity*) : Takes an entity ID and returns this entity's transform component scale (x, y and z).

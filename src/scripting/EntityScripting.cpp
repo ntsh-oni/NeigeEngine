@@ -6,6 +6,8 @@ int32_t EntityScripting::currentEntity = -1;
 
 void EntityScripting::init() {
 	lua_register(L, "getEntityID", getEntityID);
+	lua_register(L, "getRenderableComponentModelPath", getRenderableComponentModelPath);
+	lua_register(L, "getScriptComponentScriptPath", getScriptComponentScriptPath);
 	lua_register(L, "getTransformComponentPosition", getTransformComponentPosition);
 	lua_register(L, "getTransformComponentRotation", getTransformComponentRotation);
 	lua_register(L, "getTransformComponentScale", getTransformComponentScale);
@@ -23,6 +25,52 @@ int EntityScripting::getEntityID(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"getEntityID()\" takes no parameter.");
+		return 0;
+	}
+}
+
+int EntityScripting::getRenderableComponentModelPath(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
+		if (lua_isnumber(L, -1)) {
+			auto& entityRenderable = ecs.getComponent<Renderable>(entity);
+
+			// Position
+			lua_pushstring(L, entityRenderable.modelPath.c_str());
+
+			return 1;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"getRenderableComponentModelPath(int entity)\" takes 1 integer parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"getRenderableComponentModelPath(int entity)\" takes 1 integer parameter.");
+		return 0;
+	}
+}
+
+int EntityScripting::getScriptComponentScriptPath(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
+		if (lua_isnumber(L, -1)) {
+			auto& entityScript = ecs.getComponent<Script>(entity);
+
+			// Position
+			lua_pushstring(L, entityScript.scriptPath.c_str());
+
+			return 1;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"getScriptComponentScriptPath(int entity)\" takes 1 integer parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"getScriptComponentScriptPath(int entity)\" takes 1 integer parameter.");
 		return 0;
 	}
 }
