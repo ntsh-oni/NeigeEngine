@@ -17,6 +17,8 @@ struct EntityScripting {
 
 	// Lua functions
 	static int getEntityID(lua_State* L);
+	static int getRenderableComponentModelPath(lua_State* L);
+	static int getScriptComponentScriptPath(lua_State* L);
 	static int getTransformComponentPosition(lua_State* L);
 	static int getTransformComponentRotation(lua_State* L);
 	static int getTransformComponentScale(lua_State* L);
