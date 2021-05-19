@@ -51,7 +51,7 @@ Mouse buttons are referenced by name:
 - "7" : The **7th** button
 - "8" : The **8th** button
 
-Key/button states are integer:
+Key/button states are integers:
 - 0 : The key/button got **pressed** during this frame
 - 1 : The key/button is **held** this frame (pressed the previous frame)
 - 2 : The key/button has been **released** this frame

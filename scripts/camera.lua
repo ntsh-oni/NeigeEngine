@@ -10,11 +10,13 @@ end
 function update()
 	if getKeyState("f") == 0 then
 		toggleFullscreen()
+		mouseX, mouseY = getMousePosition()
 	end
 	
 	if getKeyState("r") == 0 then
 		mouseView = not mouseView
 		showMouseCursor(not mouseView)
+		mouseX, mouseY = getMousePosition()
 	end
 	
 	if (firstMove) then
