@@ -32,30 +32,30 @@ Functions to manipulate vectors.
 Functions related to keyboard and mouse inputs.
 
 Keyboard keys are referenced by name:
-"a" - "z" : **Letters** from A to Z
-"left" : The **left arrow** key
-"right" : The **right arrow** key
-"up" : The **up arrow** key
-"down" : The **down arrow** key
-"escape" : The **escape** key
-"space" : The **spacebar** key
-"shift" The **left shift** key
+- "a" - "z" : **Letters** from A to Z
+- "left" : The **left arrow** key
+- "right" : The **right arrow** key
+- "up" : The **up arrow** key
+- "down" : The **down arrow** key
+- "escape" : The **escape** key
+- "space" : The **spacebar** key
+- "shift" The **left shift** key
 
 Mouse buttons are referenced by name:
-"left" : The **left click** button
-"right" : The **right click** button
-"middle" : The **middle** button
-"4" : The **4th** button
-"5" : The **5th** button
-"6" : The **6th** button
-"7" : The **7th** button
-"8" : The **8th** button
+- "left" : The **left click** button
+- "right" : The **right click** button
+- "middle" : The **middle** button
+- "4" : The **4th** button
+- "5" : The **5th** button
+- "6" : The **6th** button
+- "7" : The **7th** button
+- "8" : The **8th** button
 
 Key/button states are integer:
-0 : The key/button got **pressed** during this frame
-1 : The key/button is **held** this frame (pressed the previous frame)
-2 : The key/button has been **released** this frame
-3 : The key/button has no state (not pressed, held, nor released)
+- 0 : The key/button got **pressed** during this frame
+- 1 : The key/button is **held** this frame (pressed the previous frame)
+- 2 : The key/button has been **released** this frame
+- 3 : The key/button has no state (not pressed, held, nor released)
 
 ### Functions
 - int **getKeyState**(*string key*) : Takes the name of the key as a string and returns its state as an integer.
