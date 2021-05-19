@@ -19,7 +19,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 **init()** is a function that activates once at the entity's creation. It can be used to define variables usable by the rest of the script.
 
 ### update
-**update()** is a function that activates once per frame. Its number of activation per second heavily depends on the user's hardware and the application itself. It is recommended to use the [delta time](#deltatime) when the script depends on the number of frames per second.
+**update()** is a function that activates once per frame. Its number of activations per second heavily depends on the user's hardware and the application. It is recommended to use the [delta time](#deltatime) when the script depends on the number of frames per second.
 
 ### Entity
 Functions related to entities and their components.
