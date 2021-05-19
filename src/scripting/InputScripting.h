@@ -10,6 +10,4 @@ struct InputScripting {
 	// Lua functions
 	static int getKeyState(lua_State* L);
 	static int getMouseButtonState(lua_State* L);
-	static int getMousePosition(lua_State* L);
-	static int setMousePosition(lua_State* L);
 };

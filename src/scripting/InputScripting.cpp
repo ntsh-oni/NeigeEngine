@@ -3,8 +3,6 @@
 void InputScripting::init() {
 	lua_register(L, "getKeyState", getKeyState);
 	lua_register(L, "getMouseButtonState", getMouseButtonState);
-	lua_register(L, "getMousePosition", getMousePosition);
-	lua_register(L, "setMousePosition", setMousePosition);
 }
 
 int InputScripting::getKeyState(lua_State* L) {
@@ -164,36 +162,6 @@ int InputScripting::getMouseButtonState(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"getMouseButtonState(string key)\" takes 1 string parameter.");
-		return 0;
-	}
-}
-
-int InputScripting::getMousePosition(lua_State* L) {
-	int n = lua_gettop(L);
-	if (n == 0) {
-		lua_pushnumber(L, mouseInputs.getXPosition());
-		lua_pushnumber(L, mouseInputs.getYPosition());
-
-		return 2;
-	}
-	else {
-		NEIGE_SCRIPT_ERROR("Function \"getMousePosition()\" takes no parameter.");
-		return 0;
-	}
-}
-
-int InputScripting::setMousePosition(lua_State* L) {
-	int n = lua_gettop(L);
-	if (n == 2) {
-		double x = lua_tonumber(L, 1);
-		double y = lua_tonumber(L, 2);
-
-		mouseInputs.setPosition(x, y);
-
-		return 0;
-	}
-	else {
-		NEIGE_SCRIPT_ERROR("Function \"setMousePosition(float x, float y)\" takes 2 parameters.");
 		return 0;
 	}
 }
