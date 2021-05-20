@@ -83,13 +83,14 @@ Functions related to the application's window.
 
 #### Functions
 - bool **isWindowFullscreen**() : Returns **true** if the application is in fullscreen, else returns **false**.
+- **setWindowFullscreen**(*bool fullscreen*) : Puts the window in fullscreen if the parameter is **true**, else, puts the window in windowed.
 - **showMouseCursor**(*bool show*) : Takes a boolean telling if the mouse cursor should be visible or not.
 - double, double **getMousePosition**() : Returns the x and y position of the mouse. The position is relative to the window (0, 0 is the window's top left corner).
 - **setMousePosition**(*double x, double y*) : Takes two doubles for the x and y positions. The position is relative to the window (0, 0 is the window's top left corner).
-- **toggleFullscreen**() : Puts the application in fullscreen mode if it is not and puts the application in windowed mode if it is in fullscreen mode.
 - int, int **getWindowSize**() : Returns the size of the window (width and height).
 - **setWindowSize**(*int width, int height*) : Sets the size of the window (width and height).
 - **setWindowTitle**(*string title*) : Sets the title of the window.
+- **closeWindow**() : Closes the window.
 
 ###  Time
 Functions related to the time.

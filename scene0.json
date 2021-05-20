@@ -53,20 +53,8 @@
 			}
 		},
 		{
-			"light": {
-				"type": "DIRECTIONAL",
-				"color": [
-					1.0,
-					1.0,
-					1.0
-				]
-			},
-			"transform": {
-				"rotation": [
-					1.0,
-					-1.0,
-					0.0
-				]
+			"script": {
+				"scriptPath": "../scripts/gamecontroller.lua"
 			}
 		}
     ]

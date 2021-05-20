@@ -2,13 +2,14 @@
 
 void WindowScripting::init() {
 	lua_register(L, "isWindowFullscreen", isWindowFullscreen);
+	lua_register(L, "setWindowFullscreen", setWindowFullscreen);
 	lua_register(L, "showMouseCursor", showMouseCursor);
 	lua_register(L, "getMousePosition", getMousePosition);
 	lua_register(L, "setMousePosition", setMousePosition);
-	lua_register(L, "toggleFullscreen", toggleFullscreen);
 	lua_register(L, "getWindowSize", getWindowSize);
 	lua_register(L, "setWindowSize", setWindowSize);
 	lua_register(L, "setWindowTitle", setWindowTitle);
+	lua_register(L, "closeWindow", closeWindow);
 }
 
 int WindowScripting::isWindowFullscreen(lua_State* L) {
@@ -24,11 +25,32 @@ int WindowScripting::isWindowFullscreen(lua_State* L) {
 	}
 }
 
+int WindowScripting::setWindowFullscreen(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		if (lua_isboolean(L, -1)) {
+			bool fullscreen = lua_toboolean(L, 1);
+
+			window.setFullscreen(fullscreen);
+
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"setWindowFullscreen(bool fullscreen)\" takes 1 boolean parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"setWindowFullscreen(bool fullscreen)\" takes 1 boolean parameter.");
+		return 0;
+	}
+}
+
 int WindowScripting::showMouseCursor(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 1) {
-		bool show = lua_toboolean(L, 1);
 		if (lua_isboolean(L, -1)) {
+			bool show = lua_toboolean(L, 1);
 			window.showCursor(show);
 
 			return 0;
@@ -61,28 +83,21 @@ int WindowScripting::getMousePosition(lua_State* L) {
 int WindowScripting::setMousePosition(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 2) {
-		double x = lua_tonumber(L, 1);
-		double y = lua_tonumber(L, 2);
+		if (lua_isnumber(L, -1) && lua_isnumber(L, -2)) {
+			double x = lua_tonumber(L, 1);
+			double y = lua_tonumber(L, 2);
 
-		window.setCursorPosition(x, y);
+			window.setCursorPosition(x, y);
 
-		return 0;
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"setMousePosition(double x, double y)\" takes 2 parameters.");
+			return 0;
+		}
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"setMousePosition(double x, double y)\" takes 2 parameters.");
-		return 0;
-	}
-}
-
-int WindowScripting::toggleFullscreen(lua_State* L) {
-	int n = lua_gettop(L);
-	if (n == 0) {
-		window.toggleFullscreen();
-
-		return 0;
-	}
-	else {
-		NEIGE_SCRIPT_ERROR("Function \"toggleFullscreen()\" takes no parameter.");
 		return 0;
 	}
 }
@@ -140,6 +155,19 @@ int WindowScripting::setWindowTitle(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"setWindowTitle(string title)\" takes 1 string parameter.");
+		return 0;
+	}
+}
+
+int WindowScripting::closeWindow(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 0) {
+		window.closeWindow();
+
+		return 0;
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"closeWindow()\" takes no parameter.");
 		return 0;
 	}
 }

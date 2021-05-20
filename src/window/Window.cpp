@@ -393,12 +393,16 @@ void Window::mousePositionAction(double x, double y) {
 	mouseInputs.setPosition(x, y);
 }
 
+void Window::closeWindow() {
+	glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 bool Window::isFullscreen() {
 	return (glfwGetWindowMonitor(window) != nullptr);
 }
 
-void Window::toggleFullscreen() {
-	if (!isFullscreen()) {
+void Window::setFullscreen(bool fullscreen) {
+	if (fullscreen && !isFullscreen()) {
 		int width;
 		int height;
 
@@ -412,7 +416,7 @@ void Window::toggleFullscreen() {
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, GLFW_DONT_CARE);
 	}
-	else {
+	else if (!fullscreen && isFullscreen()) {
 		glfwSetWindowMonitor(window, nullptr, oldXPos, oldYPos, oldExtent.width, oldExtent.height, GLFW_DONT_CARE);
 	}
 }

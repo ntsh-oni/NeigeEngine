@@ -107,6 +107,8 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 
 	for (simdjson::ondemand::object entity : document["entities"]) {
 		Entity ecsEntity = ecs.createEntity();
+
+		foundTransform = false;
 		for (auto component : entity) {
 			std::string_view componentName = std::string_view(component.unescaped_key());
 			if (componentName == "camera") {
