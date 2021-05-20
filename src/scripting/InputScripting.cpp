@@ -8,8 +8,9 @@ void InputScripting::init() {
 int InputScripting::getKeyState(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 1) {
-		std::string key = lua_tostring(L, 1);
 		if (lua_isstring(L, -1)) {
+			std::string key = lua_tostring(L, 1);
+
 			if (key == "q") {
 				lua_pushnumber(L, static_cast<int>(keyboardInputs.qKey));
 			}
@@ -109,6 +110,10 @@ int InputScripting::getKeyState(lua_State* L) {
 			else if (key == "shift") {
 				lua_pushnumber(L, static_cast<int>(keyboardInputs.shiftKey));
 			}
+			else {
+				NEIGE_SCRIPT_ERROR("Function \"getKeyState(string key)\": key \"" + key + "\" does not exist.");
+				return 0;
+			} 
 
 			return 1;
 		}
@@ -126,8 +131,9 @@ int InputScripting::getKeyState(lua_State* L) {
 int InputScripting::getMouseButtonState(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 1) {
-		std::string button = lua_tostring(L, 1);
 		if (lua_tostring(L, -1)) {
+			std::string button = lua_tostring(L, 1);
+
 			if (button == "left") {
 				lua_pushnumber(L, static_cast<int>(mouseInputs.leftButton));
 			}
@@ -151,6 +157,10 @@ int InputScripting::getMouseButtonState(lua_State* L) {
 			}
 			else if (button == "8") {
 				lua_pushnumber(L, static_cast<int>(mouseInputs.eightButton));
+			}
+			else {
+				NEIGE_SCRIPT_ERROR("Function \"getMouseButtonState(string button)\": button \"" + button + "\" does not exist.");
+				return 0;
 			}
 
 			return 1;

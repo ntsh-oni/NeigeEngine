@@ -11,7 +11,7 @@ end
 
 function update()
 	if getKeyState("f") == 0 then
-		toggleFullscreen()
+		setWindowFullscreen(not isWindowFullscreen())
 		if mouseView then
 			local width, height = getWindowSize()
 			mouseX = width / 2.0

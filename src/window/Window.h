@@ -52,8 +52,9 @@ struct Window {
 	void keyAction(int key, int action);
 	void mouseButtonAction(int button, int action);
 	void mousePositionAction(double x, double y);
+	void closeWindow();
 	bool isFullscreen();
-	void toggleFullscreen();
+	void setFullscreen(bool fullscreen);
 	void showCursor(bool show);
 	void setCursorPosition(double x, double y);
 	void setWindowTitle(const std::string& title);
