@@ -1,5 +1,3 @@
-
-
 # Scripting Documentation
 NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
@@ -90,6 +88,8 @@ Functions related to the application's window.
 - **setMousePosition**(*double x, double y*) : Takes two doubles for the x and y positions. The position is relative to the window (0, 0 is the window's top left corner).
 - **toggleFullscreen**() : Puts the application in fullscreen mode if it is not and puts the application in windowed mode if it is in fullscreen mode.
 - int, int **getWindowSize**() : Returns the size of the window (width and height).
+- **setWindowSize**(*int width, int height*) : Sets the size of the window (width and height).
+- **setWindowTitle**(*string title*) : Sets the title of the window.
 
 ###  Time
 Functions related to the time.

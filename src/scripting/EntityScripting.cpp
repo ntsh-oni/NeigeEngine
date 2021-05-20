@@ -60,7 +60,6 @@ int EntityScripting::getRenderableComponentModelPath(lua_State* L) {
 			if (ecs.hasComponent<Renderable>(entity)) {
 				auto& entityRenderable = ecs.getComponent<Renderable>(entity);
 
-				// Position
 				lua_pushstring(L, entityRenderable.modelPath.c_str());
 
 				return 1;

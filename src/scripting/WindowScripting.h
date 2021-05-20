@@ -13,4 +13,6 @@ struct WindowScripting {
 	static int setMousePosition(lua_State* L);
 	static int toggleFullscreen(lua_State* L);
 	static int getWindowSize(lua_State* L);
+	static int setWindowSize(lua_State* L);
+	static int setWindowTitle(lua_State* L);
 };
