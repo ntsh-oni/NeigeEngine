@@ -56,6 +56,8 @@ struct Window {
 	void toggleFullscreen();
 	void showCursor(bool show);
 	void setCursorPosition(double x, double y);
+	void setWindowTitle(const std::string& title);
+	void setWindowSize(int width, int height);
 	bool windowGotClosed();
 	void pollEvents();
 	void waitEvents();

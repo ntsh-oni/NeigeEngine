@@ -431,6 +431,14 @@ void Window::setCursorPosition(double x, double y) {
 	mouseInputs.setPosition(x, y);
 }
 
+void Window::setWindowTitle(const std::string& title) {
+	glfwSetWindowTitle(window, title.c_str());
+}
+
+void Window::setWindowSize(int width, int height) {
+	glfwSetWindowSize(window, width, height);
+}
+
 bool Window::windowGotClosed() {
 	return glfwWindowShouldClose(window);
 }
