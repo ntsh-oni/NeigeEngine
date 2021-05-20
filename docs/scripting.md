@@ -1,4 +1,5 @@
 
+
 # Scripting Documentation
 NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
@@ -26,14 +27,17 @@ Functions related to entities and their components.
 
 #### Functions
 - int **getEntityID()** : Returns the entity calling this script's ID.
-- string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's renderable component model path.
-- string **getScriptComponentScriptPath**(*int entity*) : Takes an entity ID and returns this entity's script component script path.
-- float, float, float **getTransformComponentPosition**(*int entity*) : Takes an entity ID and returns this entity's transform component position (x, y and z).
-- float, float, float **getTransformComponentRotation**(*int entity*) : Takes an entity ID and returns this entity's transform component rotation (x, y and z).
-- float, float, float **getTransformComponentScale**(*int entity*) : Takes an entity ID and returns this entity's transform component scale (x, y and z).
-- **setTransformComponentPosition**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Set the entity's transform component position.
-- **setTransformComponentRotation**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Set the entity's transform component rotation.
-- **setTransformComponentScale**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Set the entity's transform component scale.
+- bool **hasRenderableComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Renderable component, else returns **false**.
+- string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's Renderable component model path. If the entity does not have a Renderable component, returns nothing.
+- bool **hasScriptComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Script component, else returns **false**.
+- string **getScriptComponentScriptPath**(*int entity*) : Takes an entity ID and returns this entity's Script component script path. If the entity does not have a Script component, returns nothing.
+- bool **hasTransformComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Transform component, else returns **false**.
+- float, float, float **getTransformComponentPosition**(*int entity*) : Takes an entity ID and returns this entity's Transform component position (x, y and z). If the entity does not have a Transform component, returns nothing.
+- float, float, float **getTransformComponentRotation**(*int entity*) : Takes an entity ID and returns this entity's Transform component rotation (x, y and z). If the entity does not have a Transform component, returns nothing.
+- float, float, float **getTransformComponentScale**(*int entity*) : Takes an entity ID and returns this entity's Transform component scale (x, y and z). If the entity does not have a Transform component, returns nothing.
+- **setTransformComponentPosition**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component position. If the entity does not have a Transform component, returns nothing.
+- **setTransformComponentRotation**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component rotation. If the entity does not have a Transform component, returns nothing.
+- **setTransformComponentScale**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component scale. If the entity does not have a Transform component, returns nothing.
 
 ### Vector
 Functions to manipulate vectors.

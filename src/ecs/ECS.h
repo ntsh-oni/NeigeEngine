@@ -90,6 +90,10 @@ public:
 		validSize--;
 	}
 
+	bool hasComponent(Entity entity) {
+		return entityToIndex.find(entity) != entityToIndex.end();
+	}
+
 	T& getData(Entity entity) {
 		NEIGE_ASSERT(entityToIndex.find(entity) != entityToIndex.end(), "Component \"" + std::to_string(entity) + "\" does not exist (get data).");
 
@@ -138,6 +142,11 @@ public:
 	template<typename T>
 	void removeComponent(Entity entity) {
 		getComponentArray<T>()->removeData(entity);
+	}
+
+	template<typename T>
+	bool hasComponent(Entity entity) {
+		return getComponentArray<T>()->hasComponent(entity);
 	}
 
 	template<typename T>
@@ -258,6 +267,11 @@ public:
 		components.set(componentManager->getComponentId<T>(), false);
 		entityManager->setComponents(entity, components);
 		systemManager->entityComponentMaskChanged(components);
+	}
+
+	template<typename T>
+	bool hasComponent(Entity entity) {
+		return componentManager->hasComponent<T>(entity);
 	}
 
 	template<typename T>
