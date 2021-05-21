@@ -57,7 +57,7 @@ void FXAA::createResources(Viewport fullscreenViewport) {
 		descriptorSet.init(&graphicsPipeline, 0);
 
 		VkDescriptorImageInfo postInfo = {};
-		postInfo.sampler = trilinearEdgeBlackSampler;
+		postInfo.sampler = trilinearOffscreenSampler;
 		postInfo.imageView = postProcessImage.imageView;
 		postInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

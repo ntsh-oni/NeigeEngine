@@ -144,13 +144,17 @@ void Renderer::init(const std::string& applicationName) {
 	createAdditionalDescriptorSets();
 	
 	// Create samplers
-	ImageTools::createImageSampler(&trilinearEdgeBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&trilinearEdgeOneLodBlackSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&trilinearBorderWhiteLessSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, VK_COMPARE_OP_LESS);
-	ImageTools::createImageSampler(&trilinearRepeatBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&nearestEdgeBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&nearestEdgeOneLodBlackSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
-	ImageTools::createImageSampler(&nearestRepeatBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearEdgeBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearEdgeOneLodBlackSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearOffscreenSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 0.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&trilinearLodOffscreenSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 0.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestOffscreenSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 0.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestRepeatOffscreenSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 0.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&shadowSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE, 0.0f, VK_COMPARE_OP_LESS);
+	ImageTools::createImageSampler(&trilinearRepeatBlackSampler, 1001, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestEdgeBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestEdgeOneLodBlackSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&nearestRepeatBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
 
 	// Depth prepass
 	NEIGE_INFO("Depth prepass init start.");
@@ -431,9 +435,25 @@ void Renderer::destroy() {
 		vkDestroySampler(logicalDevice.device, trilinearEdgeOneLodBlackSampler, nullptr);
 		trilinearEdgeOneLodBlackSampler = VK_NULL_HANDLE;
 	}
-	if (trilinearBorderWhiteLessSampler != VK_NULL_HANDLE) {
-		vkDestroySampler(logicalDevice.device, trilinearBorderWhiteLessSampler, nullptr);
-		trilinearBorderWhiteLessSampler = VK_NULL_HANDLE;
+	if (trilinearOffscreenSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearOffscreenSampler, nullptr);
+		trilinearOffscreenSampler = VK_NULL_HANDLE;
+	}
+	if (trilinearLodOffscreenSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, trilinearLodOffscreenSampler, nullptr);
+		trilinearLodOffscreenSampler = VK_NULL_HANDLE;
+	}
+	if (nearestOffscreenSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, nearestOffscreenSampler, nullptr);
+		nearestOffscreenSampler = VK_NULL_HANDLE;
+	}
+	if (nearestRepeatOffscreenSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, nearestRepeatOffscreenSampler, nullptr);
+		nearestRepeatOffscreenSampler = VK_NULL_HANDLE;
+	}
+	if (shadowSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, shadowSampler, nullptr);
+		shadowSampler = VK_NULL_HANDLE;
 	}
 	if (trilinearRepeatBlackSampler != VK_NULL_HANDLE) {
 		vkDestroySampler(logicalDevice.device, trilinearRepeatBlackSampler, nullptr);
@@ -1399,12 +1419,12 @@ void Renderer::createAlphaCompositingDescriptorSet() {
 	alphaCompositingDescriptorSet.init(&graphicsPipelines.at("alphaCompositing"), 0);
 
 	VkDescriptorImageInfo accumulationInfo = {};
-	accumulationInfo.sampler = trilinearEdgeBlackSampler;
+	accumulationInfo.sampler = trilinearOffscreenSampler;
 	accumulationInfo.imageView = blendAccumulationImage.imageView;
 	accumulationInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkDescriptorImageInfo revealageInfo = {};
-	revealageInfo.sampler = trilinearEdgeBlackSampler;
+	revealageInfo.sampler = trilinearOffscreenSampler;
 	revealageInfo.imageView = blendRevealageImage.imageView;
 	revealageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -1446,15 +1466,15 @@ void Renderer::createPostProcessDescriptorSet() {
 	VkDescriptorImageInfo bloomInfo = {};
 	VkDescriptorImageInfo ssaoInfo = {};
 
-	sceneInfo.sampler = trilinearEdgeBlackSampler;
+	sceneInfo.sampler = trilinearOffscreenSampler;
 	sceneInfo.imageView = sceneImage.imageView;
 	sceneInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	bloomInfo.sampler = trilinearEdgeBlackSampler;
+	bloomInfo.sampler = trilinearLodOffscreenSampler;
 	bloomInfo.imageView = enableBloom ? bloom.bloomImage.imageView : defaultPostProcessEffectImage.imageView;
 	bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	ssaoInfo.sampler = nearestEdgeBlackSampler;
+	ssaoInfo.sampler = nearestOffscreenSampler;
 	ssaoInfo.imageView = enableSSAO ? ssao.ssaoBlurredImage.imageView : defaultPostProcessEffectImage.imageView;
 	ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
