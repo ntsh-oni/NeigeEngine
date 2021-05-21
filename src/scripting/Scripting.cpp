@@ -8,6 +8,7 @@ void Scripting::init() {
 	L = luaL_newstate();
 	luaL_openlibs(L);
 
+	CameraScripting::init();
 	EntityScripting::init();
 	InputScripting::init();
 	TimeScripting::init();

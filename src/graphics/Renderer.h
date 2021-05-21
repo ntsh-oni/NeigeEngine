@@ -58,6 +58,9 @@ struct Renderer : public System {
 
 	uint32_t currentFrame = 0;
 
+	// Scene
+	std::string envmapPath;
+
 	// Settings
 	bool enableBloom;
 	int bloomDownscale;

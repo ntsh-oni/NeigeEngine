@@ -14,6 +14,10 @@
 #include "window/WindowResources.h"
 #include <string>
 
+struct Scene {
+	std::string envmapPath = "";
+};
+
 struct GameInfo {
 	std::string name = "";
 	uint32_t windowWidth = 300;
