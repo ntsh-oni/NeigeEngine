@@ -1,4 +1,3 @@
-
 # Scripting Documentation
 NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
@@ -22,10 +21,12 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 ### update
 **update()** is a function that activates once per frame. Its number of activations per second heavily depends on the user's hardware and the application. It is recommended to use the [delta time](#deltatime) when the script depends on the number of frames per second.
 
-### Entity
+## Specific functions
+
+## Entity
 Functions related to entities and their components.
 
-#### Functions
+### Functions
 - int **getEntityID()** : Returns the entity calling this script's ID.
 - bool **hasRenderableComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Renderable component, else returns **false**.
 - string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's Renderable component model path. If the entity does not have a Renderable component, returns nothing.
@@ -39,15 +40,15 @@ Functions related to entities and their components.
 - **setTransformComponentRotation**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component rotation. If the entity does not have a Transform component, returns nothing.
 - **setTransformComponentScale**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component scale. If the entity does not have a Transform component, returns nothing.
 
-### Vector
+## Vector
 Functions to manipulate vectors.
 
-#### Functions
+### Functions
 - float, float, [float], [float] **normalize**(*float x, float y, [float z], [float w]*) : Normalize a vector of 2, 3 or 4 floats and returns a vector of the same size.
 - float **dot**(*float x1, float y1, [float z1], [float w1], float x2, float y2, [float z2], [float w2]*) : Computes a dot product between **two vectors of the same size** (2, 3 or 4 floats) and returns a float.
 - float, float, float **cross**(*float x1, float y1, float z1, float x2, float y2, float z2*) : Computes a cross product between **two vectors of 3 floats** and returns a vector of 3 floats.
 
-### Input
+## Input
 Functions related to keyboard and mouse inputs.
 
 Keyboard keys are referenced by name:
@@ -76,14 +77,14 @@ Key/button states are integers:
 - 2 : The key/button has been **released** this frame
 - 3 : The key/button has no state (not pressed, held, nor released)
 
-#### Functions
+### Functions
 - int **getKeyState**(*string key*) : Takes the name of the key as a string and returns its state as an integer.
 - int **getMouseButtonState**(*string button*) : Takes the name of the button as a string and returns its state as an integer.
 
-### Window
+## Window
 Functions related to the application's window.
 
-#### Functions
+### Functions
 - bool **isWindowFullscreen**() : Returns **true** if the application is in fullscreen, else returns **false**.
 - **setWindowFullscreen**(*bool fullscreen*) : Puts the window in fullscreen if the parameter is **true**, else, puts the window in windowed.
 - **showMouseCursor**(*bool show*) : Takes a boolean telling if the mouse cursor should be visible or not.
@@ -94,17 +95,17 @@ Functions related to the application's window.
 - **setWindowTitle**(*string title*) : Sets the title of the window.
 - **closeWindow**() : Closes the window.
 
-### Camera
+## Camera
 Functions related to cameras. There is one main camera and a camera list that can contain multiple cameras.
 
-#### Functions
+### Functions
 - int **getMainCameraIndex**() : Returns the main camera index in the camera list.
 - **setMainCameraIndex**(*int cameraId*) : Replaces the main camera by the camera at the *cameraId* index in the camera list. *cameraId* must be between 0 and the number of cameras in the camera list.
 - int **getMainCameraEntity**() : Returns the main camera entity.
 - int **getCameraCount**() : Returns the number of cameras in the camera list.
 
-###  Time
+##  Time
 Functions related to the time.
 
-#### Functions
+### Functions
 - <a id="deltatime"></a>double **getDeltaTime**() : Returns the delta time as a double. The delta time represents the time between the previous and the current frame.
