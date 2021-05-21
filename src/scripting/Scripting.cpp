@@ -13,18 +13,14 @@ void Scripting::init() {
 	TimeScripting::init();
 	VectorScripting::init();
 	WindowScripting::init();
-
-	// Move entities to the unitialiazed entities queue
-	for (Entity entity : entities) {
-		uninitializedEntities.push(entity);
-	}
 }
 
 void Scripting::update(double deltaTime) {
 	TimeScripting::deltaTime = deltaTime;
 
-	while (!uninitializedEntities.empty()) {
-		Entity entityToInit = uninitializedEntities.front();
+	std::set<Entity> uninitializedEntities;
+	std::set_difference(entities.begin(), entities.end(), initializedEntities.begin(), initializedEntities.end(), std::inserter(uninitializedEntities, uninitializedEntities.begin()));
+	for (Entity entityToInit : uninitializedEntities) {
 		auto& entityScript = ecs.getComponent<Script>(entityToInit);
 
 		if (FileTools::exists(entityScript.scriptPath)) {
@@ -55,7 +51,6 @@ void Scripting::update(double deltaTime) {
 		}
 
 		initializedEntities.emplace(entityToInit);
-		uninitializedEntities.pop();
 	}
 
 	for (Entity entity : entities) {

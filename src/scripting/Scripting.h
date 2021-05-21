@@ -9,7 +9,6 @@
 #include "ScriptingResources.h"
 
 struct Scripting : public System {
-	std::queue<Entity> uninitializedEntities;
 	std::set<Entity> initializedEntities;
 
 	void init();

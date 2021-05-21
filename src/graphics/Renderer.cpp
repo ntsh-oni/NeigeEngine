@@ -301,11 +301,6 @@ void Renderer::init(const std::string& applicationName) {
 
 	materials.push_back(defaultMaterial);
 
-	// Move entities to the unloaded entities queue
-	for (Entity object : entities) {
-		unloadedEntities.push(object);
-	}
-
 	// Command pools and buffers
 	renderingCommandPools.resize(framesInFlight);
 	renderingCommandBuffers.resize(framesInFlight);
@@ -363,10 +358,6 @@ void Renderer::update() {
 			memoryAllocator.memoryAnalyzer();
 		}
 	}
-	/*
-	if (keyboardInputs.fKey == KeyState::PRESSED) {
-		window.toggleFullscreen();
-	}*/
 
 	if (window.gotResized) {
 		window.gotResized = false;
@@ -943,11 +934,11 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 	// Renderables
 	// Load entities
-	if (!unloadedEntities.empty()) {
-		Entity entityToLoad = unloadedEntities.front();
+	std::set<Entity> unloadedEntities;
+	std::set_difference(entities.begin(), entities.end(), loadedEntities.begin(), loadedEntities.end(), std::inserter(unloadedEntities, unloadedEntities.begin()));
+	for (Entity entityToLoad : unloadedEntities) {
 		loadObject(entityToLoad);
 		loadedEntities.emplace(entityToLoad);
-		unloadedEntities.pop();
 		for (uint32_t i = 0; i < framesInFlight; i++) {
 			materialDescriptorSetUpToDate[i] = false;
 		}
