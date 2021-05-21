@@ -19,6 +19,7 @@
 #include "sync/Fence.h"
 #include "sync/Semaphore.h"
 #include "../ecs/ECS.h"
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,7 +27,6 @@
 #include <map>
 
 struct Renderer : public System {
-	std::queue<Entity> unloadedEntities;
 	std::set<Entity> loadedEntities;
 
 	// Sync
