@@ -30,30 +30,6 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/DamagedHelmet.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					1.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
 				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
@@ -96,33 +72,6 @@
 		{
 			"script": {
 				"scriptPath": "../scripts/gamecontroller.lua"
-			}
-		},
-		{
-			"camera": {
-				"fov": 45.0,
-				"nearPlane": 0.2,
-				"farPlane": 500.0
-			},
-			"transform": {
-				"position": [
-					4.0,
-					1.0,
-					0.0
-				],
-				"rotation": [
-					-1.0,
-					0.0,
-					0.0
-				],
-                "scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			},
-			"script": {
-				"scriptPath": "../scripts/camera.lua"
 			}
 		}
     ]
