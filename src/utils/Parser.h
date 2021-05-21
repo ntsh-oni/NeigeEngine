@@ -10,6 +10,6 @@
 #include "../Game.h"
 
 struct Parser {
-	static GameInfo parseGame(const std::string& filePath);
-	static void parseScene(const std::string& filePath, ECS& ecs);
+	static GameInfo parseGameInfo(const std::string& filePath);
+	static Scene parseScene(const std::string& filePath, ECS& ecs);
 };

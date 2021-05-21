@@ -1,3 +1,4 @@
+
 # Scripting Documentation
 NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
@@ -10,6 +11,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 	- [Vector](#vector)
 	- [Input](#input)
 	- [Window](#window)
+	- [Camera](#camera)
 	- [Time](#time)
  
 ## General functions
@@ -91,6 +93,15 @@ Functions related to the application's window.
 - **setWindowSize**(*int width, int height*) : Sets the size of the window (width and height).
 - **setWindowTitle**(*string title*) : Sets the title of the window.
 - **closeWindow**() : Closes the window.
+
+### Camera
+Functions related to cameras. There is one main camera and a camera list that can contain multiple cameras.
+
+#### Functions
+- int **getMainCameraIndex**() : Returns the main camera index in the camera list.
+- **setMainCameraIndex**(*int cameraId*) : Replaces the main camera by the camera at the *cameraId* index in the camera list. *cameraId* must be between 0 and the number of cameras in the camera list.
+- int **getMainCameraEntity**() : Returns the main camera entity.
+- int **getCameraCount**() : Returns the number of cameras in the camera list.
 
 ###  Time
 Functions related to the time.

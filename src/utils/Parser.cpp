@@ -1,6 +1,6 @@
 #include "Parser.h"
 
-GameInfo Parser::parseGame(const std::string& filePath) {
+GameInfo Parser::parseGameInfo(const std::string& filePath) {
 	GameInfo gameInfo = {};
 
 	if (!FileTools::exists(filePath)) {
@@ -93,9 +93,12 @@ GameInfo Parser::parseGame(const std::string& filePath) {
 	return gameInfo;
 }
 
-void Parser::parseScene(const std::string& filePath, ECS& ecs) {
+Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
+	Scene scene = {};
+
 	if (!FileTools::exists(filePath)) {
 		NEIGE_ERROR("Could not find " + filePath + " to load the scene.");
+		return scene;
 	}
 
 	simdjson::ondemand::parser parser;
@@ -103,6 +106,18 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 	simdjson::ondemand::document document = parser.iterate(json);
 
 	simdjson::error_code error;
+
+	// Envmap
+	std::string_view envmapPath;
+	error = document["envmapPath"].get(envmapPath);
+
+	if (!error) {
+		scene.envmapPath = envmapPath;
+	}
+	else {
+		scene.envmapPath = "";
+	}
+
 	bool foundTransform = false;
 
 	for (simdjson::ondemand::object entity : document["entities"]) {
@@ -145,17 +160,6 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				}
 				else {
 					camera.farPlane = 200.0f;
-				}
-
-				// Envmap
-				std::string_view envmapPath;
-				error = component.value()["envmapPath"].get(envmapPath);
-
-				if (!error) {
-					camera.envmapPath = envmapPath;
-				}
-				else {
-					camera.envmapPath = "";
 				}
 
 				ecs.addComponent(ecsEntity, camera);
@@ -431,4 +435,6 @@ void Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				});
 		}
 	}
+
+	return scene;
 }

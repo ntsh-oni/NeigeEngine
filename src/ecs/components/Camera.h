@@ -4,13 +4,11 @@
 #include "../../../external/glm/glm/glm.hpp"
 #include "../../../external/glm/glm/gtc/matrix_transform.hpp"
 #include "../../physics/Frustum.h"
-#include <string>
 
 struct Camera {
 	float FOV;
 	float nearPlane;
 	float farPlane;
-	std::string envmapPath = "";
 
 	glm::mat4 view;
 	glm::mat4 projection;

@@ -59,6 +59,7 @@ void Game::init() {
 
 void Game::launch() {
 	window.init(info.name);
+	cameraSystem->init();
 	lighting->init();
 	scripting->init();
 	renderer->init(info.name);

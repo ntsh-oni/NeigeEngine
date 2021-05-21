@@ -1,11 +1,11 @@
 {
+	"envmapPath": "../modelfiles/sunset_forest_8k.hdr",
 	"entities": [
 		{
 			"camera": {
 				"fov": 45.0,
 				"nearPlane": 0.2,
-				"farPlane": 500.0,
-				"envmapPath": "../modelfiles/sunset_forest_8k.hdr"
+				"farPlane": 500.0
 			},
 			"transform": {
 				"position": [
@@ -19,9 +19,9 @@
 					0.0
 				],
                 "scale": [
-					0.5,
-					2.0,
-					0.5
+					1.0,
+					1.0,
+					1.0
 				]
 			},
 			"script": {
@@ -96,6 +96,33 @@
 		{
 			"script": {
 				"scriptPath": "../scripts/gamecontroller.lua"
+			}
+		},
+		{
+			"camera": {
+				"fov": 45.0,
+				"nearPlane": 0.2,
+				"farPlane": 500.0
+			},
+			"transform": {
+				"position": [
+					4.0,
+					1.0,
+					0.0
+				],
+				"rotation": [
+					-1.0,
+					0.0,
+					0.0
+				],
+                "scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"script": {
+				"scriptPath": "../scripts/camera.lua"
 			}
 		}
     ]

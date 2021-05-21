@@ -116,9 +116,6 @@ void Renderer::init(const std::string& applicationName) {
 	}
 
 	// Camera
-	auto& cameraCamera = ecs.getComponent<Camera>(camera);
-	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
-
 	cameraBuffers.resize(framesInFlight);
 	for (Buffer& buffer : cameraBuffers) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(CameraUniformBufferObject), &buffer.memoryInfo);
@@ -179,7 +176,7 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Envmap
 	NEIGE_INFO("Environment map init start.");
-	envmap.init(cameraCamera.envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
+	envmap.init(envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
 	NEIGE_INFO("Environment map init end.");
 
 	// Default revealage attachment
@@ -845,8 +842,8 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	void* data;
 
 	// Camera
-	auto& cameraCamera = ecs.getComponent<Camera>(camera);
-	auto& cameraTransform = ecs.getComponent<Transform>(camera);
+	auto& cameraCamera = ecs.getComponent<Camera>(mainCamera);
+	auto& cameraTransform = ecs.getComponent<Transform>(mainCamera);
 
 	CameraUniformBufferObject cubo = {};
 	cameraCamera.view = Camera::createLookAtView(cameraTransform.position, cameraTransform.position + cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1558,6 +1555,6 @@ void Renderer::reloadOnResize() {
 
 	createPostProcessDescriptorSet();
 
-	auto& cameraCamera = ecs.getComponent<Camera>(camera);
+	auto& cameraCamera = ecs.getComponent<Camera>(mainCamera);
 	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
 }

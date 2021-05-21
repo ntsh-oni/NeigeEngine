@@ -10,6 +10,17 @@ function init()
 end
 
 function update()
+	local speed = 5.0
+	local sensitivity = 1.5
+	local dt = getDeltaTime()
+	local id = getEntityID()
+	local px, py, pz = getTransformComponentPosition(id)
+	local rx, ry, rz = getTransformComponentRotation(id)
+	
+	if id ~= getMainCameraEntity() then
+		do return end
+	end
+	
 	if getKeyState("f") == 0 then
 		setWindowFullscreen(not isWindowFullscreen())
 		if mouseView then
@@ -30,13 +41,6 @@ function update()
 			setMousePosition(mouseX, mouseY);
 		end
 	end
-
-	local speed = 5.0
-	local sensitivity = 1.5
-	local dt = getDeltaTime()
-	local id = getEntityID()
-	local px, py, pz = getTransformComponentPosition(id)
-	local rx, ry, rz = getTransformComponentRotation(id)
 	
 	if (mouseView) then
 		local tmpMouseX, tmpMouseY = getMousePosition()
