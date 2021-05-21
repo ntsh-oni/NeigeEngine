@@ -1555,6 +1555,8 @@ void Renderer::reloadOnResize() {
 
 	createPostProcessDescriptorSet();
 
-	auto& cameraCamera = ecs.getComponent<Camera>(mainCamera);
-	cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
+	for (Entity camera : cameras) {
+		auto& cameraCamera = ecs.getComponent<Camera>(camera);
+		cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
+	}
 }
