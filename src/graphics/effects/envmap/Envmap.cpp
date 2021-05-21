@@ -79,7 +79,7 @@ void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
 		VkDescriptorImageInfo skyboxInfo = {};
-		skyboxInfo.sampler = trilinearEdgeOneLodBlackSampler;
+		skyboxInfo.sampler = trilinearOffscreenSampler;
 		skyboxInfo.imageView = envmap.skyboxImage.imageView;
 		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

@@ -118,7 +118,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 		resizeDescriptorSet.init(&resizeGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo thresholdInfo = {};
-		thresholdInfo.sampler = nearestEdgeBlackSampler;
+		thresholdInfo.sampler = nearestOffscreenSampler;
 		thresholdInfo.imageView = sceneImage.imageView;
 		thresholdInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -149,7 +149,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 			blurDescriptorSets[mipLevel].init(&blurGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo bloomInfo = {};
-			bloomInfo.sampler = nearestEdgeBlackSampler;
+			bloomInfo.sampler = nearestOffscreenSampler;
 			bloomInfo.imageView = mipLevel == 0 ? bloomLod0ImageView : backBlurImageViews[mipLevel - 1];
 			bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -175,7 +175,7 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 			backBlurDescriptorSets[mipLevel].init(&blurGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo blurInfo = {};
-			blurInfo.sampler = nearestEdgeBlackSampler;
+			blurInfo.sampler = nearestOffscreenSampler;
 			blurInfo.imageView = blurImageViews[mipLevel];
 			blurInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

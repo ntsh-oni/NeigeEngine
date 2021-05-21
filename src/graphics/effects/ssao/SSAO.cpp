@@ -159,7 +159,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			depthToPositionsDescriptorSets[i].init(&depthToPositionsGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo depthPrepassInfo = {};
-			depthPrepassInfo.sampler = nearestEdgeBlackSampler;
+			depthPrepassInfo.sampler = nearestOffscreenSampler;
 			depthPrepassInfo.imageView = depthPrepass.image.imageView;
 			depthPrepassInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
@@ -207,7 +207,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			depthToNormalsDescriptorSets[i].init(&depthToNormalsGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo depthPrepassInfo = {};
-			depthPrepassInfo.sampler = nearestEdgeBlackSampler;
+			depthPrepassInfo.sampler = nearestOffscreenSampler;
 			depthPrepassInfo.imageView = depthPrepass.image.imageView;
 			depthPrepassInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
@@ -255,17 +255,17 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			ssaoDescriptorSets[i].init(&ssaoGraphicsPipeline, 0);
 
 			VkDescriptorImageInfo positionInfo = {};
-			positionInfo.sampler = nearestEdgeBlackSampler;
+			positionInfo.sampler = nearestOffscreenSampler;
 			positionInfo.imageView = depthToPositionsImage.imageView;
 			positionInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkDescriptorImageInfo normalInfo = {};
-			normalInfo.sampler = nearestEdgeBlackSampler;
+			normalInfo.sampler = nearestOffscreenSampler;
 			normalInfo.imageView = depthToNormalsImage.imageView;
 			normalInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 			VkDescriptorImageInfo randomTextureInfo = {};
-			randomTextureInfo.sampler = nearestRepeatBlackSampler;
+			randomTextureInfo.sampler = nearestRepeatOffscreenSampler;
 			randomTextureInfo.imageView = randomTexture.imageView;
 			randomTextureInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -354,7 +354,7 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		ssaoBlurredDescriptorSet.init(&ssaoBlurredGraphicsPipeline, 0);
 
 		VkDescriptorImageInfo ssaoInfo = {};
-		ssaoInfo.sampler = nearestEdgeBlackSampler;
+		ssaoInfo.sampler = nearestOffscreenSampler;
 		ssaoInfo.imageView = ssaoImage.imageView;
 		ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

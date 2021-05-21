@@ -37,6 +37,30 @@
 			"transform": {
 				"position": [
 					0.0,
+					1.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			}
+		},
+		{
+			"renderable": {
+				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					0.0,
 					0.0,
 					0.0
 				],
@@ -49,6 +73,23 @@
 					1.0,
 					1.0,
 					1.0
+				]
+			}
+		},
+		{
+			"light": {
+				"type": "DIRECTIONAL",
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"transform": {
+				"rotation": [
+					0.0,
+					-1.0,
+					0.0
 				]
 			}
 		},

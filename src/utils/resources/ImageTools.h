@@ -34,6 +34,7 @@ struct ImageTools {
 		VkFilter filter,
 		VkSamplerAddressMode addressMode,
 		VkBorderColor borderColor,
+		float anisotropy,
 		VkCompareOp compareOp);
 	static void loadImage(const std::string& filePath,
 		VkImage* imageDestination,

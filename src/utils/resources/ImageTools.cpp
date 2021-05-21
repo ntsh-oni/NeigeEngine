@@ -67,6 +67,7 @@ void ImageTools::createImageSampler(VkSampler* sampler,
 	VkFilter filter,
 	VkSamplerAddressMode addressMode,
 	VkBorderColor borderColor,
+	float anisotropy,
 	VkCompareOp compareOp) {
 	VkSamplerCreateInfo samplerCreateInfo = {};
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -79,8 +80,8 @@ void ImageTools::createImageSampler(VkSampler* sampler,
 	samplerCreateInfo.addressModeV = addressMode;
 	samplerCreateInfo.addressModeW = addressMode;
 	samplerCreateInfo.mipLodBias = 0.0f;
-	samplerCreateInfo.anisotropyEnable = VK_TRUE;
-	samplerCreateInfo.maxAnisotropy = 16.0f;
+	samplerCreateInfo.anisotropyEnable = anisotropy > 0.0f ? VK_TRUE : VK_FALSE;
+	samplerCreateInfo.maxAnisotropy = anisotropy;
 	samplerCreateInfo.compareEnable = compareOp == VK_COMPARE_OP_ALWAYS ? VK_FALSE : VK_TRUE;
 	samplerCreateInfo.compareOp = compareOp;
 	samplerCreateInfo.minLod = 0.0f;
