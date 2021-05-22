@@ -16,5 +16,6 @@ struct Swapchain {
 
 	void init(uint32_t* swapchainSize);
 	void destroy();
+	void destroyResources();
 	VkResult acquireNextImage(Semaphore* imageAvailableSemaphore, uint32_t* index);
 };

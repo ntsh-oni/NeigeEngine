@@ -40,7 +40,8 @@ void Swapchain::init(uint32_t* swapchainSize) {
 	swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	swapchainCreateInfo.presentMode = presentMode;
 	swapchainCreateInfo.clipped = VK_TRUE;
-	swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+	VkSwapchainKHR oldSwapchain = swapchain;
+	swapchainCreateInfo.oldSwapchain = oldSwapchain;
 	NEIGE_VK_CHECK(vkCreateSwapchainKHR(logicalDevice.device, &swapchainCreateInfo, nullptr, &swapchain));
 
 	NEIGE_VK_CHECK(vkGetSwapchainImagesKHR(logicalDevice.device, swapchain, &imageNumber, nullptr));
@@ -55,10 +56,14 @@ void Swapchain::init(uint32_t* swapchainSize) {
 }
 
 void Swapchain::destroy() {
+	destroyResources();
+	vkDestroySwapchainKHR(logicalDevice.device, swapchain, nullptr);
+}
+
+void Swapchain::destroyResources() {
 	for (uint32_t i = 0; i < imageNumber; i++) {
 		vkDestroyImageView(logicalDevice.device, imageViews[i], nullptr);
 	}
-	vkDestroySwapchainKHR(logicalDevice.device, swapchain, nullptr);
 }
 
 VkResult Swapchain::acquireNextImage(Semaphore* imageAvailableSemaphore, uint32_t* index) {

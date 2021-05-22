@@ -415,6 +415,7 @@ void Renderer::update() {
 void Renderer::destroy() {
 	logicalDevice.wait();
 	destroyResources();
+	swapchain.destroy();
 	if (trilinearEdgeBlackSampler != VK_NULL_HANDLE) {
 		vkDestroySampler(logicalDevice.device, trilinearEdgeBlackSampler, nullptr);
 		trilinearEdgeBlackSampler = VK_NULL_HANDLE;
@@ -1232,7 +1233,6 @@ void Renderer::createResources() {
 }
 
 void Renderer::destroyResources() {
-	swapchain.destroy();
 	sceneImage.destroy();
 	blendAccumulationImage.destroy();
 	blendRevealageImage.destroy();
@@ -1519,6 +1519,7 @@ void Renderer::reloadOnResize() {
 	destroyResources();
 
 	// Swapchain
+	swapchain.destroyResources();
 	swapchain.init(&swapchainSize);
 
 	fullscreenViewport.viewport.width = static_cast<float>(window.extent.width);

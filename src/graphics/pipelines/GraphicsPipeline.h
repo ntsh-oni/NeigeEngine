@@ -4,6 +4,7 @@
 #include "../../utils/structs/ShaderStructs.h"
 #include "../commands/CommandBuffer.h"
 #include "../renderpasses/RenderPass.h"
+#include "DescriptorPool.h"
 #include "Shader.h"
 #include "Viewport.h"
 #include <vector>
