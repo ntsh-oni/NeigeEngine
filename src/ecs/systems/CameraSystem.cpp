@@ -15,6 +15,7 @@ void CameraSystem::init() {
 			mainCamera = camera;
 			firstCamera = false;
 		}
-		cameras.push_back(camera);
 	}
+
+	cameras = &entities;
 }

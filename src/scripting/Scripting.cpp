@@ -19,41 +19,43 @@ void Scripting::init() {
 void Scripting::update(double deltaTime) {
 	TimeScripting::deltaTime = deltaTime;
 
-	std::set<Entity> uninitializedEntities;
-	std::set_difference(entities.begin(), entities.end(), initializedEntities.begin(), initializedEntities.end(), std::inserter(uninitializedEntities, uninitializedEntities.begin()));
-	for (Entity entityToInit : uninitializedEntities) {
-		auto& entityScript = ecs.getComponent<Script>(entityToInit);
+	// Init
+	for (Entity entity : entities) {
+		auto& entityScript = ecs.getComponent<Script>(entity);
 
-		if (FileTools::exists(entityScript.scriptPath)) {
-			EntityScripting::currentEntity = entityToInit;
+		if (!entityScript.initialized) {
+			if (FileTools::exists(entityScript.scriptPath)) {
+				EntityScripting::currentEntity = entity;
 
-			entityScript.script = FileTools::readAscii(entityScript.scriptPath);
+				entityScript.script = FileTools::readAscii(entityScript.scriptPath);
 
-			int r = luaL_dostring(L, entityScript.script.c_str());
-			if (r != LUA_OK) {
-				std::string error = lua_tostring(L, -1);
-				NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": load error: " + error);
-				lua_pop(L, 1);
-			}
-			else {
-				lua_getglobal(L, "init");
-				if (!lua_isnil(L, -1)) {
-					r = lua_pcall(L, 0, 0, 0);
-					if (r != LUA_OK) {
-						std::string error = lua_tostring(L, -1);
-						NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": call \"init\" function error: " + error);
-						lua_pop(L, 1);
+				int r = luaL_dostring(L, entityScript.script.c_str());
+				if (r != LUA_OK) {
+					std::string error = lua_tostring(L, -1);
+					NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": load error: " + error);
+					lua_pop(L, 1);
+				}
+				else {
+					lua_getglobal(L, "init");
+					if (!lua_isnil(L, -1)) {
+						r = lua_pcall(L, 0, 0, 0);
+						if (r != LUA_OK) {
+							std::string error = lua_tostring(L, -1);
+							NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": call \"init\" function error: " + error);
+							lua_pop(L, 1);
+						}
 					}
 				}
 			}
-		}
-		else {
-			NEIGE_SCRIPT_ERROR("Script file \"" + entityScript.scriptPath + "\" does not exist (entity " + std::to_string(entityToInit) + ").");
-		}
+			else {
+				NEIGE_SCRIPT_ERROR("Script file \"" + entityScript.scriptPath + "\" does not exist (entity " + std::to_string(entity) + ").");
+			}
 
-		initializedEntities.emplace(entityToInit);
+			entityScript.initialized = true;
+		}
 	}
 
+	// Update
 	for (Entity entity : entities) {
 		auto& entityScript = ecs.getComponent<Script>(entity);
 
@@ -81,6 +83,42 @@ void Scripting::update(double deltaTime) {
 		else {
 			NEIGE_SCRIPT_ERROR("Script file \"" + entityScript.scriptPath + "\" does not exist (entity " + std::to_string(entity) + ").");
 		}
+	}
+
+	// Destroy
+	while (!entitiesToDestroy.empty()) {
+		Entity entityToDestroy = entitiesToDestroy.front();
+
+		auto& entityScript = ecs.getComponent<Script>(entityToDestroy);
+
+		if (FileTools::exists(entityScript.scriptPath)) {
+			EntityScripting::currentEntity = entityToDestroy;
+
+			int r = luaL_dostring(L, entityScript.script.c_str());
+			if (r != LUA_OK) {
+				std::string error = lua_tostring(L, -1);
+				NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": load error: " + error);
+				lua_pop(L, 1);
+			}
+			else {
+				lua_getglobal(L, "destroy");
+				if (!lua_isnil(L, -1)) {
+					r = lua_pcall(L, 0, 0, 0);
+					if (r != LUA_OK) {
+						std::string error = lua_tostring(L, -1);
+						NEIGE_SCRIPT_ERROR("\"" + entityScript.scriptPath + "\": call \"destroy\" function error: " + error);
+						lua_pop(L, 1);
+					}
+				}
+			}
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Script file \"" + entityScript.scriptPath + "\" does not exist (entity " + std::to_string(entityToDestroy) + ").");
+		}
+
+		ecs.destroyEntity(entityToDestroy);
+
+		entitiesToDestroy.pop();
 	}
 }
 

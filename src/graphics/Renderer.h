@@ -19,6 +19,8 @@
 #include "sync/Fence.h"
 #include "sync/Semaphore.h"
 #include "../ecs/ECS.h"
+#include "../ecs/systems/Lighting.h"
+#include "../ecs/systems/CameraSystem.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -27,7 +29,9 @@
 #include <map>
 
 struct Renderer : public System {
-	std::set<Entity> loadedEntities;
+	// Internal systems
+	std::shared_ptr<Lighting> lighting;
+	std::shared_ptr<CameraSystem> cameraSystem;
 
 	// Sync
 	std::vector<Fence> fences;

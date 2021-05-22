@@ -78,7 +78,7 @@ public:
 	}
 
 	void removeData(Entity entity) {
-		NEIGE_ASSERT(entityToIndex.find(entity) != entityToIndex.end(), "Component \"" + std::to_string(entity) + "\" does not exist (remove data).");
+		NEIGE_ASSERT(entityToIndex.find(entity) != entityToIndex.end(), "Component for entity \"" + std::to_string(entity) + "\" does not exist (remove data).");
 
 		size_t tmp = entityToIndex[entity];
 		components[tmp] = components[validSize - 1];
@@ -95,13 +95,13 @@ public:
 	}
 
 	T& getData(Entity entity) {
-		NEIGE_ASSERT(entityToIndex.find(entity) != entityToIndex.end(), "Component \"" + std::to_string(entity) + "\" does not exist (get data).");
+		NEIGE_ASSERT(entityToIndex.find(entity) != entityToIndex.end(), "Component for entity \"" + std::to_string(entity) + "\" does not exist (get data).");
 
 		return components[entityToIndex[entity]];
 	}
 
 	void entityDestroyed(Entity entity) override {
-		if (entityToIndex.find(entity) == entityToIndex.end()) {
+		if (entityToIndex.find(entity) != entityToIndex.end()) {
 			removeData(entity);
 		}
 	}

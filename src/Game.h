@@ -33,8 +33,6 @@ struct GameInfo {
 
 struct Game {
 	std::shared_ptr<Renderer> renderer;
-	std::shared_ptr<Lighting> lighting;
-	std::shared_ptr<CameraSystem> cameraSystem;
 	std::shared_ptr<Physics> physics;
 	std::shared_ptr<Scripting> scripting;
 	double lastFrame = 0.0;

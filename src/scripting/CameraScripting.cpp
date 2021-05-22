@@ -12,12 +12,14 @@ int CameraScripting::getMainCameraIndex(lua_State* L) {
 	if (n == 0) {
 		bool foundCamera = false;
 		int cameraId = 0;
-		for (size_t i = 0; i < cameras.size(); i++) {
-			if (mainCamera == cameras[i]) {
+		int i = 0;
+		for (Entity camera : *cameras) {
+			if (mainCamera == camera) {
 				cameraId = static_cast<int>(i);
 				foundCamera = true;
 				break;
 			}
+			i++;
 		}
 
 		if (foundCamera) {
@@ -42,8 +44,8 @@ int CameraScripting::setMainCameraIndex(lua_State* L) {
 		if (lua_isnumber(L, -1)) {
 			size_t cameraId = static_cast<size_t>(lua_tonumber(L, 1));
 
-			if (cameraId >= 0 && cameraId < cameras.size()) {
-				mainCamera = cameras[cameraId];
+			if (cameraId >= 0 && cameraId < cameras->size()) {
+				mainCamera = *std::next(cameras->begin(), cameraId);
 
 				return 0;
 			}
@@ -66,15 +68,7 @@ int CameraScripting::setMainCameraIndex(lua_State* L) {
 int CameraScripting::getMainCameraEntity(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 0) {
-		int cameraId = 0;
-		for (size_t i = 0; i < cameras.size(); i++) {
-			if (mainCamera == cameras[i]) {
-				cameraId = mainCamera;
-				break;
-			}
-		}
-
-		lua_pushnumber(L, cameraId);
+		lua_pushnumber(L, mainCamera);
 
 		return 1;
 	}
@@ -87,7 +81,7 @@ int CameraScripting::getMainCameraEntity(lua_State* L) {
 int CameraScripting::getCameraCount(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 0) {
-		lua_pushnumber(L, static_cast<int>(cameras.size()));
+		lua_pushnumber(L, static_cast<int>(cameras->size()));
 
 		return 1;
 	}

@@ -27,7 +27,7 @@ function update()
 			local width, height = getWindowSize()
 			mouseX = width / 2.0
 			mouseY = height / 2.0
-			setMousePosition(mouseX, mouseY);
+			setMousePosition(mouseX, mouseY)
 		end
 	end
 	
