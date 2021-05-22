@@ -5,6 +5,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 1. General functions
 	- [init](#init)
 	- [update](#update)
+	- [destroy](#destroy)
 2. Specific functions
 	- [Entity](#entity)
 	- [Vector](#vector)
@@ -21,6 +22,9 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 ### update
 **update()** is a function that activates once per frame. Its number of activations per second heavily depends on the user's hardware and the application. It is recommended to use the [delta time](#deltatime) when the script depends on the number of frames per second.
 
+### destroy
+**destroy()** is a function that activates once at the entity's destruction. If multiple entities got destroyed during the same frame, the first entity that got destroyed activates its destroy() function first (**FIFO**).
+
 ## Specific functions
 
 ## Entity
@@ -28,6 +32,7 @@ Functions related to entities and their components.
 
 ### Functions
 - int **getEntityID()** : Returns the entity calling this script's ID.
+- **destroyEntity**(*[int entity]*) : Takes an entity ID and destroys it. If no entity ID is specified, destroys the entity calling this function.
 - bool **hasRenderableComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Renderable component, else returns **false**.
 - string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's Renderable component model path. If the entity does not have a Renderable component, returns nothing.
 - bool **hasScriptComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Script component, else returns **false**.

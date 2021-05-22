@@ -29,7 +29,7 @@ void Game::init() {
 	renderer->enableFXAA = info.enableFXAA;
 
 	// Lighting system
-	lighting = ecs.registerSystem<Lighting>();
+	renderer->lighting = ecs.registerSystem<Lighting>();
 	ComponentMask lightingMask;
 	lightingMask.set(ecs.getComponentId<Light>());
 	ecs.setSystemComponents<Lighting>(lightingMask);
@@ -38,7 +38,7 @@ void Game::init() {
 	ComponentMask cameraMask;
 	cameraMask.set(ecs.getComponentId<Camera>());
 
-	cameraSystem = ecs.registerSystem<CameraSystem>();
+	renderer->cameraSystem = ecs.registerSystem<CameraSystem>();
 	ecs.setSystemComponents<CameraSystem>(cameraMask);
 
 	// Physics system
@@ -59,9 +59,9 @@ void Game::init() {
 
 void Game::launch() {
 	window.init(info.name);
-	cameraSystem->init();
-	lighting->init();
 	scripting->init();
+	renderer->cameraSystem->init();
+	renderer->lighting->init();
 	renderer->init(info.name);
 
 	while (!window.windowGotClosed()) {
@@ -71,8 +71,6 @@ void Game::launch() {
 		window.pollEvents();
 
 		scripting->update(deltaTime);
-
-		lighting->update();
 
 		physics->update(std::min<double>(deltaTime, (1.0 / 60.0)));
 

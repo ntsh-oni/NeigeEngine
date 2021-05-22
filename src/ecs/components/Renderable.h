@@ -21,6 +21,9 @@ struct Renderable {
 	std::string tesselationEvaluationShaderPath = "";
 	std::string geometryShaderPath = "";
 
+	// Loading state
+	bool loaded = false;
+
 	// Model
 	Model* model;
 

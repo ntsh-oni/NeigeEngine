@@ -10,8 +10,6 @@
 #include "ScriptingResources.h"
 
 struct Scripting : public System {
-	std::set<Entity> initializedEntities;
-
 	void init();
 	void update(double deltaTime);
 	void destroy();
