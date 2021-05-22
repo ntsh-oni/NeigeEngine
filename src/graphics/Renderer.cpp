@@ -337,18 +337,24 @@ void Renderer::update() {
 			}
 			envmap.skyboxGraphicsPipeline.destroyPipeline();
 			envmap.skyboxGraphicsPipeline.init();
-			ssao.depthToPositionsGraphicsPipeline.destroyPipeline();
-			ssao.depthToPositionsGraphicsPipeline.init();
-			ssao.depthToNormalsGraphicsPipeline.destroyPipeline();
-			ssao.depthToNormalsGraphicsPipeline.init();
-			ssao.ssaoGraphicsPipeline.destroyPipeline();
-			ssao.ssaoGraphicsPipeline.init();
-			ssao.ssaoBlurredGraphicsPipeline.destroyPipeline();
-			ssao.ssaoBlurredGraphicsPipeline.init();
-			bloom.blurGraphicsPipeline.destroyPipeline();
-			bloom.blurGraphicsPipeline.init();
-			fxaa.graphicsPipeline.destroyPipeline();
-			fxaa.graphicsPipeline.init();
+			if (enableSSAO) {
+				ssao.depthToPositionsGraphicsPipeline.destroyPipeline();
+				ssao.depthToPositionsGraphicsPipeline.init();
+				ssao.depthToNormalsGraphicsPipeline.destroyPipeline();
+				ssao.depthToNormalsGraphicsPipeline.init();
+				ssao.ssaoGraphicsPipeline.destroyPipeline();
+				ssao.ssaoGraphicsPipeline.init();
+				ssao.ssaoBlurredGraphicsPipeline.destroyPipeline();
+				ssao.ssaoBlurredGraphicsPipeline.init();
+			}
+			if (enableBloom) {
+				bloom.blurGraphicsPipeline.destroyPipeline();
+				bloom.blurGraphicsPipeline.init();
+			}
+			if (enableFXAA) {
+				fxaa.graphicsPipeline.destroyPipeline();
+				fxaa.graphicsPipeline.init();
+			}
 		}
 
 		if (keyboardInputs.cKey == KeyState::PRESSED) {

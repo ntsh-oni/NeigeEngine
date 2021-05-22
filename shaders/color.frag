@@ -32,6 +32,10 @@ layout(set = 0, binding = 6) uniform sampler2D brdfLUT;
 
 layout(set = 0, binding = 7) uniform sampler2DShadow shadowMaps[MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
+layout(set = 0, binding = 8) uniform Time {
+	float time;
+} time;
+
 layout(set = 1, binding = 0) uniform sampler2D textures[];
 layout(set = 1, binding = 1) restrict readonly buffer Materials {
 	int diffuseIndex;
