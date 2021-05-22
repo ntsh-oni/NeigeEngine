@@ -47,12 +47,12 @@ int EntityScripting::destroyEntity(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"deleteEntity(int entity)\" takes 1 integer parameter.");
+			NEIGE_SCRIPT_ERROR("Function \"destroyEntity(int entity)\" takes 1 integer parameter.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"deleteEntity(int entity)\" takes 1 integer parameter.");
+		NEIGE_SCRIPT_ERROR("Function \"destroyEntity(int entity)\" takes 1 integer parameter.");
 		return 0;
 	}
 }
