@@ -6,13 +6,13 @@
 	},
 	"graphics": {
 		"ssao": {
-			"enable": false,
+			"enable": true,
 			"downscale": 3
 		},
 		"bloom": {
 			"enable": true,
 			"downscale": 4,
-			"threshold": 0.5,
+			"threshold": 1.5,
 			"size": 33
 		},
 		"fxaa": {
