@@ -458,11 +458,7 @@ void GraphicsPipeline::init() {
 
 void GraphicsPipeline::destroy() {
 	for (size_t i = 0; i < descriptorPools.size(); i++) {
-		if (descriptorPools[i].descriptorPool != VK_NULL_HANDLE) {
-			vkDestroyDescriptorPool(logicalDevice.device, descriptorPools[i].descriptorPool, nullptr);
-			descriptorPools[i].descriptorPool = VK_NULL_HANDLE;
-			descriptorPools[i].remainingSets = 0;
-		}
+		descriptorPools[i].destroy();
 	}
 	for (size_t i = 0; i < descriptorSetLayouts.size(); i++) {
 		if (externalSet(i) == -1 && descriptorSetLayouts[i] != VK_NULL_HANDLE) {

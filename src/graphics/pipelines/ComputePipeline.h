@@ -3,6 +3,7 @@
 #include "../../utils/NeigeDefines.h"
 #include "../../utils/structs/ShaderStructs.h"
 #include "../commands/CommandBuffer.h"
+#include "DescriptorPool.h"
 #include "Shader.h"
 #include <vector>
 

@@ -2,6 +2,7 @@
 #include "vulkan/vulkan.h"
 #include "ComputePipeline.h"
 #include "GraphicsPipeline.h"
+#include "DescriptorPool.h"
 #include "../commands/CommandBuffer.h"
 
 struct DescriptorSet {
