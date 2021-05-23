@@ -26,22 +26,22 @@ $ make
 ```
 ## Features
 ### General Features
-- [x] Entity component system
-- [x] Keyboard and mouse input
-- [x] glTF import
-- [x] Lua scripting
-- [x] JSON scene format
+- Entity component system
+- Keyboard and mouse input
+- glTF import
+- [Lua scripting](https://github.com/ZaOniRinku/NeigeEngine/blob/main/docs/scripting.md)
+- JSON scene format
 ### Graphics Features
-- [x] Physically Based Rendering (PBR) metallic-roughness
-- [x] Image-Based Lighting (IBL)
-- [x] Shadow mapping
-- [x] Fast Approximate Anti-Aliasing (FXAA)
-- [x] Pure Depth Screen Space Ambient Occlusion (SSAO)
-- [x] Bloom
-- [x] Weighted Blended Order-Independent Transparency (WBOIT)
-- [x] Alpha cutoff
-- [x] GPU Frustum culling
-- [x] Realtime shaders reloading
+- Physically Based Rendering (PBR) metallic-roughness
+- Image-Based Lighting (IBL)
+- Shadow mapping
+- Fast Approximate Anti-Aliasing (FXAA)
+- Pure Depth Screen Space Ambient Occlusion (SSAO)
+- Bloom
+- Weighted Blended Order-Independent Transparency (WBOIT)
+- Alpha cutoff
+- GPU Frustum culling
+- Realtime shaders reloading
 ## Screenshots
 ![Amazon Lumberyard Bistro](https://i.imgur.com/uq0IOq4.png)
 <sub>Amazon Lumberyard Bistro</sub>

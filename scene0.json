@@ -1,5 +1,5 @@
 {
-	"envmapPath": "",
+	"envmapPath": "../modelfiles/sunset_forest_8k.hdr",
 	"entities": [
 		{
 			"camera": {
@@ -11,12 +11,12 @@
 				"position": [
 					0.0,
 					1.0,
-					8.0
+					0.0
 				],
 				"rotation": [
+					-1.0,
 					0.0,
-					0.0,
-					1.0
+					0.0
 				],
                 "scale": [
 					1.0,
@@ -30,9 +30,9 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/spherered.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
+				"modelPath": "../modelfiles/terraintest.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
 			"transform": {
 				"position": [
@@ -46,57 +46,9 @@
 					0.0
 				],
 				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/sphereblue.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/spheregreen.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
-			},
-			"transform": {
-				"position": [
-					2.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
+					100.0,
+					100.0,
+					100.0
 				]
 			}
 		},
