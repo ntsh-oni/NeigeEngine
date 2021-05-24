@@ -5,6 +5,7 @@
 #include "EntityScripting.h"
 #include "InputScripting.h"
 #include "TimeScripting.h"
+#include "UIScripting.h"
 #include "VectorScripting.h"
 #include "WindowScripting.h"
 #include "ScriptingResources.h"

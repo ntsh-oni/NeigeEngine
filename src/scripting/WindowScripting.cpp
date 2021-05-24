@@ -83,7 +83,7 @@ int WindowScripting::getMousePosition(lua_State* L) {
 int WindowScripting::setMousePosition(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 2) {
-		if (lua_isnumber(L, -1) && lua_isnumber(L, -2)) {
+		if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
 			double x = lua_tonumber(L, 1);
 			double y = lua_tonumber(L, 2);
 
@@ -119,7 +119,7 @@ int WindowScripting::getWindowSize(lua_State* L) {
 int WindowScripting::setWindowSize(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 2) {
-		if (lua_isnumber(L, -1) && lua_isnumber(L, -2)) {
+		if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
 			int width = static_cast<int>(lua_tonumber(L, 1));
 			int height = static_cast<int>(lua_tonumber(L, 2));
 

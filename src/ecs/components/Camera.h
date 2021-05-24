@@ -28,5 +28,8 @@ struct Camera {
 	static glm::mat4 createOrthoProjection(float left, float right, float bottom, float top, float nearPlane, float farPlane) {
 		return glm::ortho(left, right, bottom, top, nearPlane, farPlane);
 	}
-};
 
+	static glm::mat4 createOrthoProjection(float left, float right, float bottom, float top) {
+		return glm::ortho(left, right, bottom, top);
+	}
+};

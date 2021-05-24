@@ -9,7 +9,7 @@ void VectorScripting::init() {
 int VectorScripting::normalize(lua_State* L) {
     int n = lua_gettop(L);
     if (n == 2) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2)) {
+        if (lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             float x = static_cast<float>(lua_tonumber(L, 1));
             float y = static_cast<float>(lua_tonumber(L, 2));
             glm::vec2 res = glm::normalize(glm::vec2(x, y));
@@ -25,7 +25,7 @@ int VectorScripting::normalize(lua_State* L) {
         }
     }
     else if (n == 3) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3)) {
+        if (lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             float x = static_cast<float>(lua_tonumber(L, 1));
             float y = static_cast<float>(lua_tonumber(L, 2));
             float z = static_cast<float>(lua_tonumber(L, 3));
@@ -43,7 +43,7 @@ int VectorScripting::normalize(lua_State* L) {
         }
     }
     else if (n == 4) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4)) {
+        if (lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             float x = static_cast<float>(lua_tonumber(L, 1));
             float y = static_cast<float>(lua_tonumber(L, 2));
             float z = static_cast<float>(lua_tonumber(L, 3));
@@ -71,7 +71,7 @@ int VectorScripting::normalize(lua_State* L) {
 int VectorScripting::dot(lua_State* L) {
     int n = lua_gettop(L);
     if (n == 4) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4)) {
+        if (lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             // 2 vec2
             float x1 = static_cast<float>(lua_tonumber(L, 1));
             float y1 = static_cast<float>(lua_tonumber(L, 2));
@@ -92,7 +92,7 @@ int VectorScripting::dot(lua_State* L) {
         }
     }
     else if (n == 6) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4) && lua_isnumber(L, -5) && lua_isnumber(L, -6)) {
+        if (lua_isnumber(L, -6) && lua_isnumber(L, -5) && lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             // 2 vec3
             float x1 = static_cast<float>(lua_tonumber(L, 1));
             float y1 = static_cast<float>(lua_tonumber(L, 2));
@@ -115,7 +115,7 @@ int VectorScripting::dot(lua_State* L) {
         }
     }
     else if (n == 8) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4) && lua_isnumber(L, -5) && lua_isnumber(L, -6) && lua_isnumber(L, -7) && lua_isnumber(L, -8)) {
+        if (lua_isnumber(L, -8) && lua_isnumber(L, -7) && lua_isnumber(L, -6) && lua_isnumber(L, -5) && lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             // 2 vec4
             float x1 = static_cast<float>(lua_tonumber(L, 1));
             float y1 = static_cast<float>(lua_tonumber(L, 2));
@@ -148,7 +148,7 @@ int VectorScripting::dot(lua_State* L) {
 int VectorScripting::cross(lua_State* L) {
     int n = lua_gettop(L);
     if (n == 6) {
-        if (lua_isnumber(L, -1) && lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4) && lua_isnumber(L, -5) && lua_isnumber(L, -6)) {
+        if (lua_isnumber(L, -6) && lua_isnumber(L, -5) && lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
             float x1 = static_cast<float>(lua_tonumber(L, 1));
             float y1 = static_cast<float>(lua_tonumber(L, 2));
             float z1 = static_cast<float>(lua_tonumber(L, 3));

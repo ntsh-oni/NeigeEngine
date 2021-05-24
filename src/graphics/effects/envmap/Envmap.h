@@ -1,8 +1,8 @@
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../../../ecs/components/Camera.h"
-#include "../../../utils/structs/ShaderStructs.h"
-#include "../../../utils/structs/RendererStructs.h"
+#include "../../structs/ShaderStructs.h"
+#include "../../structs/RendererStructs.h"
 #include "../../commands/CommandPool.h"
 #include "../../commands/CommandBuffer.h"
 #include "../../pipelines/Viewport.h"

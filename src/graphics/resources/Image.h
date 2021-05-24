@@ -1,7 +1,7 @@
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../../utils/NeigeDefines.h"
-#include "../../utils/structs/RendererStructs.h"
+#include "../structs/RendererStructs.h"
 
 struct Image {
 	VkImage image = VK_NULL_HANDLE;

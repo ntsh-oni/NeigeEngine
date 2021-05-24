@@ -1,6 +1,6 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "../NeigeDefines.h"
+#include "../../utils/NeigeDefines.h"
 #include <vector>
 #include <optional>
 

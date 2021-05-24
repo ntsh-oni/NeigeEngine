@@ -1,7 +1,7 @@
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../../utils/NeigeDefines.h"
-#include "../../utils/structs/ShaderStructs.h"
+#include "../structs/ShaderStructs.h"
 #include "../commands/CommandBuffer.h"
 #include "../renderpasses/RenderPass.h"
 #include "DescriptorPool.h"

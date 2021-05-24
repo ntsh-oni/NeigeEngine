@@ -2,8 +2,8 @@
 #pragma warning(disable:4996)
 #include "../../graphics/resources/Image.h"
 #include "../NeigeDefines.h"
-#include "../structs/ModelStructs.h"
-#include "../structs/ShaderStructs.h"
+#include "../../graphics/structs/ModelStructs.h"
+#include "../../graphics/structs/ShaderStructs.h"
 #include "../../physics/AABB.h"
 #include "../../../external/glm/glm/gtc/type_ptr.hpp"
 #include "../../../external/glm/glm/gtx/quaternion.hpp"

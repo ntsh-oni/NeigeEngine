@@ -1,6 +1,8 @@
 #include "ImageTools.h"
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
 #include "../../external/stb/stb_image.h"
+#include "../../external/stb/stb_truetype.h"
 #include "../../graphics/resources/RendererResources.h"
 
 void ImageTools::createImage(VkImage* image,
@@ -420,4 +422,37 @@ void ImageTools::generateMipmaps(VkImage image,
 
 	commandBuffer.endAndSubmit();
 	commandPool.destroy();
+}
+
+void ImageTools::loadFont(const std::string& filePath,
+	float fontHeight,
+	Font* fontDestination) {
+	fontDestination->height = fontHeight;
+	fontDestination->startChar = 32;
+	fontDestination->endChar = 126;
+	int width = 512;
+	int height = 512;
+
+	unsigned char pixels[512 * 512];
+	std::string tmp = FileTools::readBinary(filePath);
+	stbtt_BakeFontBitmap(reinterpret_cast<const unsigned char*>(tmp.c_str()), 0, fontHeight, pixels, width, height, 32, 96, fontDestination->backedChar);
+	VkDeviceSize size = static_cast<VkDeviceSize>(width) * static_cast<VkDeviceSize>(height) * sizeof(uint8_t);
+	if (!pixels) {
+		NEIGE_ERROR("Error with font file \"" + filePath + "\".");
+	}
+
+	Buffer stagingBuffer;
+	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
+	void* data;
+	stagingBuffer.map(0, size, &data);
+	memcpy(data, pixels, size);
+	stagingBuffer.unmap();
+
+	createImage(&fontDestination->image.image, 1, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &fontDestination->image.memoryInfo);
+	createImageView(&fontDestination->image.imageView, fontDestination->image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	transitionLayout(fontDestination->image.image, VK_FORMAT_R8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
+	BufferTools::copyToImage(stagingBuffer.buffer, fontDestination->image.image, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, sizeof(uint8_t));
+	transitionLayout(fontDestination->image.image, VK_FORMAT_R8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
+
+	stagingBuffer.destroy();
 }

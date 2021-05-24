@@ -11,3 +11,4 @@ inline VkSampler trilinearRepeatBlackSampler = VK_NULL_HANDLE;
 inline VkSampler nearestEdgeBlackSampler = VK_NULL_HANDLE;
 inline VkSampler nearestEdgeOneLodBlackSampler = VK_NULL_HANDLE;
 inline VkSampler nearestRepeatBlackSampler = VK_NULL_HANDLE;
+inline VkSampler fontSampler = VK_NULL_HANDLE;

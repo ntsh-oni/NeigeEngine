@@ -6,8 +6,8 @@
 #include "../../external/spirv-reflect/spirv_reflect.h"
 #include "../../utils/resources/FileTools.h"
 #include "../../utils/NeigeDefines.h"
-#include "../../utils/structs/RendererStructs.h"
-#include "../../utils/structs/ShaderStructs.h"
+#include "../structs/RendererStructs.h"
+#include "../structs/ShaderStructs.h"
 #include <string>
 #include <vector>
 

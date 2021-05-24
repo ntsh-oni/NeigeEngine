@@ -1,6 +1,6 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "../../utils/structs/RendererStructs.h"
+#include "../structs/RendererStructs.h"
 
 struct Buffer {
 	VkBuffer buffer = VK_NULL_HANDLE;

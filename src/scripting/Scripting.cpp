@@ -12,6 +12,7 @@ void Scripting::init() {
 	EntityScripting::init();
 	InputScripting::init();
 	TimeScripting::init();
+	UIScripting::init();
 	VectorScripting::init();
 	WindowScripting::init();
 }
