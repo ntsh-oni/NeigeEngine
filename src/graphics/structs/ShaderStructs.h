@@ -5,7 +5,7 @@
 #include "../../external/glm/glm/glm.hpp"
 #include "../../graphics/resources/Buffer.h"
 #include "../../graphics/resources/Image.h"
-#include "../NeigeDefines.h"
+#include "../../utils/NeigeDefines.h"
 
 #define MAX_DIR_LIGHTS 10
 #define MAX_POINT_LIGHTS 10

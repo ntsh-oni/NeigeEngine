@@ -30,13 +30,13 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/terraintest.gltf",
+				"modelPath": "../modelfiles/DamagedHelmet.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
 			"transform": {
 				"position": [
-					-2.0,
+					0.0,
 					0.0,
 					0.0
 				],
@@ -46,9 +46,9 @@
 					0.0
 				],
 				"scale": [
-					100.0,
-					100.0,
-					100.0
+					1.0,
+					1.0,
+					1.0
 				]
 			}
 		},

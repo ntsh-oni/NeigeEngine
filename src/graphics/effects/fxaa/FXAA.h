@@ -1,6 +1,6 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "../../../utils/structs/ShaderStructs.h"
+#include "../../structs/ShaderStructs.h"
 #include "../../resources/Image.h"
 #include "../../renderpasses/Framebuffer.h"
 #include "../../renderpasses/RenderPass.h"

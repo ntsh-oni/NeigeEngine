@@ -11,6 +11,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 	- [Vector](#vector)
 	- [Input](#input)
 	- [Window](#window)
+	- [UI](#ui)
 	- [Camera](#camera)
 	- [Time](#time)
  
@@ -99,6 +100,13 @@ Functions related to the application's window.
 - **setWindowSize**(*int width, int height*) : Sets the size of the window (width and height).
 - **setWindowTitle**(*string title*) : Sets the title of the window.
 - **closeWindow**() : Closes the window.
+
+## UI
+Functions related to the user interface.
+
+### Functions
+- int **createFont**(*string fontPath, float height*) : Takes the font's path and the height and returns the font's index.
+- **drawText**(*string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float x, float y*) : Takes the text to draw, the font's index, the color of the text and its position relative to the window. This functions draws text the frame this function is called.
 
 ## Camera
 Functions related to cameras. There is one main camera and a camera list that can contain multiple cameras.

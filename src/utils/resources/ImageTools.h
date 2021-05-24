@@ -1,13 +1,15 @@
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../NeigeDefines.h"
-#include "../structs/RendererStructs.h"
+#include "../../graphics/structs/RendererStructs.h"
+#include "../../graphics/structs/UIStructs.h"
 #include "BufferTools.h"
 #include "FileTools.h"
 #include "../../graphics/resources/Buffer.h"
 #include "../../graphics/commands/CommandBuffer.h"
 #include "../../graphics/commands/CommandPool.h"
 #include <array>
+#include <stdio.h>
 
 struct ImageTools {
 	static void createImage(VkImage* image,
@@ -79,4 +81,7 @@ struct ImageTools {
 		int32_t texelHeight,
 		uint32_t mipLevels,
 		uint32_t arrayLayers);
+	static void loadFont(const std::string& filePath,
+		float fontHeight,
+		Font* fontDestination);
 };

@@ -97,17 +97,15 @@ void Renderer::init(const std::string& applicationName) {
 		std::vector<RenderPassAttachment> attachments;
 		std::vector<SubpassDependency> dependencies;
 
-		if (enableFXAA) {
-			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 
+		if (enableFXAA) {
 			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 		}
 		else {
-			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
-
-			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 		}
 
 		RenderPass renderPass;
@@ -138,6 +136,13 @@ void Renderer::init(const std::string& applicationName) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(double), &buffer.memoryInfo);
 	}
 
+	// Default font
+	Font font;
+	ImageTools::createImage(&font.image.image, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &font.image.memoryInfo);
+	ImageTools::createImageView(&font.image.imageView, font.image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	fonts.push_back(font);
+
 	createAdditionalDescriptorSets();
 	
 	// Create samplers
@@ -152,6 +157,7 @@ void Renderer::init(const std::string& applicationName) {
 	ImageTools::createImageSampler(&nearestEdgeBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
 	ImageTools::createImageSampler(&nearestEdgeOneLodBlackSampler, 1, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
 	ImageTools::createImageSampler(&nearestRepeatBlackSampler, 1001, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 16.0f, VK_COMPARE_OP_ALWAYS);
+	ImageTools::createImageSampler(&fontSampler, 1, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, 0.0f, VK_COMPARE_OP_ALWAYS);
 
 	// Depth prepass
 	NEIGE_INFO("Depth prepass init start.");
@@ -192,6 +198,11 @@ void Renderer::init(const std::string& applicationName) {
 		bloom.init(bloomDownscale, bloomThreshold, bloomBlurSize, fullscreenViewport);
 		NEIGE_INFO("Bloom init end.");
 	}
+
+	// UI
+	NEIGE_INFO("UI init start.");
+	ui.init(fullscreenViewport, enableFXAA);
+	NEIGE_INFO("UI init end.");
 
 	// FXAA
 	if (enableFXAA) {
@@ -466,9 +477,14 @@ void Renderer::destroy() {
 		vkDestroySampler(logicalDevice.device, nearestRepeatBlackSampler, nullptr);
 		nearestRepeatBlackSampler = VK_NULL_HANDLE;
 	}
+	if (fontSampler != VK_NULL_HANDLE) {
+		vkDestroySampler(logicalDevice.device, fontSampler, nullptr);
+		fontSampler = VK_NULL_HANDLE;
+	}
 	depthPrepass.destroy();
 	envmap.destroy();
 	shadow.destroy();
+	ui.destroy();
 	if (enableFXAA) {
 		fxaa.destroy();
 	}
@@ -951,6 +967,12 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		materialDescriptorSetUpToDate[frameInFlightIndex] = true;
 	}
 
+	// UI
+	if (!fontDescriptorSetUpToDate[frameInFlightIndex]) {
+		ui.updateFontDescriptorSet(frameInFlightIndex);
+		fontDescriptorSetUpToDate[frameInFlightIndex] = true;
+	}
+
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
@@ -1175,8 +1197,8 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	// Post-processing
 	GraphicsPipeline* postGraphicsPipeline = &graphicsPipelines.at("post");
 
-	VkFramebuffer postProcessingFramebuffer = enableFXAA ? postFramebuffers[0].framebuffer : postFramebuffers[framebufferIndex].framebuffer;
-	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postProcessingFramebuffer, window.extent);
+	VkFramebuffer postProcessFramebuffer = enableFXAA ? postFramebuffers[0].framebuffer : postFramebuffers[framebufferIndex].framebuffer;
+	postRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], postProcessFramebuffer, window.extent);
 	postGraphicsPipeline->bind(&renderingCommandBuffers[frameInFlightIndex]);
 	postDescriptorSet.bind(&renderingCommandBuffers[frameInFlightIndex], postGraphicsPipeline, 0);
 	VkBool32 parameters[2] = { enableSSAO, enableBloom };
@@ -1185,6 +1207,11 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	vkCmdDraw(renderingCommandBuffers[frameInFlightIndex].commandBuffer, 3, 1, 0, 0);
 
 	postRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
+
+	// UI
+	ui.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], postProcessFramebuffer, window.extent);
+	ui.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	ui.renderPass.end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// FXAA
 	if (enableFXAA) {
@@ -1569,6 +1596,9 @@ void Renderer::reloadOnResize() {
 		bloom.destroyResources();
 		bloom.createResources(fullscreenViewport);
 	}
+
+	// UI
+	ui.createResources(fullscreenViewport, enableFXAA);
 
 	// FXAA
 	if (enableFXAA) {

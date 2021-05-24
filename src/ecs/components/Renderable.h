@@ -4,7 +4,7 @@
 #include "../../graphics/pipelines/GraphicsPipeline.h"
 #include "../../graphics/resources/Samplers.h"
 #include "../../graphics/resources/ShaderResources.h"
-#include "../../utils/structs/ShaderStructs.h"
+#include "../../graphics/structs/ShaderStructs.h"
 #include <string>
 #include <vector>
 #include <iostream>

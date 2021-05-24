@@ -1,8 +1,9 @@
 #pragma once
 #include "vulkan/vulkan.h"
 #include "../utils/NeigeDefines.h"
-#include "../utils/structs/RendererStructs.h"
-#include "../utils/structs/ShaderStructs.h"
+#include "structs/RendererStructs.h"
+#include "structs/ShaderStructs.h"
+#include "structs/UIStructs.h"
 #include "../utils/NeigeVKTranslate.h"
 #include "../utils/resources/ImageTools.h"
 #include "../utils/resources/ModelLoader.h"

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../utils/structs/ShaderStructs.h"
+#include "../structs/ShaderStructs.h"
 #include "../models/Model.h"
 #include "../pipelines/Shader.h"
 #include "../effects/bloom/Bloom.h"
@@ -9,6 +9,7 @@
 #include "../effects/fxaa/FXAA.h"
 #include "../effects/shadowmapping/Shadow.h"
 #include "../effects/ssao/SSAO.h"
+#include "../effects/ui/UI.h"
 #include "../../ecs/ECS.h"
 #include "Buffer.h"
 #include "Image.h"
@@ -43,3 +44,4 @@ inline FrustumCulling frustumCulling;
 inline FXAA fxaa;
 inline Shadow shadow;
 inline SSAO ssao;
+inline UI ui;

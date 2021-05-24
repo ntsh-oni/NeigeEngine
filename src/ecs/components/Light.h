@@ -2,7 +2,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "../../../external/glm/glm/glm.hpp"
-#include "../../utils/structs/ShaderStructs.h"
+#include "../../graphics/structs/ShaderStructs.h"
 
 struct Light {
 	LightType type;
