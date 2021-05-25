@@ -30,14 +30,38 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/DamagedHelmet.gltf",
+				"modelPath": "../modelfiles/water.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/water.frag"
+			},
+			"transform": {
+				"position": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					100.0,
+					100.0,
+					100.0
+				]
+			}
+		},
+		{
+			"renderable": {
+				"modelPath": "../modelfiles/steampunk_underwater_explorer/scene.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
 			"transform": {
 				"position": [
 					0.0,
-					0.0,
+					-5.0,
 					0.0
 				],
 				"rotation": [
