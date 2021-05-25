@@ -55,8 +55,8 @@
 		{
 			"renderable": {
 				"modelPath": "../modelfiles/steampunk_underwater_explorer/scene.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
+				"vertexShaderPath": "../shaders/color.vert",
+				"fragmentShaderPath": "../shaders/color.frag"
 			},
 			"transform": {
 				"position": [

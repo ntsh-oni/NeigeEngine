@@ -64,7 +64,7 @@ void main() {
 		outputColor0 = vec4(colorSample.rgb, 1.0);
 	}
 	else if (alphaMode == 2) {
-		vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);
+		vec4 premultiplied = vec4(colorSample.rgb * colorSample.a, colorSample.a);
 		float w = w1();
 		outputColor0 = premultiplied * w;
 		outputColor1 = colorSample.a;
