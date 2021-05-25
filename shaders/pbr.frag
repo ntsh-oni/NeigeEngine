@@ -1,7 +1,8 @@
 #version 460
 #extension GL_EXT_nonuniform_qualifier : enable
+#extension GL_GOOGLE_include_directive : enable
 
-#define MAX_PRIMITIVES 1024
+#include "../shaders/wboit/weightsFunctions.glsl"
 
 #define MAX_DIR_LIGHTS 10
 #define MAX_POINT_LIGHTS 10
@@ -230,9 +231,7 @@ void main() {
 	}
 	else if (alphaMode == 2) {
 		vec4 premultiplied = vec4(tmpColor * colorSample.a, colorSample.a);
-		float a = min(1.0, premultiplied.a) * 8.0 + 0.01;
-		float b = -gl_FragCoord.z * 0.95 + 1.0;
-		float w = clamp(a * a * a * 1e3 * b * b * b, 1e-2, 3e2);
+		float w = w1();
 		outputColor0 = premultiplied * w;
 		outputColor1 = colorSample.a;
 	}
