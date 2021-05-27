@@ -1,15 +1,15 @@
 # WBOIT Weight functions
 ## w0
-<img align="left" src="resources/w0.png" width="450px"/>
+![w0](resources/w0.png)
 
 ## w1
-<img align="left" src="resources/w1.png" width="450px"/>
+![w1](resources/w1.png)
 
 ## w2
-<img align="left" src="resources/w2.png" width="450px"/>
+![w2](resources/w2.png)
 
 ## w3
-<img align="left" src="resources/w3.png" width="450px"/>
+![w3](resources/w3.png)
 
 ## w4
-<img align="left" src="resources/w4.png" width="450px"/>
+![w0](resources/w4.png)
