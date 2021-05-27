@@ -155,7 +155,7 @@ float shadowValue(vec4 lightSpace, int shadowMapIndex) {
 }
 
 void main() {
-	vec4 colorSample = vec4(1.0, 1.0, 1.0, 0.9);
+	vec4 colorSample = vec4(1.0, 1.0, 1.0, 0.7);
 	vec3 normalSample = texture(textures[materials[perDraw.perDrawMaterial[drawIndex].materialIndex].normalIndex], uv + vec2(time.time / 2.0, sin(time.time) / 32.0)).xyz;
 	float metallicSample = 1.0;
 	float roughnessSample = 0.0;

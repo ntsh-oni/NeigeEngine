@@ -13,7 +13,7 @@ float w2() {
 }
 
 float w3() {
-	return max(min(10.0 / (pow(abs(gl_FragCoord.z) / 200.0, 6.0) + pow(abs(gl_FragCoord.z) / 10.0, 3.0) + 0.00001), 3000.0), 0.01);
+	return max(min(0.03 / (pow(abs(gl_FragCoord.z) / 200.0, 6.0) + pow(abs(gl_FragCoord.z) / 10.0, 3.0) + 0.00001), 3000.0), 0.01);
 }
 
 float w4() {

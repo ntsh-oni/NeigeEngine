@@ -14,7 +14,7 @@ layout(location = 0) out vec4 outColor;
 
 vec3 depthToPosition(float depth) {
 	vec4 clipSpace = vec4(uv * 2.0 - 1.0, depth, 1.0);
-	vec4 viewSpace = inverse(camera.projection * camera.view) * clipSpace;
+	vec4 viewSpace = inverse(camera.projection) * clipSpace;
 	
 	return (viewSpace.xyz / viewSpace.w);
 }
