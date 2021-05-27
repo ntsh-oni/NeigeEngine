@@ -32,7 +32,7 @@
 			"renderable": {
 				"modelPath": "../modelfiles/Sponza/glTF/Sponza.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
+				"fragmentShaderPath": "../shaders/water.frag"
 			},
 			"transform": {
 				"position": [
