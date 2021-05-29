@@ -19,11 +19,6 @@ function update()
 	if getMouseButtonState("right") == 0 then
 		fontId = createFont("../modelfiles/JetBrainsMono-Regular.ttf", 16.0)
 	end
-	
-	local mc = getMainCameraEntity()
-	local rx, ry, rz = getTransformComponentRotation(mc)
-	
-	drawText(string.format("%.3f", rx) .. " " .. string.format("%.3f", ry) .. " " .. string.format("%.3f", rz), fontId, 1.0, 1.0, 0.0, 50.0, 50.0)
 end
 
 function destroy()

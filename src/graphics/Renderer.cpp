@@ -11,6 +11,10 @@
 extern ECS ecs;
 
 void Renderer::init(const std::string& applicationName) {
+	// Init internal systems
+	cameraSystem->init();
+	lighting->init();
+
 	NEIGE_INFO("Renderer init start.");
 
 	// Instance

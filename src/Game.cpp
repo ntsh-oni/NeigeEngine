@@ -60,8 +60,6 @@ void Game::init() {
 void Game::launch() {
 	window.init(info.name);
 	scripting->init();
-	renderer->cameraSystem->init();
-	renderer->lighting->init();
 	renderer->init(info.name);
 
 	while (!window.windowGotClosed()) {
