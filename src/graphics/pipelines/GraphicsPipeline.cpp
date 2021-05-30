@@ -248,7 +248,18 @@ void GraphicsPipeline::init() {
 	setBindings.resize(sets.size());
 	for (size_t i = 0; i < sets.size(); i++) {
 		for (size_t j = 0; j < sets[i].bindings.size(); j++) {
-			setBindings[i].push_back(sets[i].bindings[j].binding);
+			bool found = false;
+			for (size_t k = 0; k < setBindings[i].size(); k++) {
+				if (setBindings[i][k].binding == sets[i].bindings[j].binding.binding) {
+					// Add stage flag
+					setBindings[i][k].stageFlags |= sets[i].bindings[j].binding.stageFlags;
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				setBindings[i].push_back(sets[i].bindings[j].binding);
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 {
-	"envmapPath": "",
+	"envmapPath": "../modelfiles/sunset_forest_8k.hdr",
 	"entities": [
 		{
 			"camera": {
@@ -30,9 +30,9 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/custom.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
+				"modelPath": "../modelfiles/water.gltf",
+				"vertexShaderPath": "../shaders/water.vert",
+				"fragmentShaderPath": "../shaders/water.frag"
 			},
 			"transform": {
 				"position": [
@@ -46,99 +46,9 @@
 					0.0
 				],
 				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"light": {
-				"type": "SPOT",
-				"color": [
-					0.0,
-					0.1,
-					0.8
-				],
-				"cutoffs": [
-					90.0,
+					100.0,
+					100.0,
 					100.0
-				]
-			},
-			"transform" : {
-				"position": [
-					-0.25,
-					2.722,
-					-8.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/spherered.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
-			},
-			"transform": {
-				"position": [
-					-4.5,
-					2.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			},
-			"light": {
-				"type": "POINT",
-				"color": [
-					1.0,
-					0.0,
-					0.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/spheregreen.gltf",
-				"vertexShaderPath": "../shaders/color.vert",
-				"fragmentShaderPath": "../shaders/color.frag"
-			},
-			"transform": {
-				"position": [
-					4.5,
-					2.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			},
-			"light": {
-				"type": "POINT",
-				"color": [
-					0.0,
-					1.0,
-					0.0
 				]
 			}
 		},
