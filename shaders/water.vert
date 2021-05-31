@@ -36,9 +36,9 @@ layout(location = MAX_DIR_LIGHTS + 4) out vec4 outSpotLightSpaces[MAX_SPOT_LIGHT
 layout(location = MAX_DIR_LIGHTS + MAX_SPOT_LIGHTS + 4) out mat3 outTBN;
 
 #define M_PI 3.1415926535897932384626433832795
-#define WAVE0 vec4(1.0, 1.0, 0.05, 0.5)
-#define WAVE1 vec4(-1.0, 1.0, 0.25, 0.5)
-#define WAVE2 vec4(1.0, 0.0, 0.05, 0.5)
+#define WAVE0 vec4(0.0, 1.0, 0.25, 1.5)
+#define WAVE1 vec4(1.0, 0.0, 0.25, 1.5)
+#define WAVE2 vec4(1.0, 1.0, 0.25, 1.0)
 
 vec3 gerstnerWave(vec4 wave, vec3 p, inout vec3 tangent, inout vec3 binormal) {
 	float steepness = wave.z;
