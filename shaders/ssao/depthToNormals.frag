@@ -23,7 +23,7 @@ void main() {
 	float depth = texture(depthPrepass, uv).x;
 	vec3 pos = depthToPosition(depth);
 	vec3 n = normalize(cross(dFdx(pos), dFdy(pos)));
-	n.y *= -1;
+	n *= -1;
 	
 	outColor = vec4(n, 1.0);
 }
