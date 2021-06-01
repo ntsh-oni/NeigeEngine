@@ -1150,7 +1150,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			}
 		}
 	}
-	if (skyboxType == "ENVMAP") {
+	if (skyboxType == SkyboxType::ENVMAP) {
 		envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 		envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &envmap.skyboxGraphicsPipeline, 0);
 

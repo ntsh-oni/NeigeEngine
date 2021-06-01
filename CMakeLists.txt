@@ -36,7 +36,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 SET(GAME_SOURCES src/Game.cpp)
-SET(GAME_HEADERS src/Game.h)
+SET(GAME_HEADERS src/Game.h src/Scene.h)
 
 SET(GRAPHICS_COMMANDS_SOURCES src/graphics/commands/CommandBuffer.cpp src/graphics/commands/CommandPool.cpp)
 SET(GRAPHICS_COMMANDS_HEADERS src/graphics/commands/CommandBuffer.h src/graphics/commands/CommandPool.h)
