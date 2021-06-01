@@ -22,6 +22,7 @@
 #include "../ecs/ECS.h"
 #include "../ecs/systems/Lighting.h"
 #include "../ecs/systems/CameraSystem.h"
+#include "../Scene.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -64,7 +65,7 @@ struct Renderer : public System {
 	uint32_t currentFrame = 0;
 
 	// Scene
-	std::string skyboxType;
+	SkyboxType skyboxType;
 	std::string envmapPath;
 
 	// Settings

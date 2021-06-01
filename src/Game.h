@@ -1,4 +1,5 @@
 #pragma once
+#include "Scene.h"
 #include "ecs/ECS.h"
 #include "ecs/components/Camera.h"
 #include "ecs/components/Light.h"
@@ -13,11 +14,6 @@
 #include "scripting/Scripting.h"
 #include "window/WindowResources.h"
 #include <string>
-
-struct Scene {
-	std::string skyboxType = "NONE";
-	std::string envmapPath = "";
-};
 
 struct GameInfo {
 	std::string name = "";
