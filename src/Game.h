@@ -15,6 +15,7 @@
 #include <string>
 
 struct Scene {
+	std::string skyboxType = "NONE";
 	std::string envmapPath = "";
 };
 

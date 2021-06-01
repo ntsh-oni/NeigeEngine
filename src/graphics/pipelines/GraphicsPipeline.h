@@ -36,6 +36,7 @@ struct GraphicsPipeline {
 	std::vector<Blending> blendings;
 	bool multiSample = false;
 	bool depthWrite = true;
+	bool depthTest = true;
 	Compare depthCompare = Compare::LESS_OR_EQUAL;
 	bool backfaceCulling = true;
 	std::vector<int> externalSets;

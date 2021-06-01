@@ -14,12 +14,6 @@ layout(set = 0, binding = 1) uniform Camera {
 	vec3 pos;
 } camera;
 
-layout(set = 0, binding = 2) uniform Shadow {
-	vec3 numLights;
-	mat4 dirLightSpaces[MAX_DIR_LIGHTS];
-	mat4 spotLightSpaces[MAX_SPOT_LIGHTS];
-} shadow;
-
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 uv;
 

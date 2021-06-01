@@ -1150,10 +1150,12 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			}
 		}
 	}
-	envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
-	envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &envmap.skyboxGraphicsPipeline, 0);
+	if (skyboxType == "ENVMAP") {
+		envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
+		envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &envmap.skyboxGraphicsPipeline, 0);
 
-	envmap.draw(&renderingCommandBuffers[frameInFlightIndex]);
+		envmap.draw(&renderingCommandBuffers[frameInFlightIndex]);
+	}
 
 	opaqueSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
 

@@ -16,6 +16,7 @@ int main(void) {
 	g.init();
 
 	Scene s = Parser::parseScene("../scene0.json", ecs);
+	g.renderer->skyboxType = s.skyboxType;
 	g.renderer->envmapPath = s.envmapPath;
 
 	g.launch();

@@ -64,6 +64,7 @@ struct Renderer : public System {
 	uint32_t currentFrame = 0;
 
 	// Scene
+	std::string skyboxType;
 	std::string envmapPath;
 
 	// Settings
