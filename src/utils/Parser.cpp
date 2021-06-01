@@ -107,15 +107,26 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 
 	simdjson::error_code error;
 
-	// Envmap
-	std::string_view envmapPath;
-	error = document["envmapPath"].get(envmapPath);
+	// Skybox
+	// Type
+	std::string_view skyboxType;
+	error = document["skybox"]["type"].get(skyboxType);
 
 	if (!error) {
-		scene.envmapPath = envmapPath;
+		scene.skyboxType = skyboxType;
+		
+		std::string_view envmapPath;
+		error = document["skybox"]["envmapPath"].get(envmapPath);
+
+		if (!error) {
+			scene.envmapPath = envmapPath;
+		}
+		else {
+			scene.envmapPath = "";
+		}
 	}
 	else {
-		scene.envmapPath = "";
+		scene.skyboxType = "NONE";
 	}
 
 	bool foundTransform = false;

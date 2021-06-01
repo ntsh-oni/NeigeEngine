@@ -382,7 +382,7 @@ void GraphicsPipeline::init() {
 	depthStencilCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilCreateInfo.pNext = nullptr;
 	depthStencilCreateInfo.flags = 0;
-	depthStencilCreateInfo.depthTestEnable = VK_TRUE;
+	depthStencilCreateInfo.depthTestEnable = depthTest ? VK_TRUE : VK_FALSE;
 	depthStencilCreateInfo.depthWriteEnable = depthWrite ? VK_TRUE : VK_FALSE;
 	depthStencilCreateInfo.depthCompareOp = compareToVkCompare();
 	depthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
