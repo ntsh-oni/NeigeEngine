@@ -371,10 +371,6 @@ void Renderer::update() {
 				fxaa.graphicsPipeline.init();
 			}
 		}
-
-		if (keyboardInputs.cKey == KeyState::PRESSED) {
-			memoryAllocator.memoryAnalyzer();
-		}
 	}
 
 	if (window.gotResized) {

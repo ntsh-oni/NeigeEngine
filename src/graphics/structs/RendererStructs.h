@@ -22,7 +22,6 @@ const std::vector<const char*> debugExplicitLayers = {
 };
 
 const std::vector<const char*> releaseExplicitLayers = {
-	"VK_LAYER_LUNARG_monitor"
 };
 
 // Extensions

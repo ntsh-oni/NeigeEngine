@@ -1,5 +1,5 @@
 function init()
-	fontId = createFont("../modelfiles/JetBrainsMono-Regular.ttf", 32.0)
+	fontId = createFont("../modelfiles/JetBrainsMono-Regular.ttf", 24.0)
 end
 
 function update()
@@ -17,8 +17,12 @@ function update()
 	end
 	
 	if getMouseButtonState("right") == 0 then
-		fontId = createFont("../modelfiles/JetBrainsMono-Regular.ttf", 16.0)
+		print(showGraphicsMemoryChunks())
 	end
+	
+	local ft = getFrametime()
+	drawText("Frametime: " .. string.format("%.3f", ft), fontId, 1.0, 0.0, 0.0, 30.0, 30.0)
+	drawText("FPS: " .. string.format("%.3f", 1000.0 / ft), fontId, 0.0, 1.0, 0.0, 30.0, 50.0)
 end
 
 function destroy()

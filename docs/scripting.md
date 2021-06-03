@@ -14,6 +14,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 	- [UI](#ui)
 	- [Camera](#camera)
 	- [Time](#time)
+	- [Debug](#debug)
  
 ## General functions
 
@@ -122,3 +123,12 @@ Functions related to the time.
 
 ### Functions
 - <a id="deltatime"></a>double **getDeltaTime**() : Returns the delta time as a double. The delta time represents the time between the previous and the current frame.
+
+## Debug
+Functions related to debug.
+
+### Functions
+- **getFrametime**() : Returns the time to make a frame. It is possible to compute the number of **frames per second** by doing **1000.0 / getFrameTime()**.
+- **getModelsList**() : Returns the list of models loaded in memory as a string.
+- **getTexturesList**() : Returns the list of textures used in materials loaded in memory as a string.
+- **showGraphicsMemoryChunks**() : Prints in the console the content of the graphics memory chunks.

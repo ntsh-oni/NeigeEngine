@@ -2,6 +2,7 @@
 #include "../ecs/ECS.h"
 #include "../utils/resources/FileTools.h"
 #include "CameraScripting.h"
+#include "DebugScripting.h"
 #include "EntityScripting.h"
 #include "InputScripting.h"
 #include "TimeScripting.h"
