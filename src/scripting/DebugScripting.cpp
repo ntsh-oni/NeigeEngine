@@ -34,7 +34,7 @@ int DebugScripting::getModelsList(lua_State* L) {
 		return 1;
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"getModelList()\" takes no parameter.");
+		NEIGE_SCRIPT_ERROR("Function \"getModelsList()\" takes no parameter.");
 		return 0;
 	}
 }
@@ -51,7 +51,7 @@ int DebugScripting::getTexturesList(lua_State* L) {
 		return 1;
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"getTextureList()\" takes no parameter.");
+		NEIGE_SCRIPT_ERROR("Function \"getTexturesList()\" takes no parameter.");
 		return 0;
 	}
 }
