@@ -33,9 +33,9 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/water.gltf",
-				"vertexShaderPath": "../shaders/water.vert",
-				"fragmentShaderPath": "../shaders/water.frag"
+				"modelPath": "../modelfiles/DamagedHelmet.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
 			"transform": {
 				"position": [
@@ -49,9 +49,9 @@
 					0.0
 				],
 				"scale": [
-					10.0,
-					3.0,
-					10.0
+					1.0,
+					1.0,
+					1.0
 				]
 			}
 		},

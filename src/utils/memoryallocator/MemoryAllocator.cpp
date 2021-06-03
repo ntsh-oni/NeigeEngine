@@ -240,7 +240,7 @@ void MemoryAllocator::memoryAnalyzer() {
 	MEMORY_INFO("Showing all memory chunks:");
 	for (size_t i = 0; i < chunks.size(); i++) {
 		Chunk& chunk = chunks.at(i);
-		std::cout << "Chunk " << chunk.id << std::endl;
+		std::cout << "Chunk " << chunk.id << ": " << physicalDevice.memoryProperties.memoryTypes[chunk.type].propertyFlags << std::endl;
 		Block* curr = chunk.head;
 		std::cout << "[";
 		while (curr) {

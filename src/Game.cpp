@@ -58,6 +58,9 @@ void Game::init() {
 }
 
 void Game::launch() {
+	int nbFrames = 0;
+	double fpsTime = glfwGetTime();
+
 	window.init(info.name);
 	scripting->init();
 	renderer->init(info.name);
@@ -65,6 +68,13 @@ void Game::launch() {
 	while (!window.windowGotClosed()) {
 		double currentTime = glfwGetTime();
 		double deltaTime = currentTime - lastFrame;
+
+		nbFrames++;
+		if (currentTime - fpsTime >= 1.0) {
+			DebugScripting::frametime = 1000.0 / static_cast<double>(nbFrames);
+			nbFrames = 0;
+			fpsTime += 1.0;
+		}
 
 		window.pollEvents();
 
