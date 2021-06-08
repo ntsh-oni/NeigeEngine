@@ -12,8 +12,7 @@ struct RenderPass {
 	std::vector<VkAttachmentReference> colorAttachmentReferences;
 	VkAttachmentReference depthAttachmentReference;
 	bool gotADepthAttachment = false;
-	VkAttachmentReference resolveAttachmentReference;
-	bool gotAResolveAttachment = false;
+	std::vector<VkAttachmentReference> resolveAttachmentReferences;
 	std::vector<VkClearValue> clearValues;
 
 	void init(std::vector<RenderPassAttachment> attachments, std::vector<SubpassDependency> subpassDependencies);
