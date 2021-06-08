@@ -23,8 +23,7 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 			break;
 		case AttachmentType::RESOLVE:
 			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			resolveAttachmentReference = reference;
-			gotAResolveAttachment = true;
+			resolveAttachmentReferences.push_back(reference);
 			break;
 		case AttachmentType::UNUSED:
 			reference.layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -39,7 +38,7 @@ void RenderPass::init(std::vector<RenderPassAttachment> attachments, std::vector
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpassDescription.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
 	subpassDescription.pColorAttachments = colorAttachmentReferences.data();
-	subpassDescription.pResolveAttachments = gotAResolveAttachment ? &resolveAttachmentReference : nullptr;
+	subpassDescription.pResolveAttachments = resolveAttachmentReferences.data();
 	subpassDescription.pDepthStencilAttachment = gotADepthAttachment ? &depthAttachmentReference : nullptr;
 
 	std::vector<VkSubpassDependency> dependencies;
