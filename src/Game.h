@@ -32,8 +32,8 @@ struct Game {
 	std::shared_ptr<Renderer> renderer;
 	std::shared_ptr<Physics> physics;
 	std::shared_ptr<Scripting> scripting;
+	std::string name = "";
 	double lastFrame = 0.0;
-	GameInfo info = {};
 
 	void init();
 	void launch();
