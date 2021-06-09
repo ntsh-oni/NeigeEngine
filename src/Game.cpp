@@ -1,8 +1,17 @@
 #include "Game.h"
+#include "utils/Parser.h"
 
 extern ECS ecs;
 
 void Game::init() {
+	// Game info
+	GameInfo info = Parser::parseGameInfo("../game.json");
+	name = info.name;
+
+	// Init window
+	window.extent.width = info.windowWidth;
+	window.extent.height = info.windowHeight;
+
 	// Register components
 	ecs.registerComponent<Camera>();
 	ecs.registerComponent<Light>();
@@ -55,15 +64,20 @@ void Game::init() {
 	scriptingMask.set(ecs.getComponentId<Script>());
 	scriptingMask.set(ecs.getComponentId<Transform>());
 	ecs.setSystemComponents<Scripting>(scriptingMask);
+
+	// First scene
+	Scene scene = Parser::parseScene("../scene0.json", ecs);
+	renderer->skyboxType = scene.skyboxType;
+	renderer->envmapPath = scene.envmapPath;
 }
 
 void Game::launch() {
 	int nbFrames = 0;
 	double fpsTime = glfwGetTime();
 
-	window.init(info.name);
+	window.init(name);
 	scripting->init();
-	renderer->init(info.name);
+	renderer->init(name);
 
 	while (!window.windowGotClosed()) {
 		double currentTime = glfwGetTime();
