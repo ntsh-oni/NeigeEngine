@@ -112,10 +112,7 @@ void ImageTools::loadImage(const std::string& filePath,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
-	void* data;
-	stagingBuffer.map(0, size, &data);
-	memcpy(data, pixels, size);
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), pixels, size);
 
 	createImage(imageDestination, 1, width, height, *mipLevels, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, *mipLevels, 1);
@@ -149,10 +146,7 @@ void ImageTools::loadHDREnvmap(const std::string& filePath,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
-	void* data;
-	stagingBuffer.map(0, size, &data);
-	memcpy(data, pixels, size);
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), pixels, size);
 
 	createImage(imageDestination, 1, width, height, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
@@ -178,10 +172,7 @@ void ImageTools::loadColor(float* color,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, 4 * sizeof(uint8_t), &stagingBuffer.memoryInfo);
-	void* pixelData;
-	stagingBuffer.map(0, 4 * sizeof(uint8_t), &pixelData);
-	memcpy(pixelData, colorData.data(), 4 * sizeof(uint8_t));
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), colorData.data(), 4 * sizeof(uint8_t));
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
@@ -204,10 +195,7 @@ void ImageTools::loadColorArray(float* colors,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
-	void* pixelData;
-	stagingBuffer.map(0, size, &pixelData);
-	memcpy(pixelData, colors, size);
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), colors, size);
 
 	createImage(imageDestination, 1, width, height, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
@@ -226,10 +214,7 @@ void ImageTools::loadColorForEnvmap(float* color,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, 4 * sizeof(float), &stagingBuffer.memoryInfo);
-	void* pixelData;
-	stagingBuffer.map(0, 4 * sizeof(float), &pixelData);
-	memcpy(pixelData, color, 4 * sizeof(float));
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), color, 4 * sizeof(float));
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
@@ -250,10 +235,7 @@ void ImageTools::loadValue(float value,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, sizeof(uint8_t), &stagingBuffer.memoryInfo);
-	void* pixelData;
-	stagingBuffer.map(0, sizeof(uint8_t), &pixelData);
-	memcpy(pixelData, &v, sizeof(uint8_t));
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), &v, sizeof(uint8_t));
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
@@ -443,10 +425,7 @@ void ImageTools::loadFont(const std::string& filePath,
 
 	Buffer stagingBuffer;
 	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
-	void* data;
-	stagingBuffer.map(0, size, &data);
-	memcpy(data, pixels, size);
-	stagingBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), pixels, size);
 
 	createImage(&fontDestination->image.image, 1, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &fontDestination->image.memoryInfo);
 	createImageView(&fontDestination->image.imageView, fontDestination->image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);

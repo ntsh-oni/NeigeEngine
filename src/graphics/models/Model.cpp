@@ -26,10 +26,7 @@ void Model::init(std::string filePath) {
 	Buffer stagingVertexBuffer;
 	VkDeviceSize size = vertices.size() * sizeof(Vertex);
 	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, size, &stagingVertexBuffer.memoryInfo);
-	void* vertexData;
-	stagingVertexBuffer.map(0, size, &vertexData);
-	memcpy(vertexData, vertices.data(), static_cast<size_t>(size));
-	stagingVertexBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingVertexBuffer.memoryInfo.data) + stagingVertexBuffer.memoryInfo.offset), vertices.data(), static_cast<size_t>(size));
 	BufferTools::createBuffer(vertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &vertexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingVertexBuffer.buffer, vertexBuffer.buffer, size);
 	stagingVertexBuffer.destroy();
@@ -37,10 +34,7 @@ void Model::init(std::string filePath) {
 	Buffer stagingIndexBuffer;
 	size = indices.size() * sizeof(uint32_t);
 	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, size, &stagingIndexBuffer.memoryInfo);
-	void* indexData;
-	stagingIndexBuffer.map(0, size, &indexData);
-	memcpy(indexData, indices.data(), static_cast<size_t>(size));
-	stagingIndexBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingIndexBuffer.memoryInfo.data) + stagingIndexBuffer.memoryInfo.offset), indices.data(), static_cast<size_t>(size));
 	BufferTools::createBuffer(indexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &indexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingIndexBuffer.buffer, indexBuffer.buffer, size);
 	stagingIndexBuffer.destroy();
@@ -112,8 +106,6 @@ void Model::init(std::string filePath) {
 		blendFrustumCullingDescriptorSet.init(&frustumCulling.computePipeline, 1);
 	}
 
-	void* data;
-
 	std::vector<AABB> opaqueAABB;
 	std::vector<AABB> maskAABB;
 	std::vector<AABB> blendAABB;
@@ -129,9 +121,7 @@ void Model::init(std::string filePath) {
 			bubo.inverseBindMatrices[i] = mesh.boneList[i].inverseBindMatrix;
 		}
 
-		mesh.boneBuffer.map(0, sizeof(BoneUniformBufferObject), &data);
-		memcpy(data, &bubo, sizeof(BoneUniformBufferObject));
-		mesh.boneBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(mesh.boneBuffer.memoryInfo.data) + mesh.boneBuffer.memoryInfo.offset), &bubo, sizeof(BoneUniformBufferObject));
 
 		// Indirect commands
 		for (Primitive& primitive : mesh.opaquePrimitives) {
@@ -206,21 +196,13 @@ void Model::init(std::string filePath) {
 
 	if (gotOpaquePrimitives) {
 		// Buffers
-		opaqueDrawIndirectBuffer.map(0, opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-		memcpy(data, opaqueDrawIndirectCommands.data(), opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-		opaqueDrawIndirectBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(opaqueDrawIndirectBuffer.memoryInfo.data) + opaqueDrawIndirectBuffer.memoryInfo.offset), opaqueDrawIndirectCommands.data(), opaqueDrawCount * sizeof(VkDrawIndexedIndirectCommand));
 
-		opaqueDrawCountBuffer.map(0, sizeof(uint32_t), &data);
-		memcpy(data, &opaqueDrawCount, sizeof(uint32_t));
-		opaqueDrawCountBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(opaqueDrawCountBuffer.memoryInfo.data) + opaqueDrawCountBuffer.memoryInfo.offset), &opaqueDrawCount, sizeof(uint32_t));
 
-		opaqueDrawIndirectInfoBuffer.map(0, opaqueDrawCount * sizeof(PerDraw), &data);
-		memcpy(data, opaqueDrawIndirectInfos.data(), opaqueDrawCount * sizeof(PerDraw));
-		opaqueDrawIndirectInfoBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(opaqueDrawIndirectInfoBuffer.memoryInfo.data) + opaqueDrawIndirectInfoBuffer.memoryInfo.offset), opaqueDrawIndirectInfos.data(), opaqueDrawCount * sizeof(PerDraw));
 
-		opaqueAABBBuffer.map(0, opaqueDrawCount * sizeof(AABB), &data);
-		memcpy(data, opaqueAABB.data(), opaqueDrawCount * sizeof(AABB));
-		opaqueAABBBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(opaqueAABBBuffer.memoryInfo.data) + opaqueAABBBuffer.memoryInfo.offset), opaqueAABB.data(), opaqueDrawCount * sizeof(AABB));
 		
 		// Frustum culling descriptor sets update
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -314,21 +296,13 @@ void Model::init(std::string filePath) {
 
 	if (gotMaskPrimitives) {
 		// Buffers
-		maskDrawIndirectBuffer.map(0, maskDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-		memcpy(data, maskDrawIndirectCommands.data(), maskDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-		maskDrawIndirectBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(maskDrawIndirectBuffer.memoryInfo.data) + maskDrawIndirectBuffer.memoryInfo.offset), maskDrawIndirectCommands.data(), maskDrawCount * sizeof(VkDrawIndexedIndirectCommand));
 
-		maskDrawCountBuffer.map(0, sizeof(uint32_t), &data);
-		memcpy(data, &maskDrawCount, sizeof(uint32_t));
-		maskDrawCountBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(maskDrawCountBuffer.memoryInfo.data) + maskDrawCountBuffer.memoryInfo.offset), &maskDrawCount, sizeof(uint32_t));
 
-		maskDrawIndirectInfoBuffer.map(0, maskDrawCount * sizeof(PerDraw), &data);
-		memcpy(data, maskDrawIndirectInfos.data(), maskDrawCount * sizeof(PerDraw));
-		maskDrawIndirectInfoBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(maskDrawIndirectInfoBuffer.memoryInfo.data) + maskDrawIndirectInfoBuffer.memoryInfo.offset), maskDrawIndirectInfos.data(), maskDrawCount * sizeof(PerDraw));
 
-		maskAABBBuffer.map(0, maskDrawCount * sizeof(AABB), &data);
-		memcpy(data, maskAABB.data(), maskDrawCount * sizeof(AABB));
-		maskAABBBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(maskAABBBuffer.memoryInfo.data) + maskAABBBuffer.memoryInfo.offset), maskAABB.data(), maskDrawCount * sizeof(AABB));
 
 		// Frustum culling descriptor sets update
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -422,21 +396,13 @@ void Model::init(std::string filePath) {
 
 	if (gotBlendPrimitives) {
 		// Buffers
-		blendDrawIndirectBuffer.map(0, blendDrawCount * sizeof(VkDrawIndexedIndirectCommand), &data);
-		memcpy(data, blendDrawIndirectCommands.data(), blendDrawCount * sizeof(VkDrawIndexedIndirectCommand));
-		blendDrawIndirectBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(blendDrawIndirectBuffer.memoryInfo.data) + blendDrawIndirectBuffer.memoryInfo.offset), blendDrawIndirectCommands.data(), blendDrawCount * sizeof(VkDrawIndexedIndirectCommand));
 
-		blendDrawCountBuffer.map(0, sizeof(uint32_t), &data);
-		memcpy(data, &blendDrawCount, sizeof(uint32_t));
-		blendDrawCountBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(blendDrawCountBuffer.memoryInfo.data) + blendDrawCountBuffer.memoryInfo.offset), &blendDrawCount, sizeof(uint32_t));
 
-		blendDrawIndirectInfoBuffer.map(0, blendDrawCount * sizeof(PerDraw), &data);
-		memcpy(data, blendDrawIndirectInfos.data(), blendDrawCount * sizeof(PerDraw));
-		blendDrawIndirectInfoBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(blendDrawIndirectInfoBuffer.memoryInfo.data) + blendDrawIndirectInfoBuffer.memoryInfo.offset), blendDrawIndirectInfos.data(), blendDrawCount * sizeof(PerDraw));
 
-		blendAABBBuffer.map(0, blendDrawCount * sizeof(AABB), &data);
-		memcpy(data, blendAABB.data(), blendDrawCount * sizeof(AABB));
-		blendAABBBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(blendAABBBuffer.memoryInfo.data) + blendAABBBuffer.memoryInfo.offset), blendAABB.data(), blendDrawCount * sizeof(AABB));
 
 		// Frustum culling descriptor sets update
 		for (uint32_t i = 0; i < framesInFlight; i++) {

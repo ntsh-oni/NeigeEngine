@@ -1,7 +1,7 @@
 #include "MemoryAllocator.h"
 #include "../../graphics/resources/RendererResources.h"
 
-Chunk::Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size) {
+Chunk::Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size, bool isHostVisible) {
 	id = chunkId;
 	type = memoryType;
 
@@ -10,6 +10,11 @@ Chunk::Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size) {
 	allocInfo.allocationSize = size;
 	allocInfo.memoryTypeIndex = memoryType;
 	NEIGE_VK_CHECK(vkAllocateMemory(logicalDevice.device, &allocInfo, nullptr, &memory));
+
+	// Map host visible memory
+	if (isHostVisible) {
+		NEIGE_VK_CHECK(vkMapMemory(logicalDevice.device, memory, 0, size, 0, &data));
+	}
 
 	Block* block = new Block();
 	block->offset = 0;
@@ -51,6 +56,7 @@ VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize*
 					memoryInfo->chunkId = id;
 					memoryInfo->offset = curr->offset;
 					memoryInfo->allocationId = (*allocationNumber) - 1;
+					memoryInfo->data = data;
 
 					return curr->offset;
 				}
@@ -76,6 +82,7 @@ VkDeviceSize Chunk::allocate(VkMemoryRequirements memRequirements, VkDeviceSize*
 				memoryInfo->chunkId = id;
 				memoryInfo->offset = curr->offset;
 				memoryInfo->allocationId = (*allocationNumber) - 1;
+				memoryInfo->data = data;
 
 				return curr->offset;
 			}
@@ -121,7 +128,7 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size), flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	// Add to this chunk
 	VkDeviceSize offset;
@@ -158,7 +165,7 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size));
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size), flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	// Add to this chunk
 	VkDeviceSize offset;
