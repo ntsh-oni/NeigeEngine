@@ -27,7 +27,6 @@ void BufferTools::createStagingBuffer(VkBuffer& buffer,
 void BufferTools::createUniformBuffer(VkBuffer& buffer,
 	VkDeviceSize size,
 	MemoryInfo* memoryInfo) {
-	VkBufferCreateInfo bufferCreateInfo = {};
 	createBuffer(buffer, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, memoryInfo);
 }
 

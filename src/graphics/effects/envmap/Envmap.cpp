@@ -35,10 +35,7 @@ void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass
 	Buffer stagingVertexBuffer;
 	VkDeviceSize size = cubeVertices.size() * sizeof(Vertex);
 	BufferTools::createStagingBuffer(stagingVertexBuffer.buffer, size, &stagingVertexBuffer.memoryInfo);
-	void* cubeVertexData;
-	stagingVertexBuffer.map(0, size, &cubeVertexData);
-	memcpy(cubeVertexData, cubeVertices.data(), static_cast<size_t>(size));
-	stagingVertexBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingVertexBuffer.memoryInfo.data) + stagingVertexBuffer.memoryInfo.offset), cubeVertices.data(), static_cast<size_t>(size));
 	BufferTools::createBuffer(cubeVertexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeVertexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingVertexBuffer.buffer, cubeVertexBuffer.buffer, size);
 	stagingVertexBuffer.destroy();
@@ -46,10 +43,7 @@ void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass
 	Buffer stagingIndexBuffer;
 	size = cubeIndices.size() * sizeof(uint32_t);
 	BufferTools::createStagingBuffer(stagingIndexBuffer.buffer, size, &stagingIndexBuffer.memoryInfo);
-	void* cubeIndexData;
-	stagingIndexBuffer.map(0, size, &cubeIndexData);
-	memcpy(cubeIndexData, cubeIndices.data(), static_cast<size_t>(size));
-	stagingIndexBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingIndexBuffer.memoryInfo.data) + stagingIndexBuffer.memoryInfo.offset), cubeIndices.data(), static_cast<size_t>(size));
 	BufferTools::createBuffer(cubeIndexBuffer.buffer, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &cubeIndexBuffer.memoryInfo);
 	BufferTools::copyBuffer(stagingIndexBuffer.buffer, cubeIndexBuffer.buffer, size);
 	stagingIndexBuffer.destroy();
@@ -386,13 +380,9 @@ void Envmap::createPrefilter() {
 			prefilterFramebuffers[mipLevel * 6 + face].init(&prefilterRenderPass, framebufferAttachments, mipWidth, mipHeight, 1);
 		}
 
-		void* data;
-
 		float roughness = static_cast<float>(mipLevel) / 4.0f;
 
-		roughnessBuffer.map(0, sizeof(float), &data);
-		memcpy(data, &roughness, sizeof(float));
-		roughnessBuffer.unmap();
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(roughnessBuffer.memoryInfo.data) + roughnessBuffer.memoryInfo.offset), &roughness, sizeof(float));
 
 		prefilterGraphicsPipeline.viewport = &prefilterViewport;
 		prefilterGraphicsPipeline.init();

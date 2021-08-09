@@ -413,10 +413,7 @@ void SSAO::createRandomTexture() {
 	}
 
 	VkDeviceSize size = SSAOSAMPLES * 4 * sizeof(float);
-	void* data;
-	sampleKernel.map(0, size, &data);
-	memcpy(data, samples.data(), size);
-	sampleKernel.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(sampleKernel.memoryInfo.data) + sampleKernel.memoryInfo.offset), samples.data(), size);
 
 	for (unsigned char i = 0; i < 16; i++) {
 		// Random rotation

@@ -8,6 +8,4 @@ struct Buffer {
 	MemoryInfo memoryInfo = {};
 
 	void destroy();
-	void map(VkDeviceSize offset, VkDeviceSize size, void** data);
-	void unmap();
 };

@@ -24,8 +24,9 @@ struct Chunk {
 	VkDeviceMemory memory;
 	int32_t type;
 	Block* head;
+	void* data;
 
-	Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size);
+	Chunk(VkDeviceSize chunkId, int32_t memoryType, VkDeviceSize size, bool isHostVisible);
 	VkDeviceSize allocate(VkMemoryRequirements memRequirements, VkDeviceSize* allocationNumber, MemoryInfo* memoryInfo);
 	void freeBlocks();
 };

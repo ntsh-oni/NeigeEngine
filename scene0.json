@@ -1,7 +1,7 @@
 {
 	"skybox": {
-		"type": "NONE",
-		"envmapPath": ""
+		"type": "ENVMAP",
+		"envmapPath": "../modelfiles/sunset_forest_8k.hdr"
 	},
 	"entities": [
 		{
@@ -53,6 +53,33 @@
 					1.0,
 					1.0
 				]
+			}
+		},
+		{
+			"renderable": {
+				"modelPath": "../modelfiles/Duck2.gltf",
+				"vertexShaderPath": "../shaders/pbr.vert",
+				"fragmentShaderPath": "../shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					1.0,
+					0.0,
+					0.0
+				],
+				"rotation": [
+					25.0,
+					40.0,
+					0.0
+				],
+				"scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"script": {
+				"scriptPath": "../scripts/objectcontroller.lua"
 			}
 		},
 		{

@@ -103,4 +103,5 @@ struct MemoryInfo {
 	VkDeviceSize chunkId;
 	VkDeviceSize offset;
 	VkDeviceSize allocationId;
+	void* data;
 };

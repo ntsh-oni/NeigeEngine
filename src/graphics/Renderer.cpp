@@ -306,10 +306,7 @@ void Renderer::init(const std::string& applicationName) {
 	Material defaultMaterial = { 0, 1, 2, 3, 4 };
 	BufferTools::createStorageBuffer(defaultMaterial.buffer.buffer, 5 * sizeof(int), &defaultMaterial.buffer.memoryInfo);
 	int materialindices[5] = { defaultMaterial.diffuseIndex, defaultMaterial.normalIndex, defaultMaterial.metallicRoughnessIndex, defaultMaterial.emissiveIndex, defaultMaterial.occlusionIndex };
-	void* data;
-	defaultMaterial.buffer.map(0, 5 * sizeof(int), &data);
-	memcpy(data, materialindices, 5 * sizeof(int));
-	defaultMaterial.buffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(defaultMaterial.buffer.memoryInfo.data) + defaultMaterial.buffer.memoryInfo.offset), materialindices, 5 * sizeof(int));
 
 	materials.push_back(defaultMaterial);
 
@@ -858,8 +855,6 @@ void Renderer::loadObject(Entity object) {
 }
 
 void Renderer::updateData(uint32_t frameInFlightIndex) {
-	void* data;
-
 	// Camera
 	auto& cameraCamera = ecs.getComponent<Camera>(mainCamera);
 	auto& cameraTransform = ecs.getComponent<Transform>(mainCamera);
@@ -870,16 +865,12 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	cubo.projection = cameraCamera.projection;
 	cubo.position = cameraTransform.position;
 
-	cameraBuffers.at(frameInFlightIndex).map(0, sizeof(CameraUniformBufferObject), &data);
-	memcpy(data, &cubo, sizeof(CameraUniformBufferObject));
-	cameraBuffers.at(frameInFlightIndex).unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(cameraBuffers.at(frameInFlightIndex).memoryInfo.data) + cameraBuffers.at(frameInFlightIndex).memoryInfo.offset), &cubo, sizeof(CameraUniformBufferObject));
 
 	// Update camera's frustum
 	cameraCamera.frustum.calculateFrustum(cameraCamera.view, cameraCamera.projection);
 
-	frustumBuffers.at(frameInFlightIndex).map(0, 6 * 4 * sizeof(float), &data);
-	memcpy(data, cameraCamera.frustum.frustum.data(), 6 * 4 * sizeof(float));
-	frustumBuffers.at(frameInFlightIndex).unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(frustumBuffers.at(frameInFlightIndex).memoryInfo.data) + frustumBuffers.at(frameInFlightIndex).memoryInfo.offset), cameraCamera.frustum.frustum.data(), 6 * 4 * sizeof(float));
 
 	// Lights
 	int dirLightCount = 0;
@@ -934,19 +925,13 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	subo.numLights.y = static_cast<float>(pointLightCount);
 	subo.numLights.z = static_cast<float>(spotLightCount);
 
-	lightingBuffers.at(frameInFlightIndex).map(0, sizeof(LightingUniformBufferObject), &data);
-	memcpy(data, &lubo, sizeof(LightingUniformBufferObject));
-	lightingBuffers.at(frameInFlightIndex).unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(lightingBuffers.at(frameInFlightIndex).memoryInfo.data) + lightingBuffers.at(frameInFlightIndex).memoryInfo.offset), &lubo, sizeof(LightingUniformBufferObject));
 
-	shadow.buffers.at(frameInFlightIndex).map(0, sizeof(ShadowUniformBufferObject), &data);
-	memcpy(data, &subo, sizeof(ShadowUniformBufferObject));
-	shadow.buffers.at(frameInFlightIndex).unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(shadow.buffers.at(frameInFlightIndex).memoryInfo.data) + shadow.buffers.at(frameInFlightIndex).memoryInfo.offset), &subo, sizeof(ShadowUniformBufferObject));
 
 	// Time
 	float time = static_cast<float>(glfwGetTime());
-	timeBuffers.at(frameInFlightIndex).map(0, sizeof(float), &data);
-	memcpy(data, &time, sizeof(double));
-	timeBuffers.at(frameInFlightIndex).unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(timeBuffers.at(frameInFlightIndex).memoryInfo.data) + timeBuffers.at(frameInFlightIndex).memoryInfo.offset), &time, sizeof(double));
 
 	// Renderables
 	// Load entities
@@ -988,9 +973,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			glm::mat4 scale = glm::scale(glm::mat4(1.0f), objectTransform.scale);
 			oubo.model = translate * rotateX * rotateY * rotateZ * scale;
 
-			objectRenderable.buffers.at(frameInFlightIndex).map(0, sizeof(ObjectUniformBufferObject), &data);
-			memcpy(data, &oubo, sizeof(ObjectUniformBufferObject));
-			objectRenderable.buffers.at(frameInFlightIndex).unmap();
+			memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(objectRenderable.buffers.at(frameInFlightIndex).memoryInfo.data) + objectRenderable.buffers.at(frameInFlightIndex).memoryInfo.offset), &oubo, sizeof(ObjectUniformBufferObject));
 		}
 	}
 }

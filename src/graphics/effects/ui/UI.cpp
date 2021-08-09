@@ -154,10 +154,7 @@ void UI::createResources(Viewport fullscreenViewport, bool enableFXAA) {
 	cubo.projection = Camera::createOrthoProjection(0.0f, fullscreenViewport.viewport.width, 0.0f, fullscreenViewport.viewport.height);
 	cubo.position = glm::vec3(0.0f);
 
-	void* data;
-	cameraBuffer.map(0, sizeof(CameraUniformBufferObject), &data);
-	memcpy(data, &cubo, sizeof(CameraUniformBufferObject));
-	cameraBuffer.unmap();
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(cameraBuffer.memoryInfo.data) + cameraBuffer.memoryInfo.offset), &cubo, sizeof(CameraUniformBufferObject));
 }
 
 void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
