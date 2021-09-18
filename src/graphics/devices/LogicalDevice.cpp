@@ -34,11 +34,16 @@ void LogicalDevice::init() {
 	physicalDevice12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 	physicalDevice12Features.runtimeDescriptorArray = VK_TRUE;
 	physicalDevice12Features.descriptorBindingPartiallyBound = VK_TRUE;
+
+	VkPhysicalDeviceVulkan11Features physicalDevice11Features = {};
+	physicalDevice11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+	physicalDevice11Features.pNext = &physicalDevice12Features;
+	physicalDevice11Features.shaderDrawParameters = VK_TRUE;
 	
 	// Logical device
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceCreateInfo.pNext = &physicalDevice12Features;
+	deviceCreateInfo.pNext = &physicalDevice11Features;
 	deviceCreateInfo.flags = 0;
 	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
