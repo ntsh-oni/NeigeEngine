@@ -3,6 +3,7 @@
 #include "../../utils/NeigeDefines.h"
 #include <vector>
 #include <optional>
+#include <limits>
 
 #define MAX_FRAMES_IN_FLIGHT 3
 

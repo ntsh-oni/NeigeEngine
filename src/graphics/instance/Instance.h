@@ -3,6 +3,7 @@
 #include "../../utils/NeigeDefines.h"
 #include "../structs/RendererStructs.h"
 #include <limits>
+#include <cstring>
 #include <string>
 
 struct Instance {
