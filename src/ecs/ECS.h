@@ -266,7 +266,7 @@ public:
 		auto components = entityManager->getComponents(entity);
 		components.set(componentManager->getComponentId<T>(), false);
 		entityManager->setComponents(entity, components);
-		systemManager->entityComponentMaskChanged(components);
+		systemManager->entityComponentMaskChanged(entity, components);
 	}
 
 	template<typename T>

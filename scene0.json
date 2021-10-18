@@ -33,31 +33,7 @@
 		},
 		{
 			"renderable": {
-				"modelPath": "../modelfiles/Vulkan.gltf",
-				"vertexShaderPath": "../shaders/pbr.vert",
-				"fragmentShaderPath": "../shaders/pbr.frag"
-			},
-			"transform": {
-				"position": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"rotation": [
-					0.0,
-					0.0,
-					0.0
-				],
-				"scale": [
-					1.0,
-					1.0,
-					1.0
-				]
-			}
-		},
-		{
-			"renderable": {
-				"modelPath": "../modelfiles/Duck2.gltf",
+				"modelPath": "../../../Telechargements/glTF-Sample-Models-master/2.0/Sponza/glTF/Sponza.gltf",
 				"vertexShaderPath": "../shaders/pbr.vert",
 				"fragmentShaderPath": "../shaders/pbr.frag"
 			},
@@ -68,8 +44,8 @@
 					0.0
 				],
 				"rotation": [
-					25.0,
-					40.0,
+					0.0,
+					0.0,
 					0.0
 				],
 				"scale": [
