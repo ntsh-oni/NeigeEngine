@@ -186,7 +186,7 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Envmap
 	NEIGE_INFO("Environment map init start.");
-	envmap.init(envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
+	envmap.init(scene.envmapPath, &fullscreenViewport, &renderPasses.at("opaqueScene"));
 	NEIGE_INFO("Environment map init end.");
 
 	// Default revealage attachment
@@ -931,7 +931,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 	// Time
 	float time = static_cast<float>(glfwGetTime());
-	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(timeBuffers.at(frameInFlightIndex).memoryInfo.data) + timeBuffers.at(frameInFlightIndex).memoryInfo.offset), &time, sizeof(double));
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(timeBuffers.at(frameInFlightIndex).memoryInfo.data) + timeBuffers.at(frameInFlightIndex).memoryInfo.offset), &time, sizeof(float));
 
 	// Renderables
 	// Load entities
@@ -1129,7 +1129,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			}
 		}
 	}
-	if (skyboxType == SkyboxType::ENVMAP) {
+	if (scene.skyboxType == SkyboxType::ENVMAP) {
 		envmap.skyboxGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 		envmap.skyboxDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &envmap.skyboxGraphicsPipeline, 0);
 
