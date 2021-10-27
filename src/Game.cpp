@@ -67,8 +67,7 @@ void Game::init() {
 
 	// First scene
 	Scene scene = Parser::parseScene("../scene0.json", ecs);
-	renderer->skyboxType = scene.skyboxType;
-	renderer->envmapPath = scene.envmapPath;
+	renderer->scene = scene;
 }
 
 void Game::launch() {

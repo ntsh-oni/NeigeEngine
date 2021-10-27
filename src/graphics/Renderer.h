@@ -65,8 +65,7 @@ struct Renderer : public System {
 	uint32_t currentFrame = 0;
 
 	// Scene
-	SkyboxType skyboxType;
-	std::string envmapPath;
+	Scene scene;
 
 	// Settings
 	bool enableBloom;

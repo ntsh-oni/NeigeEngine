@@ -366,6 +366,7 @@ Debug/
 x64/
 modelfiles/
 textures/
+scripts/
 *.bin
 *.sln
 *.vcxproj
@@ -373,3 +374,5 @@ textures/
 *.vcxproj.user
 CMakeCache.txt
 compile.bat
+game.json
+scene0.json
