@@ -128,7 +128,8 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size), flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	VkDeviceSize allocationSize = std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size);
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, allocationSize, flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	// Add to this chunk
 	VkDeviceSize offset;
@@ -142,7 +143,7 @@ VkDeviceSize MemoryAllocator::allocate(VkBuffer* bufferToAllocate, VkMemoryPrope
 
 	chunks.push_back(newChunk);
 
-	MEMORY_INFO("New memory chunk allocated.");
+	MEMORY_INFO("New memory chunk allocated (number: " + std::to_string(chunks.size() - 1) + ", size: " + std::to_string(allocationSize) + ").");
 	return allocationNumber - 1;
 }
 
@@ -165,7 +166,8 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 	}
 
 	// No block has been found, create a new chunk
-	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size), flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	VkDeviceSize allocationSize = std::max((VkDeviceSize)CHUNK_SIZE, memRequirements.size);
+	Chunk newChunk = Chunk(static_cast<VkDeviceSize>(chunks.size()), properties, allocationSize, flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	// Add to this chunk
 	VkDeviceSize offset;
@@ -179,7 +181,7 @@ VkDeviceSize MemoryAllocator::allocate(VkImage* imageToAllocate, VkMemoryPropert
 
 	chunks.push_back(newChunk);
 
-	MEMORY_INFO("New memory chunk allocated.");
+	MEMORY_INFO("New memory chunk allocated (number: " + std::to_string(chunks.size() - 1) + ", size: " + std::to_string(allocationSize) + ").");
 	return allocationNumber - 1;
 }
 
