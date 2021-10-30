@@ -31,7 +31,7 @@
 #ifndef NDEBUG
 #define NEIGE_INFO(m) \
 	do { \
-		std::cout << "\033[1m\033[36mNEIGE INFO :\033[39m\033[0m " << m << std::endl; \
+		std::cout << "\033[1m\033[94mNEIGE INFO :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 #else
 #define NEIGE_INFO(m)
@@ -52,7 +52,7 @@
 #ifndef NDEBUG
 #define MEMORY_INFO(m) \
 	do { \
-		std::cerr << "\033[1m\033[95mMEMORY INFO :\033[39m\033[0m " << m << std::endl; \
+		std::cerr << "\033[1m\033[94mMEMORY INFO :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 #else
 #define MEMORY_INFO(m)
@@ -60,12 +60,12 @@
 
 #define NEIGE_SHADER_ERROR(m) \
 	do { \
-		std::cerr << "\033[1m\033[94mSHADER ERROR :\033[39m\033[0m " << m << std::endl; \
+		std::cerr << "\033[1m\033[31mSHADER ERROR :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 
 #define NEIGE_SCRIPT_ERROR(m) \
 	do { \
-		std::cerr << "\033[1m\033[93mSCRIPT ERROR :\033[39m\033[0m " << m << std::endl; \
+		std::cerr << "\033[1m\033[31mSCRIPT ERROR :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 
 #ifndef NDEBUG
