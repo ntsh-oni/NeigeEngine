@@ -3,7 +3,7 @@
 #include "../../../graphics/resources/ShaderResources.h"
 
 void FrustumCulling::init() {
-	computePipeline.computeShaderPath = "../shaders/frustumculling/frustumculling.comp";
+	computePipeline.computeShaderPath = "../src/graphics/shaders/frustumculling/frustumculling.comp";
 	computePipeline.init();
 }
 

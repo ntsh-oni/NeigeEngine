@@ -240,8 +240,8 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Scene compositing
 	GraphicsPipeline alphaCompositingGraphicsPipeline;
-	alphaCompositingGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	alphaCompositingGraphicsPipeline.fragmentShaderPath = "../shaders/wboit/alphaCompositing.frag";
+	alphaCompositingGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	alphaCompositingGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/wboit/alphaCompositing.frag";
 	alphaCompositingGraphicsPipeline.renderPass = &renderPasses.at("alphaCompositing");
 	alphaCompositingGraphicsPipeline.viewport = &fullscreenViewport;
 	alphaCompositingGraphicsPipeline.multiSample = false;
@@ -259,8 +259,8 @@ void Renderer::init(const std::string& applicationName) {
 	ImageTools::createImageView(&defaultPostProcessEffectImage.imageView, defaultPostProcessEffectImage.image, 0, 1, 0, defaultPostProcessEffectImage.mipmapLevels, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	GraphicsPipeline postGraphicsPipeline;
-	postGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	postGraphicsPipeline.fragmentShaderPath = "../shaders/postprocess/postProcess.frag";
+	postGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	postGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/postprocess/postProcess.frag";
 	postGraphicsPipeline.renderPass = &renderPasses.at("post");
 	postGraphicsPipeline.viewport = &fullscreenViewport;
 	postGraphicsPipeline.multiSample = false;

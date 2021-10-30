@@ -18,15 +18,15 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 		renderPass.init(attachments, dependencies);
 	}
 
-	opaqueGraphicsPipeline.vertexShaderPath = "../shaders/depthprepass/depthPrepass.vert";
+	opaqueGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/depthprepass/depthPrepass.vert";
 	opaqueGraphicsPipeline.renderPass = &renderPass;
 	opaqueGraphicsPipeline.viewport = &viewport;
 	opaqueGraphicsPipeline.multiSample = false;
 	opaqueGraphicsPipeline.backfaceCulling = true;
 	opaqueGraphicsPipeline.init();
 
-	maskGraphicsPipeline.vertexShaderPath = "../shaders/depthprepass/depthPrepass.vert";
-	maskGraphicsPipeline.fragmentShaderPath = "../shaders/depthprepass/depthPrepassMask.frag";
+	maskGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/depthprepass/depthPrepass.vert";
+	maskGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/depthprepass/depthPrepassMask.frag";
 	maskGraphicsPipeline.renderPass = &renderPass;
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;

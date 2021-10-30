@@ -53,8 +53,8 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 		ssaoBlurredRenderPass.init(attachments, dependencies);
 	}
 
-	depthToPositionsGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	depthToPositionsGraphicsPipeline.fragmentShaderPath = "../shaders/ssao/depthToPositions.frag";
+	depthToPositionsGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	depthToPositionsGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ssao/depthToPositions.frag";
 	depthToPositionsGraphicsPipeline.renderPass = &depthToPositionsRenderPass;
 	depthToPositionsGraphicsPipeline.viewport = &viewport;
 	depthToPositionsGraphicsPipeline.multiSample = false;
@@ -62,8 +62,8 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	depthToPositionsGraphicsPipeline.depthWrite = false;
 	depthToPositionsGraphicsPipeline.init();
 	
-	depthToNormalsGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	depthToNormalsGraphicsPipeline.fragmentShaderPath = "../shaders/ssao/depthToNormals.frag";
+	depthToNormalsGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	depthToNormalsGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ssao/depthToNormals.frag";
 	depthToNormalsGraphicsPipeline.renderPass = &depthToNormalsRenderPass;
 	depthToNormalsGraphicsPipeline.viewport = &viewport;
 	depthToNormalsGraphicsPipeline.multiSample = false;
@@ -71,8 +71,8 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	depthToNormalsGraphicsPipeline.depthWrite = false;
 	depthToNormalsGraphicsPipeline.init();
 
-	ssaoGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	ssaoGraphicsPipeline.fragmentShaderPath = "../shaders/ssao/ssao.frag";
+	ssaoGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	ssaoGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ssao/ssao.frag";
 	ssaoGraphicsPipeline.renderPass = &ssaoRenderPass;
 	ssaoGraphicsPipeline.viewport = &viewport;
 	ssaoGraphicsPipeline.multiSample = false;
@@ -80,8 +80,8 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	ssaoGraphicsPipeline.depthWrite = false;
 	ssaoGraphicsPipeline.init();
 
-	ssaoBlurredGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	ssaoBlurredGraphicsPipeline.fragmentShaderPath = "../shaders/ssao/ssaoBlur.frag";
+	ssaoBlurredGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	ssaoBlurredGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ssao/ssaoBlur.frag";
 	ssaoBlurredGraphicsPipeline.renderPass = &ssaoBlurredRenderPass;
 	ssaoBlurredGraphicsPipeline.viewport = &viewport;
 	ssaoBlurredGraphicsPipeline.multiSample = false;

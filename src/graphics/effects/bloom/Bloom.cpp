@@ -30,8 +30,8 @@ void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenVi
 		blurRenderPass.init(attachments, dependencies);
 	}
 
-	resizeGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	resizeGraphicsPipeline.fragmentShaderPath = "../shaders/bloom/bloomDownscale.frag";
+	resizeGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	resizeGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/bloom/bloomDownscale.frag";
 	resizeGraphicsPipeline.renderPass = &blurRenderPass;
 	resizeGraphicsPipeline.viewport = &viewport;
 	resizeGraphicsPipeline.multiSample = false;
@@ -41,8 +41,8 @@ void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenVi
 
 	blurViewport = viewport;
 
-	blurGraphicsPipeline.vertexShaderPath = "../shaders/general/fullscreenTriangle.vert";
-	blurGraphicsPipeline.fragmentShaderPath = "../shaders/bloom/bloomBlur.frag";
+	blurGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/general/fullscreenTriangle.vert";
+	blurGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/bloom/bloomBlur.frag";
 	blurGraphicsPipeline.renderPass = &blurRenderPass;
 	blurGraphicsPipeline.viewport = &blurViewport;
 	blurGraphicsPipeline.multiSample = false;
