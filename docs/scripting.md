@@ -2,19 +2,45 @@
 NeigeEngine uses **Lua** for the scripting. It also defines engine-specific functions described in this documentation.
 
 ## Table of contents
-1. General functions
+1. Types
+	- [vector](#vector)
+3. General functions
 	- [init](#init)
 	- [update](#update)
 	- [destroy](#destroy)
-2. Specific functions
+4. Specific functions
 	- [Entity](#entity)
-	- [Vector](#vector)
 	- [Input](#input)
 	- [Window](#window)
 	- [UI](#ui)
 	- [Camera](#camera)
 	- [Time](#time)
 	- [Debug](#debug)
+
+## Vector
+Types and functions associated with vectors (vector of 2, 3 and 4 elements).
+
+### vec2
+Constructor : **vec2:new**(*float x, float y*)
+
+- float **vec2:length**(*vec2 a*) : Returns the vector's length.
+- float **vec2:dot**(*vec2 a, vec2 b*) : Computes the dot product between two vectors of 2 elements.
+- vec2 **vec2:normalize**(*vec2 a*) : Normalizes a vector of 2 elements.
+
+### vec3
+Constructor : **vec3:new**(*float x, float y, float z*)
+
+- float **vec3:length**(*vec3 a*) : Returns the vector's length.
+- float **vec3:dot**(*vec3 a, vec3 b*) : Computes the dot product between two vectors of 3 elements.
+- vec3 **vec3:cross**(*vec3 a, vec3 b*) : Computes the cross product between two vectors of 3 elements.
+- vec3 **vec3:normalize**(*vec3 a*) : Normalizes a vector of 3 parameters.
+
+### vec4
+Constructor : **vec4:new**(*float x, float y, float z, float w*)
+
+- float **vec4:length**(*vec4 a*) : Returns the vector's length.
+- float **vec4:dot**(*vec4 a, vec4 b*) : Computes the dot product between two vectors of 4 elements.
+- vec4 **vec4:normalize**(*vec4 a*) : Normalizes a vector of 4 elements.
  
 ## General functions
 
@@ -33,7 +59,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 Functions related to entities and their components.
 
 ### Functions
-- int **getEntityID()** : Returns the entity calling this script's ID.
+- int **getEntityID**() : Returns the entity calling this script's ID.
 - **destroyEntity**(*[int entity]*) : Takes an entity ID and destroys it. If no entity ID is specified, destroys the entity calling this function.
 - bool **hasRenderableComponent**(*int entity*) : Takes an entity ID and returns **true** if this entity has a Renderable component, else returns **false**.
 - string **getRenderableComponentModelPath**(*int entity*) : Takes an entity ID and returns this entity's Renderable component model path. If the entity does not have a Renderable component, returns nothing.
@@ -46,14 +72,6 @@ Functions related to entities and their components.
 - **setTransformComponentPosition**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component position. If the entity does not have a Transform component, returns nothing.
 - **setTransformComponentRotation**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component rotation. If the entity does not have a Transform component, returns nothing.
 - **setTransformComponentScale**(*int entity, float x, float y, float z*) : Takes an entity ID and 3 floats. Sets the entity's Transform component scale. If the entity does not have a Transform component, returns nothing.
-
-## Vector
-Functions to manipulate vectors.
-
-### Functions
-- float, float, [float], [float] **normalize**(*float x, float y, [float z], [float w]*) : Normalize a vector of 2, 3 or 4 floats and returns a vector of the same size.
-- float **dot**(*float x1, float y1, [float z1], [float w1], float x2, float y2, [float z2], [float w2]*) : Computes a dot product between **two vectors of the same size** (2, 3 or 4 floats) and returns a float.
-- float, float, float **cross**(*float x1, float y1, float z1, float x2, float y2, float z2*) : Computes a cross product between **two vectors of 3 floats** and returns a vector of 3 floats.
 
 ## Input
 Functions related to keyboard and mouse inputs.

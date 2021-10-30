@@ -366,7 +366,8 @@ Debug/
 x64/
 modelfiles/
 textures/
-scripts/
+appscripts/
+appshaders/
 *.bin
 *.sln
 *.vcxproj

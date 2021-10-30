@@ -89,8 +89,8 @@ void UI::init(Viewport fullscreenViewport, bool enableFXAA) {
 	}
 
 	// Graphics pipeline
-	graphicsPipeline.vertexShaderPath = "../shaders/ui/text.vert";
-	graphicsPipeline.fragmentShaderPath = "../shaders/ui/text.frag";
+	graphicsPipeline.vertexShaderPath = "../src/graphics/shaders/ui/text.vert";
+	graphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ui/text.frag";
 	graphicsPipeline.renderPass = &renderPass;
 	graphicsPipeline.viewport = &viewport;
 	graphicsPipeline.multiSample = false;
