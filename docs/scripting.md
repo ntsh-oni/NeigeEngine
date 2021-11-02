@@ -33,7 +33,7 @@ Constructor : **vec3:new**(*float x, float y, float z*)
 - float **vec3:length**(*vec3 a*) : Returns the vector's length.
 - float **vec3:dot**(*vec3 a, vec3 b*) : Computes the dot product between two vectors of 3 elements.
 - vec3 **vec3:cross**(*vec3 a, vec3 b*) : Computes the cross product between two vectors of 3 elements.
-- vec3 **vec3:normalize**(*vec3 a*) : Normalizes a vector of 3 parameters.
+- vec3 **vec3:normalize**(*vec3 a*) : Normalizes a vector of 3 elements.
 
 ### vec4
 Constructor : **vec4:new**(*float x, float y, float z, float w*)
