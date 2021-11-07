@@ -51,7 +51,7 @@ void Renderer::init(const std::string& applicationName) {
 		std::vector<RenderPassAttachment> attachments;
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
 		attachments.push_back(RenderPassAttachment(AttachmentType::UNUSED, VK_FORMAT_R8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 0.0f)));
-		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ClearDepthValue(1.0f, 0)));
+		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, ClearDepthValue(1.0f, 0)));
 		
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -69,7 +69,7 @@ void Renderer::init(const std::string& applicationName) {
 		std::vector<RenderPassAttachment> attachments;
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 0.0f)));
 		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, VK_FORMAT_R8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(1.0f, 0.0f, 0.0f, 0.0f)));
-		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, ClearDepthValue(1.0f, 0)));
+		attachments.push_back(RenderPassAttachment(AttachmentType::DEPTH, physicalDevice.depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, ClearDepthValue(1.0f, 0)));
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
@@ -195,6 +195,13 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Image and famebuffers
 	createResources();
+
+	// Atmosphere
+	if (scene.skyboxType == SkyboxType::ATMOSPHERE) {
+		NEIGE_INFO("Atmosphere init start.");
+		atmosphere.init(fullscreenViewport);
+		NEIGE_INFO("Atmosphere init end.");
+	}
 
 	// Bloom
 	if (enableBloom) {
@@ -479,6 +486,9 @@ void Renderer::destroy() {
 		fontSampler = VK_NULL_HANDLE;
 	}
 	depthPrepass.destroy();
+	if (scene.skyboxType == SkyboxType::ATMOSPHERE) {
+		atmosphere.destroy();
+	}
 	envmap.destroy();
 	shadow.destroy();
 	ui.destroy();
@@ -873,6 +883,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(frustumBuffers.at(frameInFlightIndex).memoryInfo.data) + frustumBuffers.at(frameInFlightIndex).memoryInfo.offset), cameraCamera.frustum.frustum.data(), 6 * 4 * sizeof(float));
 
 	// Lights
+	bool foundMainLight = false;
 	int dirLightCount = 0;
 	int pointLightCount = 0;
 	int spotLightCount = 0;
@@ -885,6 +896,13 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		if (lightLight.type == LightType::DIRECTIONAL) {
 			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightTransform.rotation, 0.0f);
 			lubo.dirLightsColor[dirLightCount] = glm::vec4(lightLight.color, 0.0f);
+
+			if (!foundMainLight) {
+				mainDirectionalLightDirection[0] = lightTransform.rotation.x;
+				mainDirectionalLightDirection[1] = lightTransform.rotation.y;
+				mainDirectionalLightDirection[2] = lightTransform.rotation.z;
+				foundMainLight = true;
+			}
 
 			glm::vec3 eye = -lightTransform.rotation;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), eye) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(eye)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
@@ -915,6 +933,12 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 
 			spotLightCount++;
 		}
+	}
+	if (!foundMainLight) {
+		// No directional light found
+		mainDirectionalLightDirection[0] = 0.0f;
+		mainDirectionalLightDirection[1] = 0.0f;
+		mainDirectionalLightDirection[2] = 0.0f;
 	}
 
 	lubo.numLights.x = static_cast<float>(dirLightCount);
@@ -1137,6 +1161,11 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	}
 
 	opaqueSceneRenderPass->end(&renderingCommandBuffers[frameInFlightIndex]);
+
+	if (scene.skyboxType == SkyboxType::ATMOSPHERE) {
+		// Atmosphere
+		atmosphere.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	}
 
 	// Blend scene
 	blendSceneRenderPass->begin(&renderingCommandBuffers[frameInFlightIndex], blendSceneFramebuffer.framebuffer, window.extent);
@@ -1575,6 +1604,12 @@ void Renderer::reloadOnResize() {
 
 	// Image and framebuffers
 	createResources();
+
+	// Atmosphere
+	if (scene.skyboxType == SkyboxType::ATMOSPHERE) {
+		atmosphere.destroyResources();
+		atmosphere.createResources(fullscreenViewport);
+	}
 
 	// Bloom
 	if (enableBloom) {
