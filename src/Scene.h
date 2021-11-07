@@ -2,11 +2,11 @@
 #include <string>
 
 enum struct SkyboxType {
-	NONE,
+	ATMOSPHERE,
 	ENVMAP
 };
 
 struct Scene {
-	SkyboxType skyboxType = SkyboxType::NONE;
+	SkyboxType skyboxType = SkyboxType::ATMOSPHERE;
 	std::string envmapPath = "";
 };

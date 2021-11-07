@@ -157,7 +157,7 @@ struct Vertex {
 				weightsAttribute.offset = offsetof(Vertex, weights);
 				inputAttributeDescriptions.push_back(weightsAttribute);
 			}
-			else if (inputVariables[i].name != "gl_VertexIndex" && inputVariables[i].name != "gl_DrawID") {
+			else if (inputVariables[i].name != "gl_VertexIndex" && inputVariables[i].name != "gl_InstanceIndex" && inputVariables[i].name != "gl_DrawID") {
 				NEIGE_WARNING("Vertex shader input variable \"" + inputVariables[i].name + "\" at location " + std::to_string(inputVariables[i].location) + " is undefined.");
 			}
 		}

@@ -116,12 +116,12 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 		if (skyboxType == "ENVMAP") {
 			scene.skyboxType = SkyboxType::ENVMAP;
 		}
-		else if (skyboxType == "NONE") {
-			scene.skyboxType = SkyboxType::NONE;
+		else if (skyboxType == "ATMOSPHERE") {
+			scene.skyboxType = SkyboxType::ATMOSPHERE;
 		}
 		else {
-			NEIGE_WARNING("Skybox type \"" + std::string(skyboxType) + "\" is undefined (valid options: \"NONE\" or \"ENVMAP\".");
-			scene.skyboxType = SkyboxType::NONE;
+			NEIGE_WARNING("Skybox type \"" + std::string(skyboxType) + "\" is undefined (valid options: \"ATMOSPHERE\" or \"ENVMAP\".");
+			scene.skyboxType = SkyboxType::ATMOSPHERE;
 		}
 		
 		std::string_view envmapPath;
@@ -135,7 +135,7 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 		}
 	}
 	else {
-		scene.skyboxType = SkyboxType::NONE;
+		scene.skyboxType = SkyboxType::ATMOSPHERE;
 	}
 
 	bool foundTransform = false;

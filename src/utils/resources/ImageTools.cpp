@@ -36,6 +36,37 @@ void ImageTools::createImage(VkImage* image,
 	memoryAllocator.allocate(image, memoryProperties, memoryInfo);
 }
 
+void ImageTools::create3DImage(VkImage* image,
+	uint32_t width,
+	uint32_t height,
+	uint32_t depth,
+	uint32_t mipLevels,
+	VkSampleCountFlagBits msaaSamples,
+	VkFormat format,
+	VkImageUsageFlags usage,
+	VkMemoryPropertyFlags memoryProperties,
+	MemoryInfo* memoryInfo) {
+	VkImageCreateInfo imageCreateInfo = {};
+	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageCreateInfo.pNext = nullptr;
+	imageCreateInfo.flags = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
+	imageCreateInfo.imageType = VK_IMAGE_TYPE_3D;
+	imageCreateInfo.format = format;
+	imageCreateInfo.extent.width = width;
+	imageCreateInfo.extent.height = height;
+	imageCreateInfo.extent.depth = depth;
+	imageCreateInfo.mipLevels = mipLevels;
+	imageCreateInfo.arrayLayers = 1;
+	imageCreateInfo.samples = msaaSamples;
+	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageCreateInfo.usage = usage;
+	imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	NEIGE_VK_CHECK(vkCreateImage(logicalDevice.device, &imageCreateInfo, nullptr, image));
+
+	memoryAllocator.allocate(image, memoryProperties, memoryInfo);
+}
+
 void ImageTools::createImageView(VkImageView* imageView,
 	VkImage image,
 	uint32_t baseArrayLayer,
@@ -327,6 +358,12 @@ void ImageTools::transitionLayout(VkImage image,
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		srcPipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		dstPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+		imageMemoryBarrier.srcAccessMask = 0;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		srcPipelineStageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstPipelineStageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	}
 	else {
 		NEIGE_ERROR("Unsupported image layout transition.");

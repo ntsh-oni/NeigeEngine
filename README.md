@@ -34,6 +34,7 @@ $ make
 ### Graphics Features
 - Physically Based Rendering (PBR) metallic-roughness
 - Image-Based Lighting (IBL)
+- Atmosphere
 - Shadow mapping
 - Fast Approximate Anti-Aliasing (FXAA)
 - Pure Depth Screen Space Ambient Occlusion (SSAO)
