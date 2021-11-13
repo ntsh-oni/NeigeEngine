@@ -227,7 +227,7 @@ void Renderer::init(const std::string& applicationName) {
 		for (Entity light : *lights) {
 			auto const& lightLight = ecs.getComponent<Light>(light);
 
-			if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
+			if (lightLight.component.type == LightType::DIRECTIONAL || lightLight.component.type == LightType::SPOT) {
 				Framebuffer lightFramebuffer;
 
 				Image depthAttachment;
@@ -599,22 +599,22 @@ void Renderer::loadObject(Entity object) {
 	objectRenderable.createLookupString();
 
 	// Model
-	if (models.find(objectRenderable.modelPath) == models.end()) {
+	if (models.find(objectRenderable.component.modelPath) == models.end()) {
 		Model model;
-		model.init(objectRenderable.modelPath);
-		models.emplace(objectRenderable.modelPath, model);
+		model.init(objectRenderable.component.modelPath);
+		models.emplace(objectRenderable.component.modelPath, model);
 	}
-	objectRenderable.model = &models.at(objectRenderable.modelPath);
+	objectRenderable.model = &models.at(objectRenderable.component.modelPath);
 
 	// Graphics pipelines
 	// Opaque
 	if (objectRenderable.model->gotOpaquePrimitives && graphicsPipelines.find(objectRenderable.lookupString + "o") == graphicsPipelines.end()) {
 		GraphicsPipeline opaqueGraphicsPipeline;
-		opaqueGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		opaqueGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
-		opaqueGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
-		opaqueGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
-		opaqueGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
+		opaqueGraphicsPipeline.vertexShaderPath = objectRenderable.component.vertexShaderPath;
+		opaqueGraphicsPipeline.fragmentShaderPath = objectRenderable.component.fragmentShaderPath;
+		opaqueGraphicsPipeline.tesselationControlShaderPath = objectRenderable.component.tesselationControlShaderPath;
+		opaqueGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.component.tesselationEvaluationShaderPath;
+		opaqueGraphicsPipeline.geometryShaderPath = objectRenderable.component.geometryShaderPath;
 		opaqueGraphicsPipeline.renderPass = &renderPasses.at("opaqueScene");
 		opaqueGraphicsPipeline.multiSample = false;
 		opaqueGraphicsPipeline.viewport = &fullscreenViewport;
@@ -633,11 +633,11 @@ void Renderer::loadObject(Entity object) {
 	// Mask
 	if (objectRenderable.model->gotMaskPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "m") == graphicsPipelines.end()) {
 		GraphicsPipeline maskGraphicsPipeline;
-		maskGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		maskGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
-		maskGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
-		maskGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
-		maskGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
+		maskGraphicsPipeline.vertexShaderPath = objectRenderable.component.vertexShaderPath;
+		maskGraphicsPipeline.fragmentShaderPath = objectRenderable.component.fragmentShaderPath;
+		maskGraphicsPipeline.tesselationControlShaderPath = objectRenderable.component.tesselationControlShaderPath;
+		maskGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.component.tesselationEvaluationShaderPath;
+		maskGraphicsPipeline.geometryShaderPath = objectRenderable.component.geometryShaderPath;
 		maskGraphicsPipeline.renderPass = &renderPasses.at("opaqueScene");
 		maskGraphicsPipeline.multiSample = false;
 		maskGraphicsPipeline.viewport = &fullscreenViewport;
@@ -657,11 +657,11 @@ void Renderer::loadObject(Entity object) {
 	// Blend
 	if (objectRenderable.model->gotBlendPrimitives && graphicsPipelines.find(objectRenderable.lookupString + "b") == graphicsPipelines.end()) {
 		GraphicsPipeline blendGraphicsPipeline;
-		blendGraphicsPipeline.vertexShaderPath = objectRenderable.vertexShaderPath;
-		blendGraphicsPipeline.fragmentShaderPath = objectRenderable.fragmentShaderPath;
-		blendGraphicsPipeline.tesselationControlShaderPath = objectRenderable.tesselationControlShaderPath;
-		blendGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.tesselationEvaluationShaderPath;
-		blendGraphicsPipeline.geometryShaderPath = objectRenderable.geometryShaderPath;
+		blendGraphicsPipeline.vertexShaderPath = objectRenderable.component.vertexShaderPath;
+		blendGraphicsPipeline.fragmentShaderPath = objectRenderable.component.fragmentShaderPath;
+		blendGraphicsPipeline.tesselationControlShaderPath = objectRenderable.component.tesselationControlShaderPath;
+		blendGraphicsPipeline.tesselationEvaluationShaderPath = objectRenderable.component.tesselationEvaluationShaderPath;
+		blendGraphicsPipeline.geometryShaderPath = objectRenderable.component.geometryShaderPath;
 		blendGraphicsPipeline.renderPass = &renderPasses.at("blendScene");
 		blendGraphicsPipeline.multiSample = false;
 		blendGraphicsPipeline.viewport = &fullscreenViewport;
@@ -870,10 +870,10 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	auto& cameraTransform = ecs.getComponent<Transform>(mainCamera);
 
 	CameraUniformBufferObject cubo = {};
-	cameraCamera.view = Camera::createLookAtView(cameraTransform.position, cameraTransform.position + cameraTransform.rotation, glm::vec3(0.0f, 1.0f, 0.0f));
+	cameraCamera.view = Camera::createLookAtView(cameraTransform.component.position, cameraTransform.component.position + cameraTransform.component.rotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	cubo.view = cameraCamera.view;
 	cubo.projection = cameraCamera.projection;
-	cubo.position = cameraTransform.position;
+	cubo.position = cameraTransform.component.position;
 
 	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(cameraBuffers.at(frameInFlightIndex).memoryInfo.data) + cameraBuffers.at(frameInFlightIndex).memoryInfo.offset), &cubo, sizeof(CameraUniformBufferObject));
 
@@ -893,39 +893,39 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		auto const& lightLight = ecs.getComponent<Light>(entity);
 		auto const& lightTransform = ecs.getComponent<Transform>(entity);
 
-		if (lightLight.type == LightType::DIRECTIONAL) {
-			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightTransform.rotation, 0.0f);
-			lubo.dirLightsColor[dirLightCount] = glm::vec4(lightLight.color, 0.0f);
+		if (lightLight.component.type == LightType::DIRECTIONAL) {
+			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightTransform.component.rotation, 0.0f);
+			lubo.dirLightsColor[dirLightCount] = glm::vec4(lightLight.component.color, 0.0f);
 
 			if (!foundMainLight) {
-				mainDirectionalLightDirection[0] = lightTransform.rotation.x;
-				mainDirectionalLightDirection[1] = lightTransform.rotation.y;
-				mainDirectionalLightDirection[2] = lightTransform.rotation.z;
+				mainDirectionalLightDirection[0] = lightTransform.component.rotation.x;
+				mainDirectionalLightDirection[1] = lightTransform.component.rotation.y;
+				mainDirectionalLightDirection[2] = lightTransform.component.rotation.z;
 				foundMainLight = true;
 			}
 
-			glm::vec3 eye = -lightTransform.rotation;
+			glm::vec3 eye = -lightTransform.component.rotation;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), eye) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(eye)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
 			glm::mat4 shadowProjection = Camera::createOrthoProjection(-10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 50.0f);
-			glm::mat4 shadowView = Camera::createLookAtView(eye + cameraTransform.position + (cameraTransform.rotation * 10.0f), cameraTransform.position + (cameraTransform.rotation * 10.0f), up);
+			glm::mat4 shadowView = Camera::createLookAtView(eye + cameraTransform.component.position + (cameraTransform.component.rotation * 10.0f), cameraTransform.component.position + (cameraTransform.component.rotation * 10.0f), up);
 			subo.dirLightSpaces[dirLightCount] = shadowProjection * shadowView;
 
 			dirLightCount++;
 		}
-		else if (lightLight.type == LightType::POINT) {
-			lubo.pointLightsPosition[pointLightCount] = glm::vec4(lightTransform.position, 0.0f);
-			lubo.pointLightsColor[pointLightCount] = glm::vec4(lightLight.color, 0.0f);
+		else if (lightLight.component.type == LightType::POINT) {
+			lubo.pointLightsPosition[pointLightCount] = glm::vec4(lightTransform.component.position, 0.0f);
+			lubo.pointLightsColor[pointLightCount] = glm::vec4(lightLight.component.color, 0.0f);
 
 			pointLightCount++;
 		}
-		else if (lightLight.type == LightType::SPOT) {
-			lubo.spotLightsPosition[spotLightCount] = glm::vec4(lightTransform.position, 0.0f);
-			lubo.spotLightsDirection[spotLightCount] = glm::vec4(lightTransform.rotation, 0.0f);
-			lubo.spotLightsColor[spotLightCount] = glm::vec4(lightLight.color, 0.0f);
-			lubo.spotLightsCutoffs[spotLightCount] = glm::vec4(glm::cos(glm::radians(lightLight.cutoffs.x)), glm::cos(glm::radians(lightLight.cutoffs.y)), 0.0f, 0.0f);
+		else if (lightLight.component.type == LightType::SPOT) {
+			lubo.spotLightsPosition[spotLightCount] = glm::vec4(lightTransform.component.position, 0.0f);
+			lubo.spotLightsDirection[spotLightCount] = glm::vec4(lightTransform.component.rotation, 0.0f);
+			lubo.spotLightsColor[spotLightCount] = glm::vec4(lightLight.component.color, 0.0f);
+			lubo.spotLightsCutoffs[spotLightCount] = glm::vec4(glm::cos(glm::radians(lightLight.component.cutoffs.x)), glm::cos(glm::radians(lightLight.component.cutoffs.y)), 0.0f, 0.0f);
 
-			glm::vec3 eye = lightTransform.position;
-			glm::vec3 to = lightTransform.rotation;
+			glm::vec3 eye = lightTransform.component.position;
+			glm::vec3 to = lightTransform.component.rotation;
 			glm::vec3 up = glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), -to) == (glm::length(glm::vec3(0.0f, 1.0f, 0.0f)) * glm::length(-to)) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0);
 			glm::mat4 shadowProjection = Camera::createPerspectiveProjection(120.0f, SHADOWMAP_WIDTH / static_cast<float>(SHADOWMAP_HEIGHT), 0.1f, 20.0f, false);
 			glm::mat4 shadowView = Camera::createLookAtView(eye, eye + to, up);
@@ -990,11 +990,11 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
 			ObjectUniformBufferObject oubo = {};
-			glm::mat4 translate = glm::translate(glm::mat4(1.0f), objectTransform.position);
-			glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-			glm::mat4 scale = glm::scale(glm::mat4(1.0f), objectTransform.scale);
+			glm::mat4 translate = glm::translate(glm::mat4(1.0f), objectTransform.component.position);
+			glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.component.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.component.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f), glm::radians(objectTransform.component.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 scale = glm::scale(glm::mat4(1.0f), objectTransform.component.scale);
 			oubo.model = translate * rotateX * rotateY * rotateZ * scale;
 
 			memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(objectRenderable.buffers.at(frameInFlightIndex).memoryInfo.data) + objectRenderable.buffers.at(frameInFlightIndex).memoryInfo.offset), &oubo, sizeof(ObjectUniformBufferObject));
@@ -1093,7 +1093,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity light : *lights) {
 		auto const& lightLight = ecs.getComponent<Light>(light);
 
-		if (lightLight.type == LightType::DIRECTIONAL || lightLight.type == LightType::SPOT) {
+		if (lightLight.component.type == LightType::DIRECTIONAL || lightLight.component.type == LightType::SPOT) {
 			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
 
 			for (Entity object : entities) {
@@ -1632,6 +1632,6 @@ void Renderer::reloadOnResize() {
 
 	for (Entity camera : cameraSystem->entities) {
 		auto& cameraCamera = ecs.getComponent<Camera>(camera);
-		cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.nearPlane, cameraCamera.farPlane, true);
+		cameraCamera.projection = Camera::createPerspectiveProjection(cameraCamera.component.FOV, window.extent.width / static_cast<float>(window.extent.height), cameraCamera.component.nearPlane, cameraCamera.component.farPlane, true);
 	}
 }

@@ -4,8 +4,12 @@
 #include "../../../external/glm/glm/glm.hpp"
 #include "../../graphics/structs/ShaderStructs.h"
 
-struct Light {
+struct LightComponent {
 	LightType type;
 	glm::vec3 color;
 	glm::vec2 cutoffs;
+};
+
+struct Light {
+	LightComponent component;
 };

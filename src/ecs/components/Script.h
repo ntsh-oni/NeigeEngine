@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
 
-struct Script {
-	// Component parameters
+struct ScriptComponent {
 	std::string scriptPath = "";
+};
+
+struct Script {
+	ScriptComponent component;
 
 	// Script state
 	bool initialized = false;

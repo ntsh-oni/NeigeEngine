@@ -154,10 +154,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["fov"].get(fov);
 
 				if (!error) {
-					camera.FOV = static_cast<float>(fov);
+					camera.component.FOV = static_cast<float>(fov);
 				}
 				else {
-					camera.FOV = 45.0f;
+					camera.component.FOV = 45.0f;
 				}
 
 				// Near plane
@@ -165,10 +165,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["nearPlane"].get(nearPlane);
 
 				if (!error) {
-					camera.nearPlane = static_cast<float>(nearPlane);
+					camera.component.nearPlane = static_cast<float>(nearPlane);
 				}
 				else {
-					camera.nearPlane = 0.3f;
+					camera.component.nearPlane = 0.3f;
 				}
 
 				// Far plane
@@ -176,10 +176,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["farPlane"].get(farPlane);
 
 				if (!error) {
-					camera.farPlane = static_cast<float>(farPlane);
+					camera.component.farPlane = static_cast<float>(farPlane);
 				}
 				else {
-					camera.farPlane = 200.0f;
+					camera.component.farPlane = 200.0f;
 				}
 
 				ecs.addComponent(ecsEntity, camera);
@@ -193,13 +193,13 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 
 				if (!error) {
 					if (type == "DIRECTIONAL") {
-						light.type = LightType::DIRECTIONAL;
+						light.component.type = LightType::DIRECTIONAL;
 					}
 					else if (type == "POINT") {
-						light.type = LightType::POINT;
+						light.component.type = LightType::POINT;
 					}
 					else if (type == "SPOT") {
-						light.type = LightType::SPOT;
+						light.component.type = LightType::SPOT;
 					}
 					else {
 						NEIGE_ERROR("Light type " + std::string(type) + " is undefined (valid options: \"DIRECTIONAL\", \"POINT\" or \"SPOT\").");
@@ -222,19 +222,19 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 					}
 
 					if (index == 3) {
-						light.color = glm::vec3(color[0], color[1], color[2]);
+						light.component.color = glm::vec3(color[0], color[1], color[2]);
 					}
 					else {
 						NEIGE_WARNING("Light color vector is missing " + std::to_string(3 - index) + " values.");
-						light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+						light.component.color = glm::vec3(1.0f, 1.0f, 1.0f);
 					}
 				}
 				else {
-					light.color = glm::vec3(1.0f, 1.0f, 1.0f);
+					light.component.color = glm::vec3(1.0f, 1.0f, 1.0f);
 				}
 
 				// Cutoffs vector
-				if (light.type == LightType::SPOT) {
+				if (light.component.type == LightType::SPOT) {
 					float cutoffs[2];
 					simdjson::ondemand::array cutoffsArray;
 					error = component.value()["cutoffs"].get(cutoffsArray);
@@ -247,19 +247,19 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 						}
 
 						if (index == 2) {
-							light.cutoffs = glm::vec2(cutoffs[0], cutoffs[1]);
+							light.component.cutoffs = glm::vec2(cutoffs[0], cutoffs[1]);
 						}
 						else {
 							NEIGE_WARNING("Light cutoffs vector is missing " + std::to_string(2 - index) + " values.");
-							light.cutoffs = glm::vec2(10.0f, 20.0f);
+							light.component.cutoffs = glm::vec2(10.0f, 20.0f);
 						}
 					}
 					else {
-						light.cutoffs = glm::vec2(1.0f, 1.0f);
+						light.component.cutoffs = glm::vec2(1.0f, 1.0f);
 					}
 				}
 				else {
-					light.cutoffs = glm::vec2(0.0f);
+					light.component.cutoffs = glm::vec2(0.0f);
 				}
 
 				ecs.addComponent(ecsEntity, light);
@@ -272,7 +272,7 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["modelPath"].get(modelPath);
 
 				if (!error) {
-					renderable.modelPath = modelPath;
+					renderable.component.modelPath = modelPath;
 				}
 				else {
 					NEIGE_ERROR("Renderable model path is not specified.");
@@ -283,7 +283,7 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["vertexShaderPath"].get(vertexShaderPath);
 
 				if (!error) {
-					renderable.vertexShaderPath = vertexShaderPath;
+					renderable.component.vertexShaderPath = vertexShaderPath;
 				}
 				else {
 					NEIGE_ERROR("Renderable vertex shader path is not specified.");
@@ -294,7 +294,7 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["fragmentShaderPath"].get(fragmentShaderPath);
 
 				if (!error) {
-					renderable.fragmentShaderPath = fragmentShaderPath;
+					renderable.component.fragmentShaderPath = fragmentShaderPath;
 				}
 				else {
 					NEIGE_ERROR("Renderable fragment shader path is not specified.");
@@ -305,10 +305,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["tesselationControlShaderPath"].get(tesselationControlShaderPath);
 
 				if (!error) {
-					renderable.tesselationControlShaderPath = tesselationControlShaderPath;
+					renderable.component.tesselationControlShaderPath = tesselationControlShaderPath;
 				}
 				else {
-					renderable.tesselationControlShaderPath = "";
+					renderable.component.tesselationControlShaderPath = "";
 				}
 
 				// Tesselation evaluation shader
@@ -316,10 +316,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["tesselationEvaluationShaderPath"].get(tesselationEvaluationShaderPath);
 
 				if (!error) {
-					renderable.tesselationEvaluationShaderPath = tesselationEvaluationShaderPath;
+					renderable.component.tesselationEvaluationShaderPath = tesselationEvaluationShaderPath;
 				}
 				else {
-					renderable.tesselationEvaluationShaderPath = "";
+					renderable.component.tesselationEvaluationShaderPath = "";
 				}
 
 				// Geometry shader
@@ -327,10 +327,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["geometryShaderPath"].get(geometryShaderPath);
 
 				if (!error) {
-					renderable.geometryShaderPath = geometryShaderPath;
+					renderable.component.geometryShaderPath = geometryShaderPath;
 				}
 				else {
-					renderable.geometryShaderPath = "";
+					renderable.component.geometryShaderPath = "";
 				}
 
 				ecs.addComponent(ecsEntity, renderable);
@@ -343,10 +343,10 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["affectedByGravity"].get(affectedByGravity);
 
 				if (!error) {
-					rigidbody.affectedByGravity = affectedByGravity;
+					rigidbody.component.affectedByGravity = affectedByGravity;
 				}
 				else {
-					rigidbody.affectedByGravity = false;
+					rigidbody.component.affectedByGravity = false;
 				}
 
 				ecs.addComponent(ecsEntity, rigidbody);
@@ -358,7 +358,7 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 				error = component.value()["scriptPath"].get(scriptPath);
 
 				if (!error) {
-					script.scriptPath = scriptPath;
+					script.component.scriptPath = scriptPath;
 				}
 
 				ecs.addComponent(ecsEntity, script);
@@ -379,15 +379,15 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 					}
 
 					if (index == 3) {
-						transform.position = glm::vec3(position[0], position[1], position[2]);
+						transform.component.position = glm::vec3(position[0], position[1], position[2]);
 					}
 					else {
 						NEIGE_WARNING("Transform position vector is missing " + std::to_string(3 - index) + " values.");
-						transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+						transform.component.position = glm::vec3(0.0f, 0.0f, 0.0f);
 					}
 				}
 				else {
-					transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+					transform.component.position = glm::vec3(0.0f, 0.0f, 0.0f);
 				}
 
 				// Rotation vector
@@ -403,15 +403,15 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 					}
 
 					if (index == 3) {
-						transform.rotation = glm::vec3(rotation[0], rotation[1], rotation[2]);
+						transform.component.rotation = glm::vec3(rotation[0], rotation[1], rotation[2]);
 					}
 					else {
 						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
-						transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+						transform.component.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 					}
 				}
 				else {
-					transform.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+					transform.component.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 				}
 
 				// Scale vector
@@ -427,15 +427,15 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 					}
 
 					if (index == 3) {
-						transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
+						transform.component.scale = glm::vec3(scale[0], scale[1], scale[2]);
 					}
 					else {
 						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
-						transform.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+						transform.component.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 					}
 				}
 				else {
-					transform.scale = glm::vec3(1.0f, 1.0f, 1.0f);
+					transform.component.scale = glm::vec3(1.0f, 1.0f, 1.0f);
 				}
 
 				ecs.addComponent(ecsEntity, transform);
