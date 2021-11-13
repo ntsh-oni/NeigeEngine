@@ -5,10 +5,14 @@
 #include "../../../external/glm/glm/gtc/matrix_transform.hpp"
 #include "../../physics/Frustum.h"
 
-struct Camera {
+struct CameraComponent {
 	float FOV;
 	float nearPlane;
 	float farPlane;
+};
+
+struct Camera {
+	CameraComponent component;
 
 	glm::mat4 view;
 	glm::mat4 projection;

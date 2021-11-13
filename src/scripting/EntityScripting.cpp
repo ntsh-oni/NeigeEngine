@@ -98,7 +98,7 @@ int EntityScripting::getRenderableComponentModelPath(lua_State* L) {
 			if (ecs.hasComponent<Renderable>(entity)) {
 				auto& entityRenderable = ecs.getComponent<Renderable>(entity);
 
-				lua_pushstring(L, entityRenderable.modelPath.c_str());
+				lua_pushstring(L, entityRenderable.component.modelPath.c_str());
 
 				return 1;
 			}
@@ -146,7 +146,7 @@ int EntityScripting::getScriptComponentScriptPath(lua_State* L) {
 			if (ecs.hasComponent<Script>(entity)) {
 				auto& entityScript = ecs.getComponent<Script>(entity);
 
-				lua_pushstring(L, entityScript.scriptPath.c_str());
+				lua_pushstring(L, entityScript.component.scriptPath.c_str());
 
 				return 1;
 			}
@@ -194,9 +194,9 @@ int EntityScripting::getTransformComponentPosition(lua_State* L) {
 			if (ecs.hasComponent<Transform>(entity)) {
 				auto& entityTransform = ecs.getComponent<Transform>(entity);
 
-				lua_pushnumber(L, entityTransform.position.x);
-				lua_pushnumber(L, entityTransform.position.y);
-				lua_pushnumber(L, entityTransform.position.z);
+				lua_pushnumber(L, entityTransform.component.position.x);
+				lua_pushnumber(L, entityTransform.component.position.y);
+				lua_pushnumber(L, entityTransform.component.position.z);
 
 				return 3;
 			}
@@ -224,9 +224,9 @@ int EntityScripting::getTransformComponentRotation(lua_State* L) {
 			if (ecs.hasComponent<Transform>(entity)) {
 				auto& entityTransform = ecs.getComponent<Transform>(entity);
 
-				lua_pushnumber(L, entityTransform.rotation.x);
-				lua_pushnumber(L, entityTransform.rotation.y);
-				lua_pushnumber(L, entityTransform.rotation.z);
+				lua_pushnumber(L, entityTransform.component.rotation.x);
+				lua_pushnumber(L, entityTransform.component.rotation.y);
+				lua_pushnumber(L, entityTransform.component.rotation.z);
 
 				return 3;
 			}
@@ -254,9 +254,9 @@ int EntityScripting::getTransformComponentScale(lua_State* L) {
 			if (ecs.hasComponent<Transform>(entity)) {
 				auto& entityTransform = ecs.getComponent<Transform>(entity);
 
-				lua_pushnumber(L, entityTransform.scale.x);
-				lua_pushnumber(L, entityTransform.scale.y);
-				lua_pushnumber(L, entityTransform.scale.z);
+				lua_pushnumber(L, entityTransform.component.scale.x);
+				lua_pushnumber(L, entityTransform.component.scale.y);
+				lua_pushnumber(L, entityTransform.component.scale.z);
 
 				return 3;
 			}
@@ -290,7 +290,7 @@ int EntityScripting::setTransformComponentPosition(lua_State* L) {
 				float z = static_cast<float>(lua_tonumber(L, 4));
 
 				if (lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4)) {
-					entityTransform.position = glm::vec3(x, y, z);
+					entityTransform.component.position = glm::vec3(x, y, z);
 
 					return 0;
 				}
@@ -329,7 +329,7 @@ int EntityScripting::setTransformComponentRotation(lua_State* L) {
 				float z = static_cast<float>(lua_tonumber(L, 4));
 
 				if (lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4)) {
-					entityTransform.rotation = glm::vec3(x, y, z);
+					entityTransform.component.rotation = glm::vec3(x, y, z);
 
 					return 0;
 				}
@@ -368,7 +368,7 @@ int EntityScripting::setTransformComponentScale(lua_State* L) {
 				float z = static_cast<float>(lua_tonumber(L, 4));
 
 				if (lua_isnumber(L, -2) && lua_isnumber(L, -3) && lua_isnumber(L, -4)) {
-					entityTransform.scale = glm::vec3(x, y, z);
+					entityTransform.component.scale = glm::vec3(x, y, z);
 
 					return 0;
 				}

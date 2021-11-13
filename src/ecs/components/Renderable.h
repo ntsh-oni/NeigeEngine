@@ -9,17 +9,18 @@
 #include <vector>
 #include <iostream>
 
-struct Renderable {
-	// Component paramaters
-	// Model
+struct RenderableComponent {
 	std::string modelPath = "";
 
-	// Shaders
 	std::string vertexShaderPath = "";
 	std::string fragmentShaderPath = "";
 	std::string tesselationControlShaderPath = "";
 	std::string tesselationEvaluationShaderPath = "";
 	std::string geometryShaderPath = "";
+};
+
+struct Renderable {
+	RenderableComponent component;
 
 	// Loading state
 	bool loaded = false;
@@ -37,7 +38,7 @@ struct Renderable {
 	std::string lookupString = "";
 
 	void createLookupString() {
-		lookupString = vertexShaderPath + fragmentShaderPath + tesselationControlShaderPath + tesselationEvaluationShaderPath + geometryShaderPath + std::to_string(static_cast<int>(topology));
+		lookupString = component.vertexShaderPath + component.fragmentShaderPath + component.tesselationControlShaderPath + component.tesselationEvaluationShaderPath + component.geometryShaderPath + std::to_string(static_cast<int>(topology));
 	}
 
 	// Descriptor sets and buffers
