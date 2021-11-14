@@ -87,7 +87,8 @@ struct Renderable {
 		VkDescriptorImageInfo irradianceInfo = {};
 		VkDescriptorImageInfo prefilterInfo = {};
 		VkDescriptorImageInfo brdfLUTInfo = {};
-		std::vector<VkDescriptorImageInfo> shadowMapsInfos;
+		std::vector<VkDescriptorImageInfo> directionalShadowMapsInfos;
+		std::vector<VkDescriptorImageInfo> spotShadowMapsInfos;
 		VkDescriptorBufferInfo timeInfo = {};
 
 		for (size_t i = 0; i < graphicsPipeline->sets[0].bindings.size(); i++) {
@@ -225,28 +226,51 @@ struct Renderable {
 
 				writesDescriptorSet.push_back(brdfLUTWriteDescriptorSet);
 			}
-			else if (bindingName == "shadowMaps") {
-				shadowMapsInfos.resize(MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS);
+			else if (bindingName == "directionalLightsShadowMaps") {
+				directionalShadowMapsInfos.resize(MAX_DIR_LIGHTS);
 
-				for (int j = 0; j < MAX_DIR_LIGHTS + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS; j++) {
-					shadowMapsInfos[j].sampler = shadowSampler;
-					shadowMapsInfos[j].imageView = (j < shadow.mapCount) ? shadow.images[j].imageView : shadow.defaultShadow.imageView;
-					shadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				for (int j = 0; j < MAX_DIR_LIGHTS; j++) {
+					directionalShadowMapsInfos[j].sampler = shadowSampler;
+					directionalShadowMapsInfos[j].imageView = (j < shadow.directionalImages.size()) ? shadow.directionalImages[j].imageView : shadow.defaultShadow.imageView;
+					directionalShadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				}
 
-				VkWriteDescriptorSet shadowMapsWriteDescriptorSet = {};
-				shadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				shadowMapsWriteDescriptorSet.pNext = nullptr;
-				shadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				shadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				shadowMapsWriteDescriptorSet.dstArrayElement = 0;
-				shadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(shadowMapsInfos.size());
-				shadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				shadowMapsWriteDescriptorSet.pImageInfo = shadowMapsInfos.data();
-				shadowMapsWriteDescriptorSet.pBufferInfo = nullptr;
-				shadowMapsWriteDescriptorSet.pTexelBufferView = nullptr;
+				VkWriteDescriptorSet directionalShadowMapsWriteDescriptorSet = {};
+				directionalShadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				directionalShadowMapsWriteDescriptorSet.pNext = nullptr;
+				directionalShadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
+				directionalShadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				directionalShadowMapsWriteDescriptorSet.dstArrayElement = 0;
+				directionalShadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(directionalShadowMapsInfos.size());
+				directionalShadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				directionalShadowMapsWriteDescriptorSet.pImageInfo = directionalShadowMapsInfos.data();
+				directionalShadowMapsWriteDescriptorSet.pBufferInfo = nullptr;
+				directionalShadowMapsWriteDescriptorSet.pTexelBufferView = nullptr;
 
-				writesDescriptorSet.push_back(shadowMapsWriteDescriptorSet);
+				writesDescriptorSet.push_back(directionalShadowMapsWriteDescriptorSet);
+			}
+			else if (bindingName == "spotLightsShadowMaps") {
+				spotShadowMapsInfos.resize(MAX_SPOT_LIGHTS);
+
+				for (int j = 0; j < MAX_SPOT_LIGHTS; j++) {
+					spotShadowMapsInfos[j].sampler = shadowSampler;
+					spotShadowMapsInfos[j].imageView = (j < shadow.spotImages.size()) ? shadow.spotImages[j].imageView : shadow.defaultShadow.imageView;
+					spotShadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				}
+
+				VkWriteDescriptorSet spotShadowMapsWriteDescriptorSet = {};
+				spotShadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				spotShadowMapsWriteDescriptorSet.pNext = nullptr;
+				spotShadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
+				spotShadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
+				spotShadowMapsWriteDescriptorSet.dstArrayElement = 0;
+				spotShadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(spotShadowMapsInfos.size());
+				spotShadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				spotShadowMapsWriteDescriptorSet.pImageInfo = spotShadowMapsInfos.data();
+				spotShadowMapsWriteDescriptorSet.pBufferInfo = nullptr;
+				spotShadowMapsWriteDescriptorSet.pTexelBufferView = nullptr;
+
+				writesDescriptorSet.push_back(spotShadowMapsWriteDescriptorSet);
 			}
 			else if (bindingName == "time") {
 				timeInfo.buffer = timeBuffers.at(frameInFlightIndex).buffer;

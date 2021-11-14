@@ -12,4 +12,7 @@ struct LightComponent {
 
 struct Light {
 	LightComponent component;
+
+	int shadowMapIndex = 0;
+	int savedShadowMapIndex = 0;
 };

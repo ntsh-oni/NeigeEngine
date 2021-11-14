@@ -15,11 +15,12 @@ struct Shadow {
 	GraphicsPipeline opaqueGraphicsPipeline;
 	GraphicsPipeline maskGraphicsPipeline;
 	std::vector<Buffer> buffers;
-	std::vector<Image> images;
-	RenderPass renderPass;
-	std::vector<Framebuffer> framebuffers;
 	Image defaultShadow;
-	int mapCount;
+	std::vector<Image> directionalImages;
+	std::vector<Image> spotImages;
+	RenderPass renderPass;
+	std::vector<Framebuffer> directionalFramebuffers;
+	std::vector<Framebuffer> spotFramebuffers;
 
 	void init();
 	void destroy();

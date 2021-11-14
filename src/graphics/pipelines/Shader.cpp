@@ -128,7 +128,7 @@ bool Shader::compile() {
 	includer.pushExternalLocalDirectory(file);
 	std::string preprocess;
 	if (!shader.preprocess(&defaultTBuiltInResource, defaultVersion, ENoProfile, false, false, messages, &preprocess, includer)) {
-		NEIGE_SHADER_ERROR("\"" + file + "\" shader preprocessing failed.\n" + "\"" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
+		NEIGE_SHADER_ERROR("\"" + file + "\" shader preprocessing failed.\n" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
 		if (module != VK_NULL_HANDLE) {
 			return false;
 		}
@@ -139,7 +139,7 @@ bool Shader::compile() {
 	const char* preprocessString = preprocess.c_str();
 	shader.setStrings(&preprocessString, 1);
 	if (!shader.parse(&defaultTBuiltInResource, defaultVersion, false, messages)) {
-		NEIGE_SHADER_ERROR("\"" + file + "\" shader parsing failed.\n" + "\"" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
+		NEIGE_SHADER_ERROR("\"" + file + "\" shader parsing failed.\n" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
 		if (module != VK_NULL_HANDLE) {
 			return false;
 		}
@@ -150,7 +150,7 @@ bool Shader::compile() {
 	glslang::TProgram program;
 	program.addShader(&shader);
 	if (!program.link(messages)) {
-		NEIGE_SHADER_ERROR("\"" + file + "\" shader linking failed.\n" + "\"" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
+		NEIGE_SHADER_ERROR("\"" + file + "\" shader linking failed.\n" + shader.getInfoLog() + "\n" + shader.getInfoDebugLog());
 		if (module != VK_NULL_HANDLE) {
 			return false;
 		}

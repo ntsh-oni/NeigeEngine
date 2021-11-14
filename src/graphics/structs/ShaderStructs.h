@@ -192,11 +192,11 @@ struct CameraUniformBufferObject {
 // Lights Uniform Buffer Object
 struct LightingUniformBufferObject {
 	glm::vec4 numLights;
-	glm::vec4 dirLightsDirection[MAX_DIR_LIGHTS];
+	glm::vec4 dirLightsDirectionAndShadowIndex[MAX_DIR_LIGHTS];
 	glm::vec4 dirLightsColor[MAX_DIR_LIGHTS];
 	glm::vec4 pointLightsPosition[MAX_POINT_LIGHTS];
 	glm::vec4 pointLightsColor[MAX_POINT_LIGHTS];
-	glm::vec4 spotLightsPosition[MAX_SPOT_LIGHTS];
+	glm::vec4 spotLightsPositionAndShadowIndex[MAX_SPOT_LIGHTS];
 	glm::vec4 spotLightsDirection[MAX_SPOT_LIGHTS];
 	glm::vec4 spotLightsColor[MAX_SPOT_LIGHTS];
 	glm::vec4 spotLightsCutoffs[MAX_SPOT_LIGHTS];
