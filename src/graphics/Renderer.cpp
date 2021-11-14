@@ -224,23 +224,44 @@ void Renderer::init(const std::string& applicationName) {
 
 	// Shadow
 	{
+		int dirLightCount = 0;
+		int spotLightCount = 0;
 		for (Entity light : *lights) {
-			auto const& lightLight = ecs.getComponent<Light>(light);
+			auto& lightLight = ecs.getComponent<Light>(light);
 
-			if (lightLight.component.type == LightType::DIRECTIONAL || lightLight.component.type == LightType::SPOT) {
+			if (lightLight.component.type == LightType::DIRECTIONAL) {
 				Framebuffer lightFramebuffer;
 
 				Image depthAttachment;
 				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.memoryInfo);
 				ImageTools::createImageView(&depthAttachment.imageView, depthAttachment.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-				shadow.images.push_back(depthAttachment);
+				shadow.directionalImages.push_back(depthAttachment);
 
 				std::vector<VkImageView> framebufferAttachments;
 				framebufferAttachments.push_back(depthAttachment.imageView);
 				lightFramebuffer.init(&shadow.renderPass, framebufferAttachments, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1);
-				shadow.framebuffers.push_back(lightFramebuffer);
+				shadow.directionalFramebuffers.push_back(lightFramebuffer);
 
-				shadow.mapCount++;
+				lightLight.shadowMapIndex = dirLightCount + 1;
+				lightLight.savedShadowMapIndex = lightLight.shadowMapIndex;
+				dirLightCount++;
+			}
+			else if (lightLight.component.type == LightType::SPOT) {
+				Framebuffer lightFramebuffer;
+
+				Image depthAttachment;
+				ImageTools::createImage(&depthAttachment.image, 1, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, physicalDevice.depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depthAttachment.memoryInfo);
+				ImageTools::createImageView(&depthAttachment.imageView, depthAttachment.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+				shadow.spotImages.push_back(depthAttachment);
+
+				std::vector<VkImageView> framebufferAttachments;
+				framebufferAttachments.push_back(depthAttachment.imageView);
+				lightFramebuffer.init(&shadow.renderPass, framebufferAttachments, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, 1);
+				shadow.spotFramebuffers.push_back(lightFramebuffer);
+
+				lightLight.shadowMapIndex = spotLightCount + 1;
+				lightLight.savedShadowMapIndex = lightLight.shadowMapIndex;
+				spotLightCount++;
 			}
 		}
 	}
@@ -894,7 +915,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 		auto const& lightTransform = ecs.getComponent<Transform>(entity);
 
 		if (lightLight.component.type == LightType::DIRECTIONAL) {
-			lubo.dirLightsDirection[dirLightCount] = glm::vec4(lightTransform.component.rotation, 0.0f);
+			lubo.dirLightsDirectionAndShadowIndex[dirLightCount] = glm::vec4(lightTransform.component.rotation, static_cast<float>(lightLight.shadowMapIndex));
 			lubo.dirLightsColor[dirLightCount] = glm::vec4(lightLight.component.color, 0.0f);
 
 			if (!foundMainLight) {
@@ -919,7 +940,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			pointLightCount++;
 		}
 		else if (lightLight.component.type == LightType::SPOT) {
-			lubo.spotLightsPosition[spotLightCount] = glm::vec4(lightTransform.component.position, 0.0f);
+			lubo.spotLightsPositionAndShadowIndex[spotLightCount] = glm::vec4(lightTransform.component.position, static_cast<float>(lightLight.shadowMapIndex));
 			lubo.spotLightsDirection[spotLightCount] = glm::vec4(lightTransform.component.rotation, 0.0f);
 			lubo.spotLightsColor[spotLightCount] = glm::vec4(lightLight.component.color, 0.0f);
 			lubo.spotLightsCutoffs[spotLightCount] = glm::vec4(glm::cos(glm::radians(lightLight.component.cutoffs.x)), glm::cos(glm::radians(lightLight.component.cutoffs.y)), 0.0f, 0.0f);
@@ -1089,12 +1110,16 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	depthPrepass.renderPass.end(&renderingCommandBuffers[frameInFlightIndex]);
 
 	// Shadow
-	int lightIndex = 0;
+	int shadowPushConstants[2];
 	for (Entity light : *lights) {
 		auto const& lightLight = ecs.getComponent<Light>(light);
 
-		if (lightLight.component.type == LightType::DIRECTIONAL || lightLight.component.type == LightType::SPOT) {
-			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadow.framebuffers[lightIndex].framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
+		shadowPushConstants[0] = lightLight.shadowMapIndex;
+		shadowPushConstants[1] = (lightLight.component.type == LightType::DIRECTIONAL) ? 0 : ((lightLight.component.type == LightType::POINT) ? 1 : 2);
+
+		if ((lightLight.component.type == LightType::DIRECTIONAL || lightLight.component.type == LightType::SPOT) && lightLight.shadowMapIndex != 0) {
+			Framebuffer* shadowFramebuffer = (lightLight.component.type == LightType::DIRECTIONAL) ? &shadow.directionalFramebuffers[lightLight.shadowMapIndex - 1] : &shadow.spotFramebuffers[lightLight.shadowMapIndex - 1];
+			shadow.renderPass.begin(&renderingCommandBuffers[frameInFlightIndex], shadowFramebuffer->framebuffer, { SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT });
 
 			for (Entity object : entities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
@@ -1106,7 +1131,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					if (objectRenderable.model->gotOpaquePrimitives) {
 						shadow.opaqueGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 						objectRenderable.shadowDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, 0);
-						shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
+						shadow.opaqueGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, 2 * sizeof(int), &shadowPushConstants);
 						objectRenderable.drawOpaque(&renderingCommandBuffers[frameInFlightIndex], &shadow.opaqueGraphicsPipeline, false, frameInFlightIndex, false);
 					}
 
@@ -1114,15 +1139,13 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 					if (objectRenderable.model->gotMaskPrimitives) {
 						shadow.maskGraphicsPipeline.bind(&renderingCommandBuffers[frameInFlightIndex]);
 						objectRenderable.shadowMaskDescriptorSets.at(frameInFlightIndex).bind(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, 0);
-						shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(int), &lightIndex);
+						shadow.maskGraphicsPipeline.pushConstant(&renderingCommandBuffers[frameInFlightIndex], VK_SHADER_STAGE_VERTEX_BIT, 0, 2 * sizeof(int), &shadowPushConstants);
 						objectRenderable.drawMask(&renderingCommandBuffers[frameInFlightIndex], &shadow.maskGraphicsPipeline, true, frameInFlightIndex, false);
 					}
 				}
 			}
 
 			shadow.renderPass.end(&renderingCommandBuffers[frameInFlightIndex]);
-
-			lightIndex++;
 		}
 	}
 

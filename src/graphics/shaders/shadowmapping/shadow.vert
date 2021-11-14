@@ -14,9 +14,10 @@ layout(set = 0, binding = 1) uniform Shadow {
 	mat4 spotLightSpaces[MAX_SPOT_LIGHTS];
 } shadow;
 
-layout(push_constant) uniform LightIndex {
-	layout(offset = 0) int lightIndex;
-} lightIndex;
+layout(push_constant) uniform PushConstants {
+	layout(offset = 0) int shadowIndex;
+	int lightType;
+} pC;
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 uv;
@@ -30,11 +31,12 @@ void main() {
 
 	int numDirLights = int(shadow.numLights.x);
 	
-	if (lightIndex.lightIndex < numDirLights) {
-		gl_Position = shadow.dirLightSpaces[lightIndex.lightIndex] * object.model * vec4(position, 1.0);
+	if (pC.lightType == 0) {
+		gl_Position = shadow.dirLightSpaces[pC.shadowIndex - 1] * object.model * vec4(position, 1.0);
 	}
-	else if (lightIndex.lightIndex >= numDirLights) {
-		gl_Position = shadow.spotLightSpaces[lightIndex.lightIndex - numDirLights] * object.model * vec4(position, 1.0);
+	else if (pC.lightType == 2) {
+		gl_Position = shadow.spotLightSpaces[pC.shadowIndex - 1] * object.model * vec4(position, 1.0);
 	}
+
 	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 }

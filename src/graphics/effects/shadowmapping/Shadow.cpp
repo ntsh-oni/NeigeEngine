@@ -23,6 +23,9 @@ void Shadow::init() {
 	ImageTools::createImageView(&defaultShadow.imageView, defaultShadow.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, physicalDevice.depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	ImageTools::transitionLayout(defaultShadow.image, physicalDevice.depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
+	directionalImages.push_back(defaultShadow);
+	spotImages.push_back(defaultShadow);
+
 	opaqueGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/shadowmapping/shadow.vert";
 	opaqueGraphicsPipeline.renderPass = &renderPass;
 	opaqueGraphicsPipeline.viewport = &viewport;
@@ -50,10 +53,16 @@ void Shadow::destroy() {
 		buffer.destroy();
 	}
 	defaultShadow.destroy();
-	for (Image& image : images) {
-		image.destroy();
+	for (size_t i = 1; i < directionalImages.size(); i++) {
+		directionalImages[i].destroy();
 	}
-	for (size_t i = 0; i < framebuffers.size(); i++) {
-		framebuffers[i].destroy();
+	for (size_t i = 1; i < spotImages.size(); i++) {
+		spotImages[i].destroy();
+	}
+	for (Framebuffer& framebuffer : directionalFramebuffers) {
+		framebuffer.destroy();
+	}
+	for (Framebuffer& framebuffer : spotFramebuffers) {
+		framebuffer.destroy();
 	}
 }
