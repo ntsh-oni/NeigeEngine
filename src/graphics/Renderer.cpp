@@ -936,9 +936,9 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	}
 	if (!foundMainLight) {
 		// No directional light found
-		mainDirectionalLightDirection[0] = 0.0f;
-		mainDirectionalLightDirection[1] = 0.0f;
-		mainDirectionalLightDirection[2] = 0.0f;
+		mainDirectionalLightDirection[0] = 1.0f;
+		mainDirectionalLightDirection[1] = 1.0f;
+		mainDirectionalLightDirection[2] = 1.0f;
 	}
 
 	lubo.numLights.x = static_cast<float>(dirLightCount);
