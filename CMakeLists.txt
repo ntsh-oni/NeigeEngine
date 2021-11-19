@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 SET(NAME NeigeEngine)
 PROJECT(${NAME} VERSION 0.0.1 LANGUAGES C CXX)
 
+SET(ALSOFT_EXAMPLES OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_EMBED_HRTF_DATA OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_INSTALL_AMBDEC_PRESETS OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_INSTALL_CONFIG OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_INSTALL_EXAMPLES OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_INSTALL_HRTF_DATA OFF CACHE BOOL "" FORCE)
+SET(ALSOFT_INSTALL_UTILS OFF CACHE BOOL "" FORCE)
 SET(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 SET(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -12,6 +19,8 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glslang)
 
 add_subdirectory(external/luabuild)
+
+add_subdirectory(external/openal-soft)
 
 add_subdirectory(external/simdjson)
 
@@ -37,6 +46,12 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 SET(GAME_SOURCES src/Game.cpp)
 SET(GAME_HEADERS src/Game.h src/Scene.h)
+
+SET(AUDIO_RESOURCES_SOURCES src/audio/resources/Sound.cpp)
+SET(AUDIO_RESOURCES_HEADERS src/audio/resources/AudioResources.h src/audio/resources/Sound.h)
+
+SET(AUDIO_SOURCES src/audio/Audio.cpp ${AUDIO_RESOURCES_SOURCES})
+SET(AUDIO_HEADERS src/audio/Audio.h ${AUDIO_RESOURCES_HEADERS})
 
 SET(GRAPHICS_COMMANDS_SOURCES src/graphics/commands/CommandBuffer.cpp src/graphics/commands/CommandPool.cpp)
 SET(GRAPHICS_COMMANDS_HEADERS src/graphics/commands/CommandBuffer.h src/graphics/commands/CommandPool.h)
@@ -64,15 +79,17 @@ SET(GRAPHICS_HEADERS src/graphics/Renderer.h ${GRAPHICS_COMMANDS_HEADERS} ${GRAP
 SET(PHYSICS_SOURCES src/physics/AABB.cpp src/physics/Frustum.cpp src/physics/Physics.cpp)
 SET(PHYSICS_HEADERS src/physics/AABB.h src/physics/Frustum.h src/physics/Physics.h)
 
-SET(SCRIPTING_SOURCES src/scripting/CameraScripting.cpp src/scripting/DebugScripting.cpp src/scripting/EntityScripting.cpp src/scripting/InputScripting.cpp src/scripting/Scripting.cpp src/scripting/TimeScripting.cpp src/scripting/UIScripting.cpp src/scripting/VectorScripting.cpp src/scripting/WindowScripting.cpp)
-SET(SCRIPTING_HEADERS src/scripting/CameraScripting.h src/scripting/DebugScripting.h src/scripting/EntityScripting.h src/scripting/InputScripting.h src/scripting/Scripting.h src/scripting/ScriptingResources.h src/scripting/TimeScripting.h src/scripting/UIScripting.h src/scripting/VectorScripting.h src/scripting/WindowScripting.h)
+SET(SCRIPTING_RESOURCES_HEADERS src/scripting/resourcesScriptingResources.h)
+
+SET(SCRIPTING_SOURCES src/scripting/AudioScripting.cpp src/scripting/CameraScripting.cpp src/scripting/DebugScripting.cpp src/scripting/EntityScripting.cpp src/scripting/InputScripting.cpp src/scripting/Scripting.cpp src/scripting/TimeScripting.cpp src/scripting/UIScripting.cpp src/scripting/VectorScripting.cpp src/scripting/WindowScripting.cpp)
+SET(SCRIPTING_HEADERS src/scripting/AudioScripting.h src/scripting/CameraScripting.h src/scripting/DebugScripting.h src/scripting/EntityScripting.h src/scripting/InputScripting.h src/scripting/Scripting.h src/scripting/TimeScripting.h src/scripting/UIScripting.h src/scripting/VectorScripting.h src/scripting/WindowScripting.h)
 
 SET(UTILS_MEMORYALLOCATOR_SOURCES src/utils/memoryallocator/MemoryAllocator.cpp)
 SET(UTILS_MEMORYALLOCATOR_HEADERS src/utils/memoryallocator/MemoryAllocator.h)
-SET(UTILS_RESOURCES_SOURCES src/utils/resources/BufferTools.cpp src/utils/resources/FileTools.cpp src/utils/resources/ImageTools.cpp src/utils/resources/ModelLoader.cpp)
-SET(UTILS_RESOURCES_HEADERS src/utils/resources/BufferTools.h src/utils/resources/FileTools.h src/utils/resources/ImageTools.h src/utils/resources/ModelLoader.h)
+SET(UTILS_RESOURCES_SOURCES src/utils/resources/AudioTools.cpp src/utils/resources/BufferTools.cpp src/utils/resources/FileTools.cpp src/utils/resources/ImageTools.cpp src/utils/resources/ModelLoader.cpp)
+SET(UTILS_RESOURCES_HEADERS src/utils/resources/AudioTools.h src/utils/resources/BufferTools.h src/utils/resources/FileTools.h src/utils/resources/ImageTools.h src/utils/resources/ModelLoader.h)
 SET(UTILS_SOURCES src/utils/NeigeVKTranslate.cpp src/utils/Parser.cpp ${UTILS_MEMORYALLOCATOR_SOURCES} ${UTILS_RESOURCES_SOURCES})
-SET(UTILS_HEADERS src/utils/NeigeDefines.h src/utils/NeigeVKTranslate.h src/utils/Parser.h ${UTILS_MEMORYALLOCATOR_HEADERS} ${UTILS_RESOURCES_HEADERS})
+SET(UTILS_HEADERS src/utils/AudioChecks.h src/utils/NeigeDefines.h src/utils/NeigeVKTranslate.h src/utils/Parser.h ${UTILS_MEMORYALLOCATOR_HEADERS} ${UTILS_RESOURCES_HEADERS})
 
 SET(WINDOW_SOURCES src/window/Surface.cpp src/window/Window.cpp)
 SET(WINDOW_HEADERS src/window/Surface.h src/window/WindowResources.h src/window/Window.h)
@@ -88,8 +105,8 @@ SET(ECS_HEADERS src/ecs/ECS.h ${ECS_COMPONENTS_HEADERS} ${ECS_SYSTEMS_HEADERS})
 
 SET(EXTERNAL_SOURCES external/spirv-reflect/spirv_reflect.c)
 
-SET(SOURCES ${GAME_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${SCRIPTING_SOURCES} ${UTILS_SOURCES} ${WINDOW_SOURCES} ${INPUTS_SOURCES} ${ECS_SOURCES} ${EXTERNAL_SOURCES})
-SET(HEADERS ${GAME_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${SCRIPTING_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
+SET(SOURCES ${GAME_SOURCES} ${AUDIO_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${SCRIPTING_SOURCES} ${UTILS_SOURCES} ${WINDOW_SOURCES} ${INPUTS_SOURCES} ${ECS_SOURCES} ${EXTERNAL_SOURCES})
+SET(HEADERS ${GAME_HEADERS} ${AUDIO_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${SCRIPTING_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
 
 add_executable(${PROJECT_NAME} main.cpp ${SOURCES} ${HEADERS})
 
@@ -99,4 +116,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC external/lua)
 target_include_directories(${PROJECT_NAME} PUBLIC external/spirv-reflect)
 target_include_directories(${PROJECT_NAME} PUBLIC external/stb)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua simdjson SPIRV Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua OpenAL simdjson SPIRV Vulkan::Vulkan)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenAL> ${PROJECT_BINARY_DIR}/OpenAL32.dll
+COMMENT "Copy OpenAL32.dll to project binary folder.")

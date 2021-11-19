@@ -1,13 +1,12 @@
 #pragma once
-#include "vulkan/vulkan.h"
 #include <iostream>
 #include <string>
 
 #define NEIGE_VK_CHECK(f) \
 	do { \
-		VkResult check = f; \
+		int64_t check = f; \
 		if (check) { \
-			std::cerr << "\033[1m\033[31mVULKAN ERROR :\033[39m\033[0m A Vulkan error has happened." << std::endl << "File : " << __FILE__ << std::endl << "Function : " << __FUNCTION__ << std::endl << "Line : " << __LINE__ << std::endl; \
+			std::cerr << "\033[1m\033[31mVULKAN ERROR :\033[39m\033[0m A Vulkan error has happened." << std::endl << "File: " << __FILE__ << std::endl << "Function: " << __FUNCTION__ << std::endl << "Line : " << __LINE__ << std::endl; \
 			exit(1); \
 		} \
 	} while (0)
@@ -66,6 +65,11 @@
 #define NEIGE_SCRIPT_ERROR(m) \
 	do { \
 		std::cerr << "\033[1m\033[31mSCRIPT ERROR :\033[39m\033[0m " << m << std::endl; \
+	} while(0)
+
+#define NEIGE_AUDIO_ERROR(m) \
+	do { \
+		std::cerr << "\033[1m\033[31mAUDIO ERROR :\033[39m\033[0m " << m << std::endl; \
 	} while(0)
 
 #ifndef NDEBUG

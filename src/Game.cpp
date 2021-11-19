@@ -50,6 +50,9 @@ void Game::init() {
 	renderer->cameraSystem = ecs.registerSystem<CameraSystem>();
 	ecs.setSystemComponents<CameraSystem>(cameraMask);
 
+	// Audio system
+	audio = ecs.registerSystem<Audio>();
+
 	// Physics system
 	physics = ecs.registerSystem<Physics>();
 	ComponentMask physicsMask;
@@ -76,6 +79,7 @@ void Game::launch() {
 
 	window.init(name);
 	scripting->init();
+	audio->init();
 	renderer->init(name);
 
 	while (!window.windowGotClosed()) {
@@ -95,11 +99,14 @@ void Game::launch() {
 
 		physics->update(std::min<double>(deltaTime, (1.0 / 60.0)));
 
+		audio->update();
+
 		renderer->update();
 
 		lastFrame = currentTime;
 	}
 
 	renderer->destroy();
+	audio->destroy();
 	window.destroy();
 }

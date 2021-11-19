@@ -10,6 +10,7 @@
 #include "ecs/systems/CameraSystem.h"
 #include "ecs/systems/Lighting.h"
 #include "graphics/Renderer.h"
+#include "audio/Audio.h"
 #include "physics/Physics.h"
 #include "scripting/Scripting.h"
 #include "window/WindowResources.h"
@@ -30,6 +31,7 @@ struct GameInfo {
 
 struct Game {
 	std::shared_ptr<Renderer> renderer;
+	std::shared_ptr<Audio> audio;
 	std::shared_ptr<Physics> physics;
 	std::shared_ptr<Scripting> scripting;
 	std::string name = "";

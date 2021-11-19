@@ -10,6 +10,7 @@
 - [GLM](https://github.com/g-truc/glm)
 - [Glslang](https://github.com/KhronosGroup/glslang)
 - [lua](https://github.com/lua/lua)
+- [OpenAL Soft](https://openal-soft.org/)
 - [simdjson](https://github.com/simdjson/simdjson)
 - [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
 - [stb](https://github.com/nothings/stb)
@@ -30,6 +31,7 @@ $ make
 - Keyboard and mouse input
 - glTF import
 - [Lua scripting](https://github.com/ZaOniRinku/NeigeEngine/blob/main/docs/scripting.md)
+- WAV audio support
 - JSON scene format
 ### Graphics Features
 - Physically Based Rendering (PBR) metallic-roughness

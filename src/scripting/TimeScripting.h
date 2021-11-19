@@ -1,6 +1,6 @@
 #pragma once
 #include "../utils/NeigeDefines.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 #include <ctime>
 
 struct TimeScripting {

@@ -1,6 +1,7 @@
 #pragma once
 #include "../ecs/ECS.h"
 #include "../utils/resources/FileTools.h"
+#include "AudioScripting.h"
 #include "CameraScripting.h"
 #include "DebugScripting.h"
 #include "EntityScripting.h"
@@ -9,7 +10,7 @@
 #include "UIScripting.h"
 #include "VectorScripting.h"
 #include "WindowScripting.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 
 struct Scripting : public System {
 	void init();
