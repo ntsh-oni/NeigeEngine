@@ -3,7 +3,7 @@
 #include "../graphics/resources/ShaderResources.h"
 #include "../graphics/resources/UIResources.h"
 #include "../utils/NeigeDefines.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 #include <string>
 
 struct DebugScripting {

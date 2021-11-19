@@ -1,7 +1,7 @@
 #pragma once
 #include "../inputs/Inputs.h"
 #include "../utils/NeigeDefines.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 #include <string>
 
 struct InputScripting {

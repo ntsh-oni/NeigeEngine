@@ -11,6 +11,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 4. Specific functions
 	- [Entity](#entity)
 	- [Input](#input)
+	- [Audio](#audio)
 	- [Window](#window)
 	- [UI](#ui)
 	- [Camera](#camera)
@@ -105,6 +106,17 @@ Key/button states are integers:
 ### Functions
 - int **getKeyState**(*string key*) : Takes the name of the key as a string and returns its state as an integer.
 - int **getMouseButtonState**(*string button*) : Takes the name of the button as a string and returns its state as an integer.
+
+## Audio
+Functions related to audio files.
+
+### Functions
+- int **loadAudio**(*string audioPath*) : Takes the audio file's path and returns the sound index. It accepts valid WAVE files.
+- **playSound**(*int soundIndex*) : Takes the sound index and plays the sound.
+- **stopSound**(*int soundIndex*) : Takes the sound index and stops the sound if it is playing.
+- **pauseSound**(*int soundIndex*) : Takes the sound index and pauses the sound if it is playing. Use playSound(int soundIndex) to resume.
+- **setGain**(*int soundIndex, float newGain*) : Takes the sound index and the new gain and changes the sound's gain.
+- **setPitch**(*int soundIndex, float newPitch*) : Takes the sound index and the new pitch and changes the sound's pitch.
 
 ## Window
 Functions related to the application's window.

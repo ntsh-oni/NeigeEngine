@@ -1,7 +1,7 @@
 #pragma once
 #include "../graphics/resources/ShaderResources.h"
 #include "../utils/NeigeDefines.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 #include <string>
 
 struct CameraScripting {

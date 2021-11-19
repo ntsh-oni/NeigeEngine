@@ -7,7 +7,7 @@
 #include "../ecs/components/Script.h"
 #include "../ecs/components/Transform.h"
 #include "../utils/NeigeDefines.h"
-#include "ScriptingResources.h"
+#include "resources/ScriptingResources.h"
 #include <string>
 
 struct EntityScripting {
