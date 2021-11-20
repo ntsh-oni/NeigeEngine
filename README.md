@@ -31,7 +31,7 @@ $ make
 - Keyboard and mouse input
 - glTF import
 - [Lua scripting](https://github.com/ZaOniRinku/NeigeEngine/blob/main/docs/scripting.md)
-- WAV audio support
+- Wav and Ogg Vorbis audio support
 - JSON scene format
 ### Graphics Features
 - Physically Based Rendering (PBR) metallic-roughness

@@ -1,4 +1,5 @@
 #include "AudioTools.h"
+#include "../../external/stb/stb_vorbis.c"
 #include "../AudioChecks.h"
 
 void AudioTools::load(const std::string& filePath, ALuint* buffer, ALuint* source) {
@@ -30,18 +31,39 @@ void AudioTools::load(const std::string& filePath, ALuint* buffer, ALuint* sourc
 		}
 
 		alCall(alBufferData, *buffer, format, data.data(), size, sampleRate);
+	}
+	else if (extension == "ogg") {
+		int channels;
+		int sampleRate;
+		int size;
+		short* data;
+		loadOggVorbis(filePath, &channels, &sampleRate, &size, &data);
+		alCall(alGenBuffers, 1, buffer);
 
-		alCall(alGenSources, 1, source);
-		alCall(alSourcef, *source, AL_PITCH, 1.0f);
-		alCall(alSourcef, *source, AL_GAIN, 1.0f);
-		alCall(alSource3f, *source, AL_POSITION, 0.0f, 0.0f, 0.0f);
-		alCall(alSource3f, *source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
-		alCall(alSourcei, *source, AL_LOOPING, AL_FALSE);
-		alCall(alSourcei, *source, AL_BUFFER, *buffer);
+		ALenum format;
+		if (channels == 1) {
+			format = AL_FORMAT_MONO16;
+		}
+		else if (channels == 2) {
+			format = AL_FORMAT_STEREO16;
+		}
+		else {
+			NEIGE_ERROR("Error loading audio file \"" + filePath + "\" with " + std::to_string(channels) + " channels.");
+		}
+
+		alCall(alBufferData, *buffer, format, data, size, sampleRate);
 	}
 	else {
 		NEIGE_ERROR("\"." + extension + "\" audio extension not supported.");
 	}
+
+	alCall(alGenSources, 1, source);
+	alCall(alSourcef, *source, AL_PITCH, 1.0f);
+	alCall(alSourcef, *source, AL_GAIN, 1.0f);
+	alCall(alSource3f, *source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alCall(alSource3f, *source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+	alCall(alSourcei, *source, AL_LOOPING, AL_FALSE);
+	alCall(alSourcei, *source, AL_BUFFER, *buffer);
 }
 
 void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t* sampleRate, uint8_t* bitsPerSample, ALsizei* size, std::vector<char>& data) {
@@ -128,9 +150,17 @@ void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t
 		NEIGE_ERROR("File  \"" + filePath + "\" is not a valid WAVE audio file (missing data).");
 	}
 	if (file.fail()) {
-		NEIGE_ERROR("File  \"" + filePath + "\" encountered an unknown error.");
+		NEIGE_ERROR("Encountered an unknown error when loading WAVE file  \"" + filePath + "\".");
 	}
 
 	data.resize(*size);
 	file.read(&data[0], *size);
+}
+
+void AudioTools::loadOggVorbis(const std::string& filePath, int* channels, int* sampleRate, int* size, short** data) {
+	*size = stb_vorbis_decode_filename(filePath.c_str(), channels, sampleRate, data);
+	if (*size == -1) {
+		NEIGE_ERROR("Encountered an unknown error when loading Ogg Vorbis file  \"" + filePath + "\".");
+	}
+	*size = *size * *channels * (sizeof(int16_t) / sizeof(uint8_t));
 }
