@@ -111,7 +111,7 @@ Key/button states are integers:
 Functions related to audio files.
 
 ### Functions
-- int **loadAudio**(*string audioPath*) : Takes the audio file's path and returns the sound index. It accepts valid WAVE files.
+- int **loadAudio**(*string audioPath*) : Takes the audio file's path and returns the sound index. It accepts valid WAVE and Ogg Vorbis files.
 - **playSound**(*int soundIndex*) : Takes the sound index and plays the sound.
 - **stopSound**(*int soundIndex*) : Takes the sound index and stops the sound if it is playing.
 - **pauseSound**(*int soundIndex*) : Takes the sound index and pauses the sound if it is playing. Use playSound(int soundIndex) to resume.
