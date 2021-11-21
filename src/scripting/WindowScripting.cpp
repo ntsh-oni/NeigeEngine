@@ -10,6 +10,9 @@ void WindowScripting::init() {
 	lua_register(L, "setWindowSize", setWindowSize);
 	lua_register(L, "setWindowTitle", setWindowTitle);
 	lua_register(L, "closeWindow", closeWindow);
+
+	std::string windowScript = FileTools::readAscii("../src/scripting/scripts/window.lua");
+	luaL_dostring(L, windowScript.c_str());
 }
 
 int WindowScripting::isWindowFullscreen(lua_State* L) {

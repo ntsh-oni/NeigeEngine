@@ -4,6 +4,9 @@ double TimeScripting::deltaTime = 0.0;
 
 void TimeScripting::init() {
 	lua_register(L, "getDeltaTime", getDeltaTime);
+
+	std::string timeScript = FileTools::readAscii("../src/scripting/scripts/time.lua");
+	luaL_dostring(L, timeScript.c_str());
 }
 
 int TimeScripting::getDeltaTime(lua_State* L) {

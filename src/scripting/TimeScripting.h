@@ -1,4 +1,5 @@
 #pragma once
+#include "../utils/resources/FileTools.h"
 #include "../utils/NeigeDefines.h"
 #include "resources/ScriptingResources.h"
 #include <ctime>

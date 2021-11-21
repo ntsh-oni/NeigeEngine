@@ -1,5 +1,6 @@
 #pragma once
 #include "../inputs/Inputs.h"
+#include "../utils/resources/FileTools.h"
 #include "../utils/NeigeDefines.h"
 #include "resources/ScriptingResources.h"
 #include <string>

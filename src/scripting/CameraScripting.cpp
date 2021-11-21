@@ -5,6 +5,9 @@ void CameraScripting::init() {
 	lua_register(L, "setMainCameraIndex", setMainCameraIndex);
 	lua_register(L, "getMainCameraEntity", getMainCameraEntity);
 	lua_register(L, "getCameraCount", getCameraCount);
+
+	std::string cameraScript = FileTools::readAscii("../src/scripting/scripts/camera.lua");
+	luaL_dostring(L, cameraScript.c_str());
 }
 
 int CameraScripting::getMainCameraIndex(lua_State* L) {

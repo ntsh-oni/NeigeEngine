@@ -7,6 +7,9 @@ void DebugScripting::init() {
 	lua_register(L, "getModelsList", getModelsList);
 	lua_register(L, "getTexturesList", getTexturesList);
 	lua_register(L, "showGraphicsMemoryChunks", showGraphicsMemoryChunks);
+
+	std::string debugScript = FileTools::readAscii("../src/scripting/scripts/debug.lua");
+	luaL_dostring(L, debugScript.c_str());
 }
 
 int DebugScripting::getFrametime(lua_State* L) {

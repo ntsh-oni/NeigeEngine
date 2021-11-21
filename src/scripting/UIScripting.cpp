@@ -6,6 +6,9 @@
 void UIScripting::init() {
     lua_register(L, "createFont", createFont);
     lua_register(L, "drawText", drawText);
+
+	std::string uiScript = FileTools::readAscii("../src/scripting/scripts/ui.lua");
+	luaL_dostring(L, uiScript.c_str());
 }
 
 int UIScripting::createFont(lua_State* L) {
