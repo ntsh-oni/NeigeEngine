@@ -3,6 +3,9 @@
 void InputScripting::init() {
 	lua_register(L, "getKeyState", getKeyState);
 	lua_register(L, "getMouseButtonState", getMouseButtonState);
+
+	std::string inputScript = FileTools::readAscii("../src/scripting/scripts/input.lua");
+	luaL_dostring(L, inputScript.c_str());
 }
 
 int InputScripting::getKeyState(lua_State* L) {

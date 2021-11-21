@@ -1,10 +1,10 @@
 #pragma once
 
 enum struct KeyState {
+	NONE,
 	PRESSED,
 	HELD,
-	RELEASED,
-	NONE
+	RELEASED
 };
 
 struct KeyboardInputs {

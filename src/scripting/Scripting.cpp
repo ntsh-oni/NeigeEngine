@@ -8,6 +8,7 @@ void Scripting::init() {
 	L = luaL_newstate();
 	luaL_openlibs(L);
 
+	VectorScripting::init();
 	AudioScripting::init();
 	CameraScripting::init();
 	DebugScripting::init();
@@ -15,7 +16,6 @@ void Scripting::init() {
 	InputScripting::init();
 	TimeScripting::init();
 	UIScripting::init();
-	VectorScripting::init();
 	WindowScripting::init();
 }
 

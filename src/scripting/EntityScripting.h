@@ -16,7 +16,7 @@ struct EntityScripting {
 	static void init();
 
 	// Lua functions
-	static int getEntityID(lua_State* L);
+	static int getEntityId(lua_State* L);
 	static int destroyEntity(lua_State* L);
 	static int hasRenderableComponent(lua_State* L);
 	static int getRenderableComponentModelPath(lua_State* L);

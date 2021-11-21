@@ -5,7 +5,7 @@ extern ECS ecs;
 int32_t EntityScripting::currentEntity = -1;
 
 void EntityScripting::init() {
-	lua_register(L, "getEntityID", getEntityID);
+	lua_register(L, "getEntityId", getEntityId);
 	lua_register(L, "destroyEntity", destroyEntity);
 	lua_register(L, "hasRenderableComponent", hasRenderableComponent);
 	lua_register(L, "getRenderableComponentModelPath", getRenderableComponentModelPath);
@@ -18,22 +18,27 @@ void EntityScripting::init() {
 	lua_register(L, "setTransformComponentPosition", setTransformComponentPosition);
 	lua_register(L, "setTransformComponentRotation", setTransformComponentRotation);
 	lua_register(L, "setTransformComponentScale", setTransformComponentScale);
+
+	std::string entityScript = FileTools::readAscii("../src/scripting/scripts/entity.lua");
+	luaL_dostring(L, entityScript.c_str());
+}
+
+int EntityScripting::getEntityId(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 0) {
+		lua_pushnumber(L, static_cast<int>(currentEntity));
+
+		return 1;
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"getEntityId()\" takes no parameter.");
+		return 0;
+	}
 }
 
 int EntityScripting::destroyEntity(lua_State* L) {
 	int n = lua_gettop(L);
-	if (n == 0) {
-		// Destroy self
-		if (ecs.hasComponent<Script>(currentEntity)) {
-			entitiesToDestroy.push(currentEntity);
-		}
-		else {
-			ecs.destroyEntity(currentEntity);
-		}
-
-		return 0;
-	}
-	else if (n == 1) {
+	if (n == 1) {
 		if (lua_isnumber(L, -1)) {
 			int entity = static_cast<int>(lua_tonumber(L, 1));
 
@@ -53,19 +58,6 @@ int EntityScripting::destroyEntity(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"destroyEntity(int entity)\" takes 1 integer parameter.");
-		return 0;
-	}
-}
-
-int EntityScripting::getEntityID(lua_State* L) {
-	int n = lua_gettop(L);
-	if (n == 0) {
-		lua_pushnumber(L, static_cast<int>(currentEntity));
-
-		return 1;
-	}
-	else {
-		NEIGE_SCRIPT_ERROR("Function \"getEntityID()\" takes no parameter.");
 		return 0;
 	}
 }

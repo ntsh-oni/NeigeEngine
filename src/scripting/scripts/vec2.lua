@@ -3,7 +3,7 @@ setmetatable(vec2, {
 	__index = vec2;
 	__add = function(a, b) return vec2:new(a.x + b.x, a.y + b.y); end;
 	__sub = function(a, b) return vec2:new(a.x - b.x, a.y - b.y); end;
-	__tostring = function(a) return "("..a.x..", "..a.y..")" end
+	__tostring = function(a) return "("..a.x..", "..a.y..")"; end;
 });
 
 function vec2:new(x, y)

@@ -9,6 +9,9 @@ void AudioScripting::init() {
 	lua_register(L, "pauseSound", pauseSound);
 	lua_register(L, "setGain", setGain);
 	lua_register(L, "setPitch", setPitch);
+
+	std::string audioScript = FileTools::readAscii("../src/scripting/scripts/audio.lua");
+	luaL_dostring(L, audioScript.c_str());
 }
 
 int AudioScripting::loadAudio(lua_State* L) {
@@ -143,12 +146,12 @@ int AudioScripting::setGain(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\" takes 1 int parameter.");
+			NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\" takes 1 int and 1 float parameter.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\" takes 1 int parameter.");
+		NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\" takes 1 int and 1 float parameter.");
 		return 0;
 	}
 }
@@ -173,12 +176,12 @@ int AudioScripting::setPitch(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\" takes 1 int parameter.");
+			NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\" takes 1 int and 1 float parameter.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\" takes 1 int parameter.");
+		NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\" takes 1 int and 1 float parameter.");
 		return 0;
 	}
 }
