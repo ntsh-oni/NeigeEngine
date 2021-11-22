@@ -80,7 +80,7 @@ void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t
 	if (!file.read(buffer, 4)) {
 		NEIGE_ERROR("Cannot read RIFF for audio file \"" + filePath + "\".");
 	}
-	if (std::strncmp(buffer, "RIFF", 4) != 0) {
+	if (strncmp(buffer, "RIFF", 4) != 0) {
 		NEIGE_ERROR("File  \"" + filePath + "\" is not a valid WAVE audio file (header missing RIFF).");
 	}
 
@@ -91,7 +91,7 @@ void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t
 	if (!file.read(buffer, 4)) {
 		NEIGE_ERROR("Cannot read WAVE for audio file \"" + filePath + "\".");
 	}
-	if (std::strncmp(buffer, "WAVE", 4) != 0) {
+	if (strncmp(buffer, "WAVE", 4) != 0) {
 		NEIGE_ERROR("File  \"" + filePath + "\" is not a valid WAVE audio file (header missing WAVE).");
 	}
 
@@ -110,13 +110,13 @@ void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t
 	if (!file.read(buffer, 2)) {
 		NEIGE_ERROR("Cannot read the number of channels for audio file \"" + filePath + "\".");
 	}
-	std::memcpy(&tmp, buffer, 2);
+	memcpy(&tmp, buffer, 2);
 	*channels = static_cast<uint8_t>(tmp);
 
 	if (!file.read(buffer, 4)) {
 		NEIGE_ERROR("Cannot read the sample rate for audio file \"" + filePath + "\".");
 	}
-	std::memcpy(&tmp, buffer, 4);
+	memcpy(&tmp, buffer, 4);
 	*sampleRate = static_cast<int32_t>(tmp);
 
 	if (!file.read(buffer, 4)) {
@@ -130,20 +130,20 @@ void AudioTools::loadWav(const std::string& filePath, uint8_t* channels, int32_t
 	if (!file.read(buffer, 2)) {
 		NEIGE_ERROR("Cannot read bits per sample for audio file \"" + filePath + "\".");
 	}
-	std::memcpy(&tmp, buffer, 2);
+	memcpy(&tmp, buffer, 2);
 	*bitsPerSample = static_cast<uint8_t>(tmp);
 
 	if (!file.read(buffer, 4)) {
 		NEIGE_ERROR("Cannot read data header for audio file \"" + filePath + "\".");
 	}
-	if (std::strncmp(buffer, "data", 4) != 0) {
+	if (strncmp(buffer, "data", 4) != 0) {
 		NEIGE_ERROR("File  \"" + filePath + "\" is not a valid WAVE audio file (header missing data).");
 	}
 
 	if (!file.read(buffer, 4)) {
 		NEIGE_ERROR("Cannot read data size for audio file \"" + filePath + "\".");
 	}
-	std::memcpy(&tmp, buffer, 4);
+	memcpy(&tmp, buffer, 4);
 	*size = static_cast<ALsizei>(tmp);
 
 	if (file.eof()) {
