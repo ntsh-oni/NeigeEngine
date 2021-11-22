@@ -119,5 +119,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC external/stb)
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua OpenAL simdjson SPIRV Vulkan::Vulkan)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenAL> ${PROJECT_BINARY_DIR}/OpenAL32.dll
-COMMENT "Copy OpenAL32.dll to project binary folder.")
+COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenAL> ${PROJECT_BINARY_DIR}
+COMMENT "Copy OpenAL32 to project binary folder.")
