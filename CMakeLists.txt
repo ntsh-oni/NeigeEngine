@@ -81,8 +81,8 @@ SET(PHYSICS_HEADERS src/physics/AABB.h src/physics/Frustum.h src/physics/Physics
 
 SET(SCRIPTING_RESOURCES_HEADERS src/scripting/resourcesScriptingResources.h)
 
-SET(SCRIPTING_SOURCES src/scripting/AudioScripting.cpp src/scripting/CameraScripting.cpp src/scripting/DebugScripting.cpp src/scripting/EntityScripting.cpp src/scripting/InputScripting.cpp src/scripting/Scripting.cpp src/scripting/TimeScripting.cpp src/scripting/UIScripting.cpp src/scripting/VectorScripting.cpp src/scripting/WindowScripting.cpp)
-SET(SCRIPTING_HEADERS src/scripting/AudioScripting.h src/scripting/CameraScripting.h src/scripting/DebugScripting.h src/scripting/EntityScripting.h src/scripting/InputScripting.h src/scripting/Scripting.h src/scripting/TimeScripting.h src/scripting/UIScripting.h src/scripting/VectorScripting.h src/scripting/WindowScripting.h)
+SET(SCRIPTING_SOURCES src/scripting/AudioScripting.cpp src/scripting/CameraScripting.cpp src/scripting/DebugScripting.cpp src/scripting/EntityScripting.cpp src/scripting/InputScripting.cpp src/scripting/PhysicsScripting.cpp src/scripting/Scripting.cpp src/scripting/TimeScripting.cpp src/scripting/UIScripting.cpp src/scripting/VectorScripting.cpp src/scripting/WindowScripting.cpp)
+SET(SCRIPTING_HEADERS src/scripting/AudioScripting.h src/scripting/CameraScripting.h src/scripting/DebugScripting.h src/scripting/EntityScripting.h src/scripting/InputScripting.h src/scripting/PhysicsScripting.h src/scripting/Scripting.h src/scripting/TimeScripting.h src/scripting/UIScripting.h src/scripting/VectorScripting.h src/scripting/WindowScripting.h)
 
 SET(UTILS_MEMORYALLOCATOR_SOURCES src/utils/memoryallocator/MemoryAllocator.cpp)
 SET(UTILS_MEMORYALLOCATOR_HEADERS src/utils/memoryallocator/MemoryAllocator.h)
