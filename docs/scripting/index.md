@@ -14,7 +14,7 @@ NeigeEngine uses **Lua** for the scripting. It also defines engine-specific func
 	- [Debug](functions/debug.md)
 	- [Entity](functions/entity.md)
 	- [Input](functions/input.md)
-	- [Physics](function/physics.md)
+	- [Physics](functions/physics.md)
 	- [Time](functions/time.md)
 	- [UI](functions/ui.md)
 	- [Window](functions/window.md)
