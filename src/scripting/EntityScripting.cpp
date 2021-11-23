@@ -88,7 +88,7 @@ int EntityScripting::getRenderableComponentModelPath(lua_State* L) {
 		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
 		if (lua_isnumber(L, -1)) {
 			if (ecs.hasComponent<Renderable>(entity)) {
-				auto& entityRenderable = ecs.getComponent<Renderable>(entity);
+				const auto& entityRenderable = ecs.getComponent<Renderable>(entity);
 
 				lua_pushstring(L, entityRenderable.component.modelPath.c_str());
 
@@ -136,7 +136,7 @@ int EntityScripting::getScriptComponentScriptPath(lua_State* L) {
 		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
 		if (lua_isnumber(L, -1)) {
 			if (ecs.hasComponent<Script>(entity)) {
-				auto& entityScript = ecs.getComponent<Script>(entity);
+				const auto& entityScript = ecs.getComponent<Script>(entity);
 
 				lua_pushstring(L, entityScript.component.scriptPath.c_str());
 
@@ -184,7 +184,7 @@ int EntityScripting::getTransformComponentPosition(lua_State* L) {
 		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
 		if (lua_isnumber(L, -1)) {
 			if (ecs.hasComponent<Transform>(entity)) {
-				auto& entityTransform = ecs.getComponent<Transform>(entity);
+				const auto& entityTransform = ecs.getComponent<Transform>(entity);
 
 				lua_pushnumber(L, entityTransform.component.position.x);
 				lua_pushnumber(L, entityTransform.component.position.y);
@@ -214,7 +214,7 @@ int EntityScripting::getTransformComponentRotation(lua_State* L) {
 		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
 		if (lua_isnumber(L, -1)) {
 			if (ecs.hasComponent<Transform>(entity)) {
-				auto& entityTransform = ecs.getComponent<Transform>(entity);
+				const auto& entityTransform = ecs.getComponent<Transform>(entity);
 
 				lua_pushnumber(L, entityTransform.component.rotation.x);
 				lua_pushnumber(L, entityTransform.component.rotation.y);
@@ -244,7 +244,7 @@ int EntityScripting::getTransformComponentScale(lua_State* L) {
 		int32_t entity = static_cast<int32_t>(lua_tonumber(L, 1));
 		if (lua_isnumber(L, -1)) {
 			if (ecs.hasComponent<Transform>(entity)) {
-				auto& entityTransform = ecs.getComponent<Transform>(entity);
+				const auto& entityTransform = ecs.getComponent<Transform>(entity);
 
 				lua_pushnumber(L, entityTransform.component.scale.x);
 				lua_pushnumber(L, entityTransform.component.scale.y);
@@ -287,7 +287,7 @@ int EntityScripting::setTransformComponentPosition(lua_State* L) {
 					return 0;
 				}
 				else {
-					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, vec3 newPosition)\" takes 1 integer and 1 vec 3 parameters.");
 					return 0;
 				}
 			}
@@ -297,12 +297,12 @@ int EntityScripting::setTransformComponentPosition(lua_State* L) {
 			}
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, vec3 newPosition)\" takes 1 integer and 1 vec 3 parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentPosition(int entity, vec3 newPosition)\" takes 1 integer and 1 vec 3 parameters.");
 		return 0;
 	}
 }
@@ -326,7 +326,7 @@ int EntityScripting::setTransformComponentRotation(lua_State* L) {
 					return 0;
 				}
 				else {
-					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, vec3 newRotation)\" takes 1 integer and 1 vec 3 parameters.");
 					return 0;
 				}
 			}
@@ -336,12 +336,12 @@ int EntityScripting::setTransformComponentRotation(lua_State* L) {
 			}
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, vec3 newRotation)\" takes 1 integer and 1 vec 3 parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentRotation(int entity, vec3 newRotation)\" takes 1 integer and 1 vec 3 parameters.");
 		return 0;
 	}
 }
@@ -365,7 +365,7 @@ int EntityScripting::setTransformComponentScale(lua_State* L) {
 					return 0;
 				}
 				else {
-					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+					NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, vec3 newScale)\" takes 1 integer and 1 vec 3 parameters.");
 					return 0;
 				}
 			}
@@ -375,12 +375,12 @@ int EntityScripting::setTransformComponentScale(lua_State* L) {
 			}
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, vec3 newScale)\" takes 1 integer and 1 vec 3 parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, float x, float y, float z)\" takes 1 integer and 3 float parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"setTransformComponentScale(int entity, vec3 newScale)\" takes 1 integer and 1 vec 3 parameters.");
 		return 0;
 	}
 }

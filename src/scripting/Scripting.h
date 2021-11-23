@@ -6,6 +6,7 @@
 #include "DebugScripting.h"
 #include "EntityScripting.h"
 #include "InputScripting.h"
+#include "PhysicsScripting.h"
 #include "TimeScripting.h"
 #include "UIScripting.h"
 #include "VectorScripting.h"

@@ -14,6 +14,7 @@ void Scripting::init() {
 	DebugScripting::init();
 	EntityScripting::init();
 	InputScripting::init();
+	PhysicsScripting::init();
 	TimeScripting::init();
 	UIScripting::init();
 	WindowScripting::init();

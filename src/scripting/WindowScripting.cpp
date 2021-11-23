@@ -95,12 +95,12 @@ int WindowScripting::setMousePosition(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setMousePosition(double x, double y)\" takes 2 parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"setMousePosition(vec2 newPosition)\" takes 1 vec2 parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setMousePosition(double x, double y)\" takes 2 parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"setMousePosition(vec2 newPosition)\" takes 1 vec2 parameters.");
 		return 0;
 	}
 }
@@ -131,12 +131,12 @@ int WindowScripting::setWindowSize(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"setWindowSize(int width, int height)\" takes 2 integer parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"setWindowSize(vec2 newSize)\" takes 2 integer parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"setWindowSize(int width, int height)\" takes 2 integer parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"setWindowSize(vec2 newSize)\" takes 2 integer parameters.");
 		return 0;
 	}
 }
