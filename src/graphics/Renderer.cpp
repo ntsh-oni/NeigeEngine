@@ -979,7 +979,8 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(timeBuffers.at(frameInFlightIndex).memoryInfo.data) + timeBuffers.at(frameInFlightIndex).memoryInfo.offset), &time, sizeof(float));
 
 	// Renderables
-	// Load entities
+	// Load and destroy entities
+	std::vector<Entity> entitiesToDestroy;
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
@@ -990,6 +991,38 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 			}
 			objectRenderable.loaded = true;
 		}
+
+		if (objectRenderable.destroyed) {
+			if (objectRenderable.destroyCounter++ > framesInFlight) {
+				for (uint32_t i = 0; i < framesInFlight; i++) {
+					objectRenderable.buffers[i].destroy();
+				}
+
+				if (objectRenderable.model->gotOpaquePrimitives) {
+					objectRenderable.opaqueCulledDrawIndirectBuffer.destroy();
+					objectRenderable.opaqueCulledDrawCountBuffer.destroy();
+					objectRenderable.opaqueCulledDrawIndirectInfoBuffer.destroy();
+				}
+
+				if (objectRenderable.model->gotMaskPrimitives) {
+					objectRenderable.maskCulledDrawIndirectBuffer.destroy();
+					objectRenderable.maskCulledDrawCountBuffer.destroy();
+					objectRenderable.maskCulledDrawIndirectInfoBuffer.destroy();
+				}
+
+				if (objectRenderable.model->gotBlendPrimitives) {
+					objectRenderable.blendCulledDrawIndirectBuffer.destroy();
+					objectRenderable.blendCulledDrawCountBuffer.destroy();
+					objectRenderable.blendCulledDrawIndirectInfoBuffer.destroy();
+				}
+
+				entitiesToDestroy.push_back(object);
+			}
+		}
+	}
+
+	for (Entity object : entitiesToDestroy) {
+		ecs.destroyEntity(object);
 	}
 
 	if (!materialDescriptorSetUpToDate[frameInFlightIndex]) {
@@ -1006,7 +1039,7 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			auto const& objectTransform = ecs.getComponent<Transform>(object);
 			auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
@@ -1042,7 +1075,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity object : entities) {
 		auto const& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			indirectBuffers.insert(indirectBuffers.end(), objectRenderable.indirectBuffers.begin(), objectRenderable.indirectBuffers.end());
 			drawCountBuffers.insert(drawCountBuffers.end(), objectRenderable.drawCountBuffers.begin(), objectRenderable.drawCountBuffers.end());
 			perDrawBuffers.insert(perDrawBuffers.end(), objectRenderable.perDrawBuffers.begin(), objectRenderable.perDrawBuffers.end());
@@ -1056,7 +1089,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			// Opaque
 			if (objectRenderable.model->gotOpaquePrimitives) {
 				objectRenderable.opaqueFrustumCullingDescriptorSets[frameInFlightIndex].bind(&renderingCommandBuffers[frameInFlightIndex], &frustumCulling.computePipeline, 0);
@@ -1088,7 +1121,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 			// Opaque
@@ -1124,7 +1157,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 			for (Entity object : entities) {
 				auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-				if (objectRenderable.loaded) {
+				if (objectRenderable.loaded && !objectRenderable.destroyed) {
 					objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 					// Opaque
@@ -1154,7 +1187,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 			// Opaque
@@ -1195,7 +1228,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	for (Entity object : entities) {
 		auto& objectRenderable = ecs.getComponent<Renderable>(object);
 		
-		if (objectRenderable.loaded) {
+		if (objectRenderable.loaded && !objectRenderable.destroyed) {
 			objectRenderable.model->bindBuffers(&renderingCommandBuffers[frameInFlightIndex]);
 
 			if (objectRenderable.model->gotBlendPrimitives) {

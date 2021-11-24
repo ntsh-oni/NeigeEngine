@@ -22,8 +22,10 @@ struct RenderableComponent {
 struct Renderable {
 	RenderableComponent component;
 
-	// Loading state
+	// State
 	bool loaded = false;
+	bool destroyed = false;
+	uint32_t destroyCounter = 0;
 
 	// Model
 	Model* model;

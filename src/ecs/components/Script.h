@@ -8,8 +8,11 @@ struct ScriptComponent {
 struct Script {
 	ScriptComponent component;
 
-	// Script state
+	// State
 	bool initialized = false;
+	bool destroyed = false;
+	bool justDestroyed = false;
+	bool canBeDestroyedNow = true;
 
 	// Script
 	std::string script;
