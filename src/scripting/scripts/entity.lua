@@ -31,7 +31,7 @@ function entity:hasRenderableComponent(entity)
 end
 
 function entity:getRenderableComponent(entity)
-	local modelPath = getRenderableComponentModelsPath(entity);
+	local modelPath = getRenderableComponentModelPath(entity);
 	return renderable:new(modelPath);
 end
 

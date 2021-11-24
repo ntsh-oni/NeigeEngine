@@ -1,10 +1,10 @@
 #pragma once
 
 enum struct ButtonState {
+	NONE,
 	PRESSED,
 	HELD,
-	RELEASED,
-	NONE
+	RELEASED
 };
 
 struct MouseInputs {
