@@ -12,6 +12,7 @@
 #include "VectorScripting.h"
 #include "WindowScripting.h"
 #include "resources/ScriptingResources.h"
+#include <vector>
 
 struct Scripting : public System {
 	void init();

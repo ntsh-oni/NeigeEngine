@@ -42,10 +42,32 @@ int EntityScripting::destroyEntity(lua_State* L) {
 		if (lua_isnumber(L, -1)) {
 			int entity = static_cast<int>(lua_tonumber(L, 1));
 
+			bool hasScript = false;
+			bool hasRenderable = false;
 			if (ecs.hasComponent<Script>(entity)) {
-				entitiesToDestroy.push(entity);
+				auto& entityScript = ecs.getComponent<Script>(entity);
+
+				entityScript.destroyed = true;
+				if (!entityScript.justDestroyed) {
+					entityScript.justDestroyed = true;
+				}
+
+				if (ecs.hasComponent<Renderable>(entity)) {
+					entityScript.canBeDestroyedNow = false;
+				}
+
+				hasScript = true;
 			}
-			else {
+
+			if (ecs.hasComponent<Renderable>(entity)) {
+				auto& entityRenderable = ecs.getComponent<Renderable>(entity);
+
+				entityRenderable.destroyed = true;
+
+				hasRenderable = true;
+			}
+			
+			if (!hasScript && !hasRenderable) {
 				ecs.destroyEntity(entity);
 			}
 

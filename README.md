@@ -16,14 +16,14 @@
 - [stb](https://github.com/nothings/stb)
 ## Download
 ```txt
-$ git clone --recurse-submodules https://github.com/ntsh-oni/NeigeEngine.git
+git clone --recurse-submodules https://github.com/ntsh-oni/NeigeEngine.git
 ```
 ## Build
 ```txt
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
+mkdir build
+cd build
+cmake ..
+make
 ```
 ## Features
 ### General Features
