@@ -71,12 +71,12 @@ int UIScripting::drawText(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float x, float y)\" takes 1 string, 1 integer and 5 floats parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float positionX, float positionY)\" takes 1 string, 1 integer and 5 floats parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float x, float y)\" takes 1 string, 1 integer and 5 floats parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float positionX, float positionY)\" takes 1 string, 1 integer and 5 floats parameters.");
 		return 0;
 	}
 }
