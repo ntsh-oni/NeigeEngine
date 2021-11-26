@@ -23,22 +23,25 @@ int PhysicsScripting::raycast(lua_State* L) {
 			for (Entity entity = 0; entity < MAX_ENTITIES; entity++) {
 				if (ecs.hasComponent<Renderable>(entity)) {
 					const auto& entityRenderable = ecs.getComponent<Renderable>(entity);
-					const auto& entityTransform = ecs.getComponent<Transform>(entity);
-					const AABB& aabb = entityRenderable.model->aabb.transform(entityTransform.component.position, entityTransform.component.rotation, entityTransform.component.scale);
 
-					float t1 = (aabb.min.x - rayOrigin.x) * invDir.x;
-					float t2 = (aabb.max.x - rayOrigin.x) * invDir.x;
-					float t3 = (aabb.min.y - rayOrigin.y) * invDir.y;
-					float t4 = (aabb.max.y - rayOrigin.y) * invDir.y;
-					float t5 = (aabb.min.z - rayOrigin.z) * invDir.z;
-					float t6 = (aabb.max.z - rayOrigin.z) * invDir.z;
+					if (entityRenderable.loaded && !entityRenderable.destroyed) {
+						const auto& entityTransform = ecs.getComponent<Transform>(entity);
+						const AABB& aabb = entityRenderable.model->aabb.transform(entityTransform.component.position, entityTransform.component.rotation, entityTransform.component.scale);
 
-					float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
-					float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+						float t1 = (aabb.min.x - rayOrigin.x) * invDir.x;
+						float t2 = (aabb.max.x - rayOrigin.x) * invDir.x;
+						float t3 = (aabb.min.y - rayOrigin.y) * invDir.y;
+						float t4 = (aabb.max.y - rayOrigin.y) * invDir.y;
+						float t5 = (aabb.min.z - rayOrigin.z) * invDir.z;
+						float t6 = (aabb.max.z - rayOrigin.z) * invDir.z;
 
-					if (tmax >= 0.0 && tmin <= tmax && tmin < t) {
-						closestEntity = entity;
-						t = std::min(t, tmin);
+						float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+						float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+						if (tmax >= 0.0 && tmin <= tmax && tmin < t) {
+							closestEntity = entity;
+							t = std::min(t, tmin);
+						}
 					}
 				}
 			}

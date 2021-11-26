@@ -34,7 +34,7 @@ public:
 	}
 
 	void destroyEntity(Entity entity) {
-		NEIGE_ASSERT(entity < numberOfEntities, "Entity " + std::to_string(entity) + " is not in range (destroy entity).");
+		NEIGE_ASSERT(entity < MAX_ENTITIES, "Entity " + std::to_string(entity) + " is not in range (destroy entity).");
 
 		componentMasks[entity].reset();
 		entities.push(entity);
@@ -42,13 +42,13 @@ public:
 	}
 
 	void setComponents(Entity entity, ComponentMask componentMask) {
-		NEIGE_ASSERT(entity < numberOfEntities, "Entity " + std::to_string(entity) + " is not in range (set components).");
+		NEIGE_ASSERT(entity < MAX_ENTITIES, "Entity " + std::to_string(entity) + " is not in range (set components).");
 
 		componentMasks[entity] = componentMask;
 	}
 
 	ComponentMask getComponents(Entity entity) {
-		NEIGE_ASSERT(entity < numberOfEntities, "Entity " + std::to_string(entity) + " is not in range (get components).");
+		NEIGE_ASSERT(entity < MAX_ENTITIES, "Entity " + std::to_string(entity) + " is not in range (get components).");
 
 		return componentMasks[entity];
 	}
