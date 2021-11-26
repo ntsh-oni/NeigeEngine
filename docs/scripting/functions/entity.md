@@ -24,7 +24,7 @@ Prefix: ``entity:``
 
 ### Functions
 - **number getId()**: Returns the entity calling this script's id.
-- **number create()**: Creates a new entity and returns it's id.
+- **number create()**: Creates a new entity and returns its id.
 - **destroy(number entity):** Destroys the entity.
 - **bool hasRenderableComponent(number entity)**: Returns **true** if this entity has a renderable component. Returns **false** if this entity does not have a renderable component.
 - **renderable getRenderableComponent(number entity)**: Returns this entity's renderable component. This function already checks if the entity has a renderable component.
