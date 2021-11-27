@@ -61,7 +61,7 @@ GameInfo Parser::parseGameInfo(const std::string& filePath) {
 	}
 
 	int64_t bloomBlurSize;
-	error = document["graphics"]["bloom"]["size"].get(bloomBlurSize);
+	error = document["graphics"]["bloom"]["blurSize"].get(bloomBlurSize);
 
 	if (!error) {
 		gameInfo.bloomBlurSize = static_cast<int>(bloomBlurSize);
