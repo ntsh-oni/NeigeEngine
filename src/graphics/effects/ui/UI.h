@@ -21,12 +21,14 @@ struct UI {
 	DescriptorPool fontsDescriptorPool;
 	VkDescriptorSetLayout fontsDescriptorSetLayout;
 	RenderPass renderPass;
+	std::vector<Framebuffer> framebuffers;
 
 	Buffer cameraBuffer;
 
-	void init(Viewport fullscreenViewport, bool enableFXAA);
+	void init(Viewport fullscreenViewport);
 	void destroy();
-	void createResources(Viewport fullscreenViewport, bool enableFXAA);
+	void createResources(Viewport fullscreenViewport);
+	void destroyResources();
 	void updateFontDescriptorSet(uint32_t frameInFlightIndex);
 	void draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
 	void drawText(CommandBuffer* commandBuffer, Text text);

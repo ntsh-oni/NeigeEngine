@@ -4,25 +4,16 @@
 #include "../../../graphics/resources/ShaderResources.h"
 #include "../../../window/WindowResources.h"
 
-void UI::init(Viewport fullscreenViewport, bool enableFXAA) {
+void UI::init(Viewport fullscreenViewport) {
 	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width), static_cast<uint32_t>(fullscreenViewport.viewport.height));
 
 	{
 		std::vector<RenderPassAttachment> attachments;
+		attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
+
 		std::vector<SubpassDependency> dependencies;
-
-		if (enableFXAA) {
-			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
-
-			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-		}
-		else {
-			attachments.push_back(RenderPassAttachment(AttachmentType::COLOR, swapchain.surfaceFormat.format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, ClearColorValue(0.0f, 0.0f, 0.0f, 1.0f)));
-
-			dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-			dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-		}
+		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 
 		renderPass.init(attachments, dependencies);
 	}
@@ -128,10 +119,11 @@ void UI::init(Viewport fullscreenViewport, bool enableFXAA) {
 		cameraDescriptorSet.update(writesDescriptorSet);
 	}
 
-	createResources(fullscreenViewport, enableFXAA);
+	createResources(fullscreenViewport);
 }
 
 void UI::destroy() {
+	destroyResources();
 	renderPass.destroy();
 	graphicsPipeline.destroy();
 	cameraBuffer.destroy();
@@ -145,8 +137,21 @@ void UI::destroy() {
 	}
 }
 
-void UI::createResources(Viewport fullscreenViewport, bool enableFXAA) {
+void UI::createResources(Viewport fullscreenViewport) {
 	viewport.init(static_cast<uint32_t>(fullscreenViewport.viewport.width), static_cast<uint32_t>(fullscreenViewport.viewport.height));
+
+	// Framebuffers
+	framebuffers.resize(swapchainSize);
+
+	{
+		std::vector<std::vector<VkImageView>> framebufferAttachments;
+		framebufferAttachments.resize(swapchainSize);
+		framebuffers.resize(swapchainSize);
+		for (uint32_t i = 0; i < swapchainSize; i++) {
+			framebufferAttachments[i].push_back(swapchain.imageViews[i]);
+			framebuffers[i].init(&renderPass, framebufferAttachments[i], static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height), 1);
+		}
+	}
 
 	// Camera
 	CameraUniformBufferObject cubo = {};
@@ -155,6 +160,14 @@ void UI::createResources(Viewport fullscreenViewport, bool enableFXAA) {
 	cubo.position = glm::vec3(0.0f);
 
 	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(cameraBuffer.memoryInfo.data) + cameraBuffer.memoryInfo.offset), &cubo, sizeof(CameraUniformBufferObject));
+}
+
+void UI::destroyResources() {
+	for (Framebuffer& framebuffer : framebuffers) {
+		framebuffer.destroy();
+	}
+	framebuffers.clear();
+	framebuffers.shrink_to_fit();
 }
 
 void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
@@ -187,6 +200,7 @@ void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
 }
 
 void UI::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
+	renderPass.begin(commandBuffer, framebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 	graphicsPipeline.bind(commandBuffer);
 	cameraDescriptorSet.bind(commandBuffer, &graphicsPipeline, 0);
 	fontsDescriptorSets[frameInFlightIndex].bind(commandBuffer, &graphicsPipeline, 1);
@@ -195,6 +209,7 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 		drawText(commandBuffer, text);
 		texts.pop();
 	}
+	renderPass.end(commandBuffer);
 }
 
 void UI::drawText(CommandBuffer* commandBuffer, Text text) {
