@@ -2,6 +2,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include "../../external/glfw/include/GLFW/glfw3.h"
 #include "../utils/NeigeDefines.h"
+#include "../utils/resources/FileTools.h"
 #include "../graphics/structs/RendererStructs.h"
 #include "../inputs/Inputs.h"
 #include "Surface.h"
@@ -58,6 +59,7 @@ struct Window {
 	void showCursor(bool show);
 	void setCursorPosition(double x, double y);
 	void setWindowTitle(const std::string& title);
+	void setWindowIcon(const std::string& iconPath);
 	void setWindowSize(int width, int height);
 	bool windowGotClosed();
 	void pollEvents();

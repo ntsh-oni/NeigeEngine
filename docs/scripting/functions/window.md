@@ -13,6 +13,7 @@ Prefix: ``window:``
 - **vec2 getSize()**: Returns the size of the window.
 - **setSize(vec2 newSize)**: Changes the size of the window.
 - **setTitle(string newTitle)**: Changes the title of the window.
+- **setIcon(string newIconPath)**: Changes the icon of the window.
 - **close()**: Closes the window.
 
 [>> Scripting documentation index](../index.md)
