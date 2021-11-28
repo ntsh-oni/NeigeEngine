@@ -1,5 +1,5 @@
 # NeigeEngine
-![NeigeEngine](https://i.imgur.com/JcU2ZnS.jpg)
+<img src="https://i.imgur.com/I5J92Cv.png" alt="NeigeEngine" width="250"/>
 
 ## Dependencies
 ### To install
