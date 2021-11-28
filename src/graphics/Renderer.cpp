@@ -1286,7 +1286,7 @@ void Renderer::recordRenderingCommands(uint32_t frameInFlightIndex, uint32_t fra
 	}
 
 	// UI
-	ui.draw(&renderingCommandBuffers[frameInFlightIndex], frameInFlightIndex);
+	ui.draw(&renderingCommandBuffers[frameInFlightIndex], framebufferIndex);
 
 	renderingCommandBuffers[frameInFlightIndex].end();
 }
