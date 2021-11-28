@@ -9,6 +9,7 @@ void WindowScripting::init() {
 	lua_register(L, "getWindowSize", getWindowSize);
 	lua_register(L, "setWindowSize", setWindowSize);
 	lua_register(L, "setWindowTitle", setWindowTitle);
+	lua_register(L, "setWindowIcon", setWindowIcon);
 	lua_register(L, "closeWindow", closeWindow);
 
 	std::string windowScript = FileTools::readAscii("../src/scripting/scripts/window.lua");
@@ -158,6 +159,27 @@ int WindowScripting::setWindowTitle(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"setWindowTitle(string title)\" takes 1 string parameter.");
+		return 0;
+	}
+}
+
+int WindowScripting::setWindowIcon(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		if (lua_isstring(L, -1)) {
+			std::string iconPath = lua_tostring(L, 1);
+
+			window.setWindowIcon(iconPath);
+
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"setWindowIcon(string iconPath)\" takes 1 string parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"setWindowIcon(string iconPath)\" takes 1 string parameter.");
 		return 0;
 	}
 }

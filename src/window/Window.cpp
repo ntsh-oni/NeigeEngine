@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../../external/stb/stb_image.h"
 #include "../graphics/resources/RendererResources.h"
 
 void Window::init(const std::string& applicationName) {
@@ -437,6 +438,18 @@ void Window::setCursorPosition(double x, double y) {
 
 void Window::setWindowTitle(const std::string& title) {
 	glfwSetWindowTitle(window, title.c_str());
+}
+
+void Window::setWindowIcon(const std::string& iconPath) {
+	if (FileTools::exists(iconPath)) {
+		GLFWimage icon;
+		icon.pixels = stbi_load(iconPath.c_str(), &icon.width, &icon.height, 0, STBI_rgb_alpha);
+		glfwSetWindowIcon(window, 1, &icon);
+		stbi_image_free(icon.pixels);
+	}
+	else {
+		NEIGE_WARNING("Could not set window icon, image \"" + iconPath + "\" does not exist.");
+	}
 }
 
 void Window::setWindowSize(int width, int height) {

@@ -34,6 +34,10 @@ function window:setTitle(newTitle)
 	setWindowTitle(newTitle);
 end
 
+function window:setIcon(newIconPath)
+	setWindowIcon(newIconPath);
+end
+
 function window:close()
 	closeWindow()
 end

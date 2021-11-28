@@ -16,5 +16,6 @@ struct WindowScripting {
 	static int getWindowSize(lua_State* L);
 	static int setWindowSize(lua_State* L);
 	static int setWindowTitle(lua_State* L);
+	static int setWindowIcon(lua_State* L);
 	static int closeWindow(lua_State* L);
 };
