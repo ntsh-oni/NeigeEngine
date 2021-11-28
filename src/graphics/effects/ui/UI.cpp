@@ -199,11 +199,11 @@ void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
 	fontsDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
 }
 
-void UI::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
-	renderPass.begin(commandBuffer, framebuffers[frameInFlightIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
+void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
+	renderPass.begin(commandBuffer, framebuffers[framebufferIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 	graphicsPipeline.bind(commandBuffer);
 	cameraDescriptorSet.bind(commandBuffer, &graphicsPipeline, 0);
-	fontsDescriptorSets[frameInFlightIndex].bind(commandBuffer, &graphicsPipeline, 1);
+	fontsDescriptorSets[framebufferIndex].bind(commandBuffer, &graphicsPipeline, 1);
 	while (!texts.empty()) {
 		Text text = texts.front();
 		drawText(commandBuffer, text);

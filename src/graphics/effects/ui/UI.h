@@ -30,6 +30,6 @@ struct UI {
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
 	void updateFontDescriptorSet(uint32_t frameInFlightIndex);
-	void draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
+	void draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex);
 	void drawText(CommandBuffer* commandBuffer, Text text);
 };
