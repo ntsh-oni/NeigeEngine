@@ -1,7 +1,15 @@
 ui = {};
 
-function ui:createFont(fontPath, height)
-	return createFont(fontPath, height);
+function ui:loadSprite(spritePath)
+	return loadSprite(spritePath);
+end
+
+function ui:loadFont(fontPath, height)
+	return loadFont(fontPath, height);
+end
+
+function ui:drawSprite(spriteIndex, position)
+	drawSprite(spriteIndex, position.x, position.y);
 end
 
 function ui:drawText(text, fontIndex, color, position)

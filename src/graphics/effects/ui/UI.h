@@ -16,20 +16,28 @@
 struct UI {
 	Viewport viewport;
 
-	GraphicsPipeline graphicsPipeline;
 	DescriptorSet cameraDescriptorSet;
-	DescriptorPool fontsDescriptorPool;
-	VkDescriptorSetLayout fontsDescriptorSetLayout;
 	RenderPass renderPass;
 	std::vector<Framebuffer> framebuffers;
 
 	Buffer cameraBuffer;
 
+	GraphicsPipeline spriteGraphicsPipeline;
+	DescriptorPool spritesDescriptorPool;
+	VkDescriptorSetLayout spritesDescriptorSetLayout;
+
+	GraphicsPipeline textGraphicsPipeline;
+	DescriptorPool fontsDescriptorPool;
+	VkDescriptorSetLayout fontsDescriptorSetLayout;
+
+
 	void init(Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
+	void updateSpriteDescriptorSet(uint32_t frameInFlightIndex);
 	void updateFontDescriptorSet(uint32_t frameInFlightIndex);
 	void draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex);
+	void drawSprite(CommandBuffer* commandBuffer, Sprite sprite);
 	void drawText(CommandBuffer* commandBuffer, Text text);
 };

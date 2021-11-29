@@ -443,6 +443,29 @@ void ImageTools::generateMipmaps(VkImage image,
 	commandPool.destroy();
 }
 
+void ImageTools::loadSprite(const std::string& filePath, SpriteImage* spriteImageDestination) {
+	int texChannels;
+
+	stbi_uc* pixels = stbi_load(filePath.c_str(), &spriteImageDestination->width, &spriteImageDestination->height, &texChannels, STBI_rgb_alpha);
+	VkDeviceSize size = static_cast<VkDeviceSize>(spriteImageDestination->width) * static_cast<VkDeviceSize>(spriteImageDestination->height) * 4 * sizeof(uint8_t);
+	if (!pixels) {
+		NEIGE_ERROR("Error with sprite image file \"" + filePath + "\".");
+	}
+
+	Buffer stagingBuffer;
+	BufferTools::createStagingBuffer(stagingBuffer.buffer, size, &stagingBuffer.memoryInfo);
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), pixels, size);
+
+	createImage(&spriteImageDestination->image.image, 1, spriteImageDestination->width, spriteImageDestination->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &spriteImageDestination->image.memoryInfo);
+	ImageTools::createImageView(&spriteImageDestination->image.imageView, spriteImageDestination->image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	transitionLayout(spriteImageDestination->image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
+	BufferTools::copyToImage(stagingBuffer.buffer, spriteImageDestination->image.image, spriteImageDestination->width, spriteImageDestination->height, 1, sizeof(uint8_t));
+	transitionLayout(spriteImageDestination->image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
+
+	stagingBuffer.destroy();
+	stbi_image_free(pixels);
+}
+
 void ImageTools::loadFont(const std::string& filePath,
 	float fontHeight,
 	Font* fontDestination) {

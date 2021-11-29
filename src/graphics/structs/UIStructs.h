@@ -4,6 +4,18 @@
 #include "../resources/Image.h"
 #include <string>
 
+// Sprite
+struct SpriteImage {
+	Image image;
+	int width;
+	int height;
+};
+
+struct Sprite {
+	int spriteIndex;
+	glm::vec2 position = glm::vec2(0.0f, 0.0f);
+};
+
 // Font
 struct Font {
 	Image image;

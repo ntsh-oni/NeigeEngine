@@ -142,6 +142,13 @@ void Renderer::init(const std::string& applicationName) {
 		BufferTools::createUniformBuffer(buffer.buffer, sizeof(double), &buffer.memoryInfo);
 	}
 
+	// Default sprite image
+	SpriteImage spriteImage;
+	ImageTools::createImage(&spriteImage.image.image, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &spriteImage.image.memoryInfo);
+	ImageTools::createImageView(&spriteImage.image.imageView, spriteImage.image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+
+	spritesImages.push_back(spriteImage);
+
 	// Default font
 	Font font;
 	ImageTools::createImage(&font.image.image, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &font.image.memoryInfo);
@@ -1033,6 +1040,10 @@ void Renderer::updateData(uint32_t frameInFlightIndex) {
 	}
 
 	// UI
+	if (!spriteDescriptorSetUpToDate[frameInFlightIndex]) {
+		ui.updateSpriteDescriptorSet(frameInFlightIndex);
+		spriteDescriptorSetUpToDate[frameInFlightIndex] = true;
+	}
 	if (!fontDescriptorSetUpToDate[frameInFlightIndex]) {
 		ui.updateFontDescriptorSet(frameInFlightIndex);
 		fontDescriptorSetUpToDate[frameInFlightIndex] = true;
