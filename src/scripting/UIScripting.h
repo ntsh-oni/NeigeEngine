@@ -8,6 +8,8 @@ struct UIScripting {
 	static void init();
 	
 	// Lua functions
-	static int createFont(lua_State* L);
+	static int loadFont(lua_State* L);
+	static int loadSprite(lua_State* L);
+	static int drawSprite(lua_State* L);
 	static int drawText(lua_State* L);
 };

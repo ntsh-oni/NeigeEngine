@@ -4,14 +4,52 @@
 #include "../utils/resources/ImageTools.h"
 
 void UIScripting::init() {
-    lua_register(L, "createFont", createFont);
+	lua_register(L, "loadSprite", loadSprite);
+    lua_register(L, "loadFont", loadFont);
+    lua_register(L, "drawSprite", drawSprite);
     lua_register(L, "drawText", drawText);
 
 	std::string uiScript = FileTools::readAscii("../src/scripting/scripts/ui.lua");
 	luaL_dostring(L, uiScript.c_str());
 }
 
-int UIScripting::createFont(lua_State* L) {
+int UIScripting::loadSprite(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		if (lua_isstring(L, -1)) {
+			std::string spritePath = lua_tostring(L, 1);
+
+			if (FileTools::exists(spritePath)) {
+				SpriteImage spriteImage;
+				ImageTools::loadSprite(spritePath, &spriteImage);
+
+				spritesImages.push_back(spriteImage);
+
+				for (uint32_t i = 0; i < framesInFlight; i++) {
+					spriteDescriptorSetUpToDate[i] = false;
+				}
+
+				lua_pushnumber(L, static_cast<int>(spritesImages.size() - 1));
+
+				return 1;
+			}
+			else {
+				NEIGE_SCRIPT_ERROR("Function \"loadSprite(string spritePath)\": sprite \"" + spritePath + "\" does not exist.");
+				return 0;
+			}
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"loadSprite(string spritePath)\" takes 1 string parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"loadSprite(string spritePath)\" takes 1 string parameter.");
+		return 0;
+	}
+}
+
+int UIScripting::loadFont(lua_State* L) {
 	int n = lua_gettop(L);
 	if (n == 2) {
 		if (lua_isstring(L, -2) && lua_isnumber(L, -1)) {
@@ -33,17 +71,44 @@ int UIScripting::createFont(lua_State* L) {
 				return 1;
 			}
 			else {
-				NEIGE_SCRIPT_ERROR("Function \"createFont(string fontPath, float height)\": font \"" + fontPath + "\" does not exist.");
+				NEIGE_SCRIPT_ERROR("Function \"loadFont(string fontPath, float height)\": font \"" + fontPath + "\" does not exist.");
 				return 0;
 			}
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"createFont(string fontPath, float height)\" takes 1 string and 1 float parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"loadFont(string fontPath, float height)\" takes 1 string and 1 float parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"createFont(string fontPath, float height)\" takes 1 string and 1 float parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"loadFont(string fontPath, float height)\" takes 1 string and 1 float parameters.");
+		return 0;
+	}
+}
+
+int UIScripting::drawSprite(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 3) {
+		if (lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+			int spriteIndex = static_cast<int>(lua_tonumber(L, 1));
+			float x = static_cast<float>(lua_tonumber(L, 2));
+			float y = static_cast<float>(lua_tonumber(L, 3));
+
+			Sprite sprite;
+			sprite.spriteIndex = spriteIndex;
+			sprite.position = glm::vec2(x, y);
+
+			sprites.push(sprite);
+
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY)\" takes 1 integer, 2 floats parameters.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY)\" takes 1 integer, 2 floats parameters.");
 		return 0;
 	}
 }

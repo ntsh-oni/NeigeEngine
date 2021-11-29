@@ -91,6 +91,8 @@ struct ImageTools {
 		int32_t texelHeight,
 		uint32_t mipLevels,
 		uint32_t arrayLayers);
+	static void loadSprite(const std::string& filePath,
+		SpriteImage* spriteImageDestination);
 	static void loadFont(const std::string& filePath,
 		float fontHeight,
 		Font* fontDestination);
