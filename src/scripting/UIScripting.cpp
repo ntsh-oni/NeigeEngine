@@ -8,6 +8,7 @@ void UIScripting::init() {
     lua_register(L, "loadFont", loadFont);
     lua_register(L, "drawSprite", drawSprite);
     lua_register(L, "drawText", drawText);
+    lua_register(L, "drawRectangle", drawRectangle);
     lua_register(L, "getSpriteSize", getSpriteSize);
 
 	std::string uiScript = FileTools::readAscii("../src/scripting/scripts/ui.lua");
@@ -101,7 +102,7 @@ int UIScripting::drawSprite(lua_State* L) {
 			float x = static_cast<float>(lua_tonumber(L, 2));
 			float y = static_cast<float>(lua_tonumber(L, 3));
 
-			Sprite sprite;
+			UISprite sprite;
 			sprite.spriteIndex = spriteId;
 			sprite.position = glm::vec2(x, y);
 
@@ -130,21 +131,21 @@ int UIScripting::drawText(lua_State* L) {
 			int fontId = static_cast<int>(lua_tonumber(L, 2));
 
 			if (fontId > fonts.size() - 1) {
-				NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float positionX, float positionY)\": fontIndex should be inferior to the number of loaded fonts (" + std::to_string(fonts.size()) + ").");
+				NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue)\": fontIndex should be inferior to the number of loaded fonts (" + std::to_string(fonts.size()) + ").");
 				return 0;
 			}
 
-			float red = static_cast<float>(lua_tonumber(L, 3));
-			float green = static_cast<float>(lua_tonumber(L, 4));
-			float blue = static_cast<float>(lua_tonumber(L, 5));
-			float x = static_cast<float>(lua_tonumber(L, 6));
-			float y = static_cast<float>(lua_tonumber(L, 7));
+			float x = static_cast<float>(lua_tonumber(L, 3));
+			float y = static_cast<float>(lua_tonumber(L, 4));
+			float red = static_cast<float>(lua_tonumber(L, 5));
+			float green = static_cast<float>(lua_tonumber(L, 6));
+			float blue = static_cast<float>(lua_tonumber(L, 7));
 
-			Text text;
+			UIText text;
 			text.text = t;
 			text.fontIndex = fontId;
-			text.color = glm::vec3(red, green, blue);
 			text.position = glm::vec2(x, y);
+			text.color = glm::vec3(red, green, blue);
 
 			texts.push(text);
 
@@ -153,12 +154,46 @@ int UIScripting::drawText(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float positionX, float positionY)\" takes 1 string, 1 integer and 5 floats parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue)\" takes 1 string, 1 integer and 5 floats parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float textColorRed, float textColorGreen, float textColorBlue, float positionX, float positionY)\" takes 1 string, 1 integer and 5 floats parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue)\" takes 1 string, 1 integer and 5 floats parameters.");
+		return 0;
+	}
+}
+
+int UIScripting::drawRectangle(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 7) {
+		if (lua_isnumber(L, -7) && lua_isnumber(L, -6) && lua_isnumber(L, -5) && lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+			float x = static_cast<float>(lua_tonumber(L, 1));
+			float y = static_cast<float>(lua_tonumber(L, 2));
+			float width = static_cast<float>(lua_tonumber(L, 3));
+			float height = static_cast<float>(lua_tonumber(L, 4));
+			float red = static_cast<float>(lua_tonumber(L, 5));
+			float green = static_cast<float>(lua_tonumber(L, 6));
+			float blue = static_cast<float>(lua_tonumber(L, 7));
+
+			UIRectangle rectangle;
+			rectangle.position = glm::vec2(x, y);
+			rectangle.size = glm::vec2(width, height);
+			rectangle.color = glm::vec3(red, green, blue);
+
+			rectangles.push(rectangle);
+
+			elementsToDraw.push(UIElement::RECTANGLE);
+
+			return 0;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"drawRectangle(float positionX, float positionY, float width, float height, float rectangleColorRed, float rectangleColorGreen, float rectangleColorBlue)\" takes 7 floats parameters.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"drawRectangle(float positionX, float positionY, float width, float height, float rectangleColorRed, float rectangleColorGreen, float rectangleColorBlue)\" takes 7 floats parameters.");
 		return 0;
 	}
 }

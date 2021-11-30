@@ -32,6 +32,8 @@ struct UI {
 	DescriptorPool fontsDescriptorPool;
 	VkDescriptorSetLayout fontsDescriptorSetLayout;
 
+	GraphicsPipeline rectangleGraphicsPipeline;
+
 
 	void init(Viewport fullscreenViewport);
 	void destroy();
@@ -40,6 +42,7 @@ struct UI {
 	void updateSpriteDescriptorSet(uint32_t frameInFlightIndex);
 	void updateFontDescriptorSet(uint32_t frameInFlightIndex);
 	void draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex);
-	void drawSprite(CommandBuffer* commandBuffer, Sprite sprite);
-	void drawText(CommandBuffer* commandBuffer, Text text);
+	void drawSprite(CommandBuffer* commandBuffer, UISprite sprite);
+	void drawText(CommandBuffer* commandBuffer, UIText text);
+	void drawRectangle(CommandBuffer* commandBuffer, UIRectangle rectangle);
 };
