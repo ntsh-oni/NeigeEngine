@@ -12,4 +12,5 @@ struct UIScripting {
 	static int loadSprite(lua_State* L);
 	static int drawSprite(lua_State* L);
 	static int drawText(lua_State* L);
+	static int getSpriteSize(lua_State* L);
 };

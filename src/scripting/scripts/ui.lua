@@ -15,3 +15,8 @@ end
 function ui:drawText(text, fontIndex, color, position)
 	drawText(text, fontIndex, color.x, color.y, color.z, position.x, position.y);
 end
+
+function ui:getSpriteSize(spriteIndex)
+	local width, height = getSpriteSize(spriteIndex);
+	return vec2:new(width, height);
+end
