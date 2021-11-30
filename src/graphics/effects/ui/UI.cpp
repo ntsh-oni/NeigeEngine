@@ -162,6 +162,16 @@ void UI::init(Viewport fullscreenViewport) {
 	textGraphicsPipeline.externalDescriptorSetLayouts.push_back(fontsDescriptorSetLayout);
 	textGraphicsPipeline.init();
 
+	rectangleGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/ui/ui.vert";
+	rectangleGraphicsPipeline.fragmentShaderPath = "../src/graphics/shaders/ui/rectangle.frag";
+	rectangleGraphicsPipeline.renderPass = &renderPass;
+	rectangleGraphicsPipeline.viewport = &viewport;
+	rectangleGraphicsPipeline.multiSample = false;
+	rectangleGraphicsPipeline.backfaceCulling = false;
+	rectangleGraphicsPipeline.depthWrite = false;
+	rectangleGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD });
+	rectangleGraphicsPipeline.init();
+
 	// Camera descriptor set
 	{
 		cameraDescriptorSet.init(&spriteGraphicsPipeline, 0);
@@ -197,6 +207,7 @@ void UI::destroy() {
 	renderPass.destroy();
 	spriteGraphicsPipeline.destroy();
 	textGraphicsPipeline.destroy();
+	rectangleGraphicsPipeline.destroy();
 	cameraBuffer.destroy();
 	if (spritesDescriptorSetLayout != VK_NULL_HANDLE) {
 		vkDestroyDescriptorSetLayout(logicalDevice.device, spritesDescriptorSetLayout, nullptr);
@@ -332,7 +343,7 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 				setsBound = true;
 			}
 
-			Sprite sprite = sprites.front();
+			UISprite sprite = sprites.front();
 			drawSprite(commandBuffer, sprite);
 			sprites.pop();
 		}
@@ -351,9 +362,27 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 				setsBound = true;
 			}
 
-			Text text = texts.front();
+			UIText text = texts.front();
 			drawText(commandBuffer, text);
 			texts.pop();
+		}
+		else if (element == UIElement::RECTANGLE) {
+			if (&rectangleGraphicsPipeline != currentGraphicsPipeline) {
+				rectangleGraphicsPipeline.bind(commandBuffer);
+
+				currentGraphicsPipeline = &rectangleGraphicsPipeline;
+				setsBound = false;
+			}
+
+			if (!setsBound) {
+				cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
+
+				setsBound = true;
+			}
+
+			UIRectangle rectangle = rectangles.front();
+			drawRectangle(commandBuffer, rectangle);
+			rectangles.pop();
 		}
 
 		elementsToDraw.pop();
@@ -362,7 +391,7 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 	renderPass.end(commandBuffer);
 }
 
-void UI::drawSprite(CommandBuffer* commandBuffer, Sprite sprite) {
+void UI::drawSprite(CommandBuffer* commandBuffer, UISprite sprite) {
 	SpriteImage* spriteImage = &spritesImages[sprite.spriteIndex];
 	float width = static_cast<float>(spriteImage->width);
 	float height = static_cast<float>(spriteImage->height);
@@ -375,7 +404,7 @@ void UI::drawSprite(CommandBuffer* commandBuffer, Sprite sprite) {
 	vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 }
 
-void UI::drawText(CommandBuffer* commandBuffer, Text text) {
+void UI::drawText(CommandBuffer* commandBuffer, UIText text) {
 	for (std::string::const_iterator c = text.text.begin(); c != text.text.end(); c++) {
 		if (*c >= fonts[text.fontIndex].startChar && *c <= fonts[text.fontIndex].endChar) {
 			stbtt_aligned_quad q;
@@ -390,4 +419,13 @@ void UI::drawText(CommandBuffer* commandBuffer, Text text) {
 			vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 		}
 	}
+}
+
+void UI::drawRectangle(CommandBuffer* commandBuffer, UIRectangle rectangle) {
+	float data[24] = { /* Position */ /* 0 */ rectangle.position.x, rectangle.position.y, /* 1 */ rectangle.position.x + rectangle.size.x, rectangle.position.y, /* 2 */ rectangle.position.x + rectangle.size.x, rectangle.position.y + rectangle.size.y, /* 3 */ rectangle.position.x, rectangle.position.y, /* 4 */ rectangle.position.x + rectangle.size.x, rectangle.position.y + rectangle.size.y, /* 5 */ rectangle.position.x, rectangle.position.y + rectangle.size.y, /* UV */ /* 0 */ 0.0f, 0.0f, /* 1 */ 1.0f, 0.0f, /* 2 */ 1.0f, 1.0f, /* 3 */ 0.0f, 0.0f, /* 4 */ 1.0f, 1.0f, /* 5 */ 0.0f, 1.0f };
+
+	rectangleGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, ((2 * 6) + (2 * 6)) * sizeof(float), data);
+	rectangleGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), 3 * sizeof(float), &rectangle.color);
+
+	vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 }

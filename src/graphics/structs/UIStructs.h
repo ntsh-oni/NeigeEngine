@@ -7,7 +7,8 @@
 // UI elements
 enum struct UIElement {
 	SPRITE,
-	TEXT
+	TEXT,
+	RECTANGLE
 };
 
 // Sprite
@@ -17,7 +18,7 @@ struct SpriteImage {
 	int height;
 };
 
-struct Sprite {
+struct UISprite {
 	int spriteIndex;
 	glm::vec2 position = glm::vec2(0.0f, 0.0f);
 };
@@ -32,9 +33,16 @@ struct Font {
 };
 
 // Text
-struct Text {
+struct UIText {
 	std::string text = "";
 	int fontIndex;
-	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec2 position = glm::vec2(0.0f, 0.0f);
+	glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+};
+
+// Rectangle
+struct UIRectangle {
+	glm::vec2 position = glm::vec2(0.0f, 0.0f);
+	glm::vec2 size = glm::vec2(0.0f, 0.0f);
+	glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
 };

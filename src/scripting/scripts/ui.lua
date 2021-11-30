@@ -12,8 +12,12 @@ function ui:drawSprite(spriteIndex, position)
 	drawSprite(spriteIndex, position.x, position.y);
 end
 
-function ui:drawText(text, fontIndex, color, position)
-	drawText(text, fontIndex, color.x, color.y, color.z, position.x, position.y);
+function ui:drawText(text, fontIndex, position, color)
+	drawText(text, fontIndex, position.x, position.y, color.x, color.y, color.z);
+end
+
+function ui:drawRectangle(position, size, color)
+	drawRectangle(position.x, position.y, size.x, size.y, color.x, color.y, color.z);
 end
 
 function ui:getSpriteSize(spriteIndex)
