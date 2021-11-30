@@ -32,7 +32,7 @@ The InputState enum has 4 values :
 Prefix: ``input:``
 
 ### Functions
--**InputState getKeyState(string key)**: Returns the state of the keyboard's key.
--**InputState getMouseButtonState(string button)**: Returns the state of the mouse's button.
+- **InputState getKeyState(string key)**: Returns the state of the keyboard's key.
+- **InputState getMouseButtonState(string button)**: Returns the state of the mouse's button.
 
 [>> Scripting documentation index](../index.md)
