@@ -4,6 +4,12 @@
 #include "../resources/Image.h"
 #include <string>
 
+// UI elements
+enum struct UIElement {
+	SPRITE,
+	TEXT
+};
+
 // Sprite
 struct SpriteImage {
 	Image image;
