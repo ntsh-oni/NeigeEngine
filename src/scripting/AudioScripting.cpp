@@ -59,6 +59,7 @@ int AudioScripting::playSound(lua_State* L) {
 			}
 
 			sounds[soundId].play();
+
 			return 0;
 		}
 		else {
@@ -86,6 +87,7 @@ int AudioScripting::stopSound(lua_State* L) {
 			if (sounds[soundId].isPlaying()) {
 				sounds[soundId].stop();
 			}
+
 			return 0;
 		}
 		else {
@@ -113,6 +115,7 @@ int AudioScripting::pauseSound(lua_State* L) {
 			if (sounds[soundId].isPlaying()) {
 				sounds[soundId].pause();
 			}
+
 			return 0;
 		}
 		else {
@@ -137,12 +140,14 @@ int AudioScripting::setGain(lua_State* L) {
 				NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\": soundIndex should be inferior to the number of loaded sounds (" + std::to_string(sounds.size()) + ").");
 				return 0;
 			}
+
 			if (newGain < 0.0) {
 				NEIGE_SCRIPT_ERROR("Function \"setGain(int soundIndex, float newGain)\": gain cannot be lower than 0.");
 				return 0;
 			}
 
 			sounds[soundId].setGain(newGain);
+
 			return 0;
 		}
 		else {
@@ -167,12 +172,14 @@ int AudioScripting::setPitch(lua_State* L) {
 				NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\": soundIndex should be inferior to the number of loaded sounds (" + std::to_string(sounds.size()) + ").");
 				return 0;
 			}
+
 			if (newPitch < 0.0) {
 				NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\": pitch cannot be lower than 0.");
 				return 0;
 			}
 
 			sounds[soundId].setPitch(newPitch);
+
 			return 0;
 		}
 		else {
