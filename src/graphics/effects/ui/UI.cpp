@@ -310,23 +310,53 @@ void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
 void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 	renderPass.begin(commandBuffer, framebuffers[framebufferIndex].framebuffer, { static_cast<uint32_t>(viewport.viewport.width), static_cast<uint32_t>(viewport.viewport.height) });
 
-	// Sprites
-	spriteGraphicsPipeline.bind(commandBuffer);
-	cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
-	spritesDescriptorSets[framebufferIndex].bind(commandBuffer, &spriteGraphicsPipeline, 1);
-	while (!sprites.empty()) {
-		Sprite sprite = sprites.front();
-		drawSprite(commandBuffer, sprite);
-		sprites.pop();
-	}
+	currentGraphicsPipeline = nullptr;
+	bool setsBound = false;
 
-	// Texts
-	textGraphicsPipeline.bind(commandBuffer);
-	fontsDescriptorSets[framebufferIndex].bind(commandBuffer, &textGraphicsPipeline, 1);
-	while (!texts.empty()) {
-		Text text = texts.front();
-		drawText(commandBuffer, text);
-		texts.pop();
+	// Sprites
+	while (!elementsToDraw.empty()) {
+		UIElement element = elementsToDraw.front();
+
+		if (element == UIElement::SPRITE) {
+			if (&spriteGraphicsPipeline != currentGraphicsPipeline) {
+				spriteGraphicsPipeline.bind(commandBuffer);
+
+				currentGraphicsPipeline = &spriteGraphicsPipeline;
+				setsBound = false;
+			}
+
+			if (!setsBound) {
+				cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
+				spritesDescriptorSets[framebufferIndex].bind(commandBuffer, &spriteGraphicsPipeline, 1);
+
+				setsBound = true;
+			}
+
+			Sprite sprite = sprites.front();
+			drawSprite(commandBuffer, sprite);
+			sprites.pop();
+		}
+		else if (element == UIElement::TEXT) {
+			if (&textGraphicsPipeline != currentGraphicsPipeline) {
+				textGraphicsPipeline.bind(commandBuffer);
+
+				currentGraphicsPipeline = &textGraphicsPipeline;
+				setsBound = false;
+			}
+
+			if (!setsBound) {
+				cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
+				fontsDescriptorSets[framebufferIndex].bind(commandBuffer, &textGraphicsPipeline, 1);
+
+				setsBound = true;
+			}
+
+			Text text = texts.front();
+			drawText(commandBuffer, text);
+			texts.pop();
+		}
+
+		elementsToDraw.pop();
 	}
 
 	renderPass.end(commandBuffer);

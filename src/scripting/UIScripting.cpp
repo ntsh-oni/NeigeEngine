@@ -100,6 +100,8 @@ int UIScripting::drawSprite(lua_State* L) {
 
 			sprites.push(sprite);
 
+			elementsToDraw.push(UIElement::SPRITE);
+
 			return 0;
 		}
 		else {
@@ -132,6 +134,8 @@ int UIScripting::drawText(lua_State* L) {
 			text.position = glm::vec2(x, y);
 
 			texts.push(text);
+
+			elementsToDraw.push(UIElement::TEXT);
 
 			return 0;
 		}

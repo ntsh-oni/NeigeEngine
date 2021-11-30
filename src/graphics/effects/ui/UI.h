@@ -16,6 +16,8 @@
 struct UI {
 	Viewport viewport;
 
+	GraphicsPipeline* currentGraphicsPipeline = nullptr;
+
 	DescriptorSet cameraDescriptorSet;
 	RenderPass renderPass;
 	std::vector<Framebuffer> framebuffers;

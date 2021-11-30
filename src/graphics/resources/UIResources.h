@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 
+inline std::queue<UIElement> elementsToDraw;
 inline std::queue<Sprite> sprites;
 inline std::vector<SpriteImage> spritesImages;
 inline std::vector<DescriptorSet> spritesDescriptorSets;
