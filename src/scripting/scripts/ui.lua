@@ -8,8 +8,8 @@ function ui:loadFont(fontPath, height)
 	return loadFont(fontPath, height);
 end
 
-function ui:drawSprite(spriteIndex, position)
-	drawSprite(spriteIndex, position.x, position.y);
+function ui:drawSprite(spriteIndex, position, opacity)
+	drawSprite(spriteIndex, position.x, position.y, opacity);
 end
 
 function ui:drawText(text, fontIndex, position, color)
