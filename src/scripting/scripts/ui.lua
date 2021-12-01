@@ -13,11 +13,11 @@ function ui:drawSprite(spriteIndex, position)
 end
 
 function ui:drawText(text, fontIndex, position, color)
-	drawText(text, fontIndex, position.x, position.y, color.x, color.y, color.z);
+	drawText(text, fontIndex, position.x, position.y, color.x, color.y, color.z, color.w);
 end
 
 function ui:drawRectangle(position, size, color)
-	drawRectangle(position.x, position.y, size.x, size.y, color.x, color.y, color.z);
+	drawRectangle(position.x, position.y, size.x, size.y, color.x, color.y, color.z, color.w);
 end
 
 function ui:getSpriteSize(spriteIndex)

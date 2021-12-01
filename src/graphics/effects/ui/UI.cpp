@@ -356,7 +356,7 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 			}
 
 			if (!setsBound) {
-				cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
+				cameraDescriptorSet.bind(commandBuffer, &textGraphicsPipeline, 0);
 				fontsDescriptorSets[framebufferIndex].bind(commandBuffer, &textGraphicsPipeline, 1);
 
 				setsBound = true;
@@ -375,7 +375,7 @@ void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {
 			}
 
 			if (!setsBound) {
-				cameraDescriptorSet.bind(commandBuffer, &spriteGraphicsPipeline, 0);
+				cameraDescriptorSet.bind(commandBuffer, &rectangleGraphicsPipeline, 0);
 
 				setsBound = true;
 			}
@@ -413,8 +413,8 @@ void UI::drawText(CommandBuffer* commandBuffer, UIText text) {
 			float data[24] = { /* Position */ /* 0 */ q.x0, q.y0, /* 1 */ q.x1, q.y0, /* 2 */ q.x1, q.y1, /* 3 */ q.x0, q.y0, /* 4 */ q.x1, q.y1, /* 5 */ q.x0, q.y1, /* UV */ /* 0 */ q.s0, q.t0, /* 1 */ q.s1, q.t0, /* 2 */ q.s1, q.t1, /* 3 */ q.s0, q.t0, /* 4 */ q.s1, q.t1, /* 5 */ q.s0, q.t1 };
 
 			textGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, ((2 * 6) + (2 * 6)) * sizeof(float), data);
-			textGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), 3 * sizeof(float), &text.color);
-			textGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float) + (3 * sizeof(float)), sizeof(int), &text.fontIndex);
+			textGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), 4 * sizeof(float), &text.color);
+			textGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float) + (4 * sizeof(float)), sizeof(int), &text.fontIndex);
 
 			vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 		}
@@ -425,7 +425,7 @@ void UI::drawRectangle(CommandBuffer* commandBuffer, UIRectangle rectangle) {
 	float data[24] = { /* Position */ /* 0 */ rectangle.position.x, rectangle.position.y, /* 1 */ rectangle.position.x + rectangle.size.x, rectangle.position.y, /* 2 */ rectangle.position.x + rectangle.size.x, rectangle.position.y + rectangle.size.y, /* 3 */ rectangle.position.x, rectangle.position.y, /* 4 */ rectangle.position.x + rectangle.size.x, rectangle.position.y + rectangle.size.y, /* 5 */ rectangle.position.x, rectangle.position.y + rectangle.size.y, /* UV */ /* 0 */ 0.0f, 0.0f, /* 1 */ 1.0f, 0.0f, /* 2 */ 1.0f, 1.0f, /* 3 */ 0.0f, 0.0f, /* 4 */ 1.0f, 1.0f, /* 5 */ 0.0f, 1.0f };
 
 	rectangleGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, ((2 * 6) + (2 * 6)) * sizeof(float), data);
-	rectangleGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), 3 * sizeof(float), &rectangle.color);
+	rectangleGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), 4 * sizeof(float), &rectangle.color);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 }
