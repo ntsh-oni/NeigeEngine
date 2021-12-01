@@ -90,21 +90,23 @@ int UIScripting::loadFont(lua_State* L) {
 
 int UIScripting::drawSprite(lua_State* L) {
 	int n = lua_gettop(L);
-	if (n == 3) {
-		if (lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+	if (n == 4) {
+		if (lua_isnumber(L, -4) && lua_isnumber(L, -3) && lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
 			int spriteId = static_cast<int>(lua_tonumber(L, 1));
 
 			if (spriteId > spritesImages.size() - 1) {
-				NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY)\": spriteIndex should be inferior to the number of loaded sprites (" + std::to_string(spritesImages.size()) + ").");
+				NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY, float opacity)\": spriteIndex should be inferior to the number of loaded sprites (" + std::to_string(spritesImages.size()) + ").");
 				return 0;
 			}
 
 			float x = static_cast<float>(lua_tonumber(L, 2));
 			float y = static_cast<float>(lua_tonumber(L, 3));
+			float opacity = static_cast<float>(lua_tonumber(L, 4));
 
 			UISprite sprite;
 			sprite.spriteIndex = spriteId;
 			sprite.position = glm::vec2(x, y);
+			sprite.opacity = opacity;
 
 			sprites.push(sprite);
 
@@ -113,12 +115,12 @@ int UIScripting::drawSprite(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY)\" takes 1 integer, 2 floats parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY, float opacity)\" takes 1 integer, 3 floats parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY)\" takes 1 integer, 2 floats parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"drawSprite(int spriteIndex, float positionX, float positionY, float opacity)\" takes 1 integer, 3 floats parameters.");
 		return 0;
 	}
 }
@@ -155,12 +157,12 @@ int UIScripting::drawText(lua_State* L) {
 			return 0;
 		}
 		else {
-			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue, float textColorBlue)\" takes 1 string, 1 integer and 6 floats parameters.");
+			NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue, float textColorAlpha)\" takes 1 string, 1 integer and 6 floats parameters.");
 			return 0;
 		}
 	}
 	else {
-		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue, float textColorBlue)\" takes 1 string, 1 integer and 6 floats parameters.");
+		NEIGE_SCRIPT_ERROR("Function \"drawText(string text, int fontIndex, float positionX, float positionY, float textColorRed, float textColorGreen, float textColorBlue, float textColorAlpha)\" takes 1 string, 1 integer and 6 floats parameters.");
 		return 0;
 	}
 }

@@ -399,7 +399,8 @@ void UI::drawSprite(CommandBuffer* commandBuffer, UISprite sprite) {
 	float data[24] = { /* Position */ /* 0 */ sprite.position.x, sprite.position.y, /* 1 */ sprite.position.x + width, sprite.position.y, /* 2 */ sprite.position.x + width, sprite.position.y + height, /* 3 */ sprite.position.x, sprite.position.y, /* 4 */ sprite.position.x + width, sprite.position.y + height, /* 5 */ sprite.position.x, sprite.position.y + height, /* UV */ /* 0 */ 0.0f, 0.0f, /* 1 */ 1.0f, 0.0f, /* 2 */ 1.0f, 1.0f, /* 3 */ 0.0f, 0.0f, /* 4 */ 1.0f, 1.0f, /* 5 */ 0.0f, 1.0f };
 
 	spriteGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_VERTEX_BIT, 0, ((2 * 6) + (2 * 6)) * sizeof(float), data);
-	spriteGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), sizeof(int), &sprite.spriteIndex);
+	spriteGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float), sizeof(float), &sprite.opacity);
+	spriteGraphicsPipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_FRAGMENT_BIT, ((2 * 6) + (2 * 6)) * sizeof(float) + sizeof(float), sizeof(int), &sprite.spriteIndex);
 
 	vkCmdDraw(commandBuffer->commandBuffer, 6, 1, 0, 0);
 }

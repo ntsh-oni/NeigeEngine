@@ -6,11 +6,12 @@ layout(location = 0) in vec2 uv;
 layout(set = 1, binding = 0) uniform sampler2D sprites[];
 
 layout(push_constant) uniform SpriteInfo {
-	layout(offset = 96) int spriteIndex;
+	layout(offset = 96) float opacity;
+	int spriteIndex;
 } sI;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	outColor = texture(sprites[sI.spriteIndex], uv);
+	outColor = texture(sprites[sI.spriteIndex], uv) * vec4(1.0, 1.0, 1.0, sI.opacity);
 }

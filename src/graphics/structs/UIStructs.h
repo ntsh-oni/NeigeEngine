@@ -21,6 +21,7 @@ struct SpriteImage {
 struct UISprite {
 	int spriteIndex;
 	glm::vec2 position = glm::vec2(0.0f, 0.0f);
+	float opacity = 1.0f;
 };
 
 // Font
