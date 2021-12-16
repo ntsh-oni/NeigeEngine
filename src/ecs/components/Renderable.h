@@ -771,21 +771,27 @@ struct Renderable {
 		model->opaqueFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
 		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->opaqueDrawCount);
 
-		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+		uint32_t groups = static_cast<uint32_t>((model->opaqueDrawCount + 64 - 1) / 64);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, groups, 1, 1);
 	}
 
 	void cullMask(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 		model->maskFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
 		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->maskDrawCount);
 
-		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+		uint32_t groups = static_cast<uint32_t>((model->maskDrawCount + 64 - 1) / 64);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, groups, 1, 1);
 	}
 
 	void cullBlend(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
 		model->blendFrustumCullingDescriptorSet.bind(commandBuffer, &frustumCulling.computePipeline, 1);
 		frustumCulling.computePipeline.pushConstant(commandBuffer, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &model->blendDrawCount);
 
-		vkCmdDispatch(commandBuffer->commandBuffer, 256, 1, 1);
+		uint32_t groups = static_cast<uint32_t>((model->blendDrawCount + 64 - 1) / 64);
+
+		vkCmdDispatch(commandBuffer->commandBuffer, groups, 1, 1);
 	}
 
 	void drawOpaque(CommandBuffer* commandBuffer, GraphicsPipeline* opaqueGraphicsPipeline, bool bindTextures, uint32_t frameInFlightIndex, bool culling) {
