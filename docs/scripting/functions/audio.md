@@ -9,6 +9,7 @@ Prefix: ``audio:``
 - **play(number soundId)**: Plays the sound.
 - **stop(number soundId)**: Stops the sound if it is playing.
 - **pause(number soundId)**: Pauses the sound if it is playing.
+- **bool isPlaying(number soundId)**: Returns true if the sound is currently playing.
 - **setGain(number newGain)**: Modifies the sound's gain.
 - **setPitch(number newPitch)**: Modifies the sound's pitch.
 

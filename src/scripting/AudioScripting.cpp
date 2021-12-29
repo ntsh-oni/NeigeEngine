@@ -7,6 +7,7 @@ void AudioScripting::init() {
 	lua_register(L, "playSound", playSound);
 	lua_register(L, "stopSound", stopSound);
 	lua_register(L, "pauseSound", pauseSound);
+	lua_register(L, "isPlaying", isPlaying);
 	lua_register(L, "setGain", setGain);
 	lua_register(L, "setPitch", setPitch);
 
@@ -125,6 +126,32 @@ int AudioScripting::pauseSound(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"pauseSound(int soundIndex)\" takes 1 int parameter.");
+		return 0;
+	}
+}
+
+int AudioScripting::isPlaying(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 1) {
+		if (lua_isnumber(L, -1)) {
+			int soundId = static_cast<int>(lua_tonumber(L, 1));
+
+			if (soundId > sounds.size() - 1) {
+				NEIGE_SCRIPT_ERROR("Function \"isPlaying(int soundIndex)\": soundIndex should be inferior to the number of loaded sounds (" + std::to_string(sounds.size()) + ").");
+				return 0;
+			}
+
+			lua_pushboolean(L, sounds[soundId].isPlaying());
+
+			return 1;
+		}
+		else {
+			NEIGE_SCRIPT_ERROR("Function \"isPlaying(int soundIndex)\" takes 1 int parameter.");
+			return 0;
+		}
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"isPlaying(int soundIndex)\" takes 1 int parameter.");
 		return 0;
 	}
 }
