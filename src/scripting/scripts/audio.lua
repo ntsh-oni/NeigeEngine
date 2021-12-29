@@ -16,6 +16,10 @@ function audio:pause(sound)
 	pauseSound(sound);
 end
 
+function audio:isPlaying(sound)
+	return isPlaying(sound);
+end
+
 function audio:setGain(sound, newGain)
 	setGain(sound, newGain);
 end
