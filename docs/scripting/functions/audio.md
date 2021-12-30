@@ -12,5 +12,6 @@ Prefix: ``audio:``
 - **bool isPlaying(number soundId)**: Returns true if the sound is currently playing.
 - **setGain(number newGain)**: Modifies the sound's gain.
 - **setPitch(number newPitch)**: Modifies the sound's pitch.
+- **number getSoundCount()**: Returns the number of loaded sounds.
 
 [>> Scripting documentation index](../index.md)

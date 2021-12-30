@@ -27,3 +27,7 @@ end
 function audio:setPitch(sound, newPitch)
 	setPitch(sound, newPitch);
 end
+
+function audio:getSoundCount()
+	return getSoundCount();
+end

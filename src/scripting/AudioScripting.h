@@ -15,4 +15,5 @@ struct AudioScripting {
 	static int isPlaying(lua_State* L);
 	static int setGain(lua_State* L);
 	static int setPitch(lua_State* L);
+	static int getSoundCount(lua_State* L);
 };
