@@ -10,6 +10,7 @@ void AudioScripting::init() {
 	lua_register(L, "isPlaying", isPlaying);
 	lua_register(L, "setGain", setGain);
 	lua_register(L, "setPitch", setPitch);
+	lua_register(L, "getSoundCount", getSoundCount);
 
 	std::string audioScript = FileTools::readAscii("../src/scripting/scripts/audio.lua");
 	luaL_dostring(L, audioScript.c_str());
@@ -216,6 +217,19 @@ int AudioScripting::setPitch(lua_State* L) {
 	}
 	else {
 		NEIGE_SCRIPT_ERROR("Function \"setPitch(int soundIndex, float newPitch)\" takes 1 int and 1 float parameter.");
+		return 0;
+	}
+}
+
+int AudioScripting::getSoundCount(lua_State* L) {
+	int n = lua_gettop(L);
+	if (n == 0) {
+		lua_pushnumber(L, static_cast<int>(sounds.size()));
+
+		return 1;
+	}
+	else {
+		NEIGE_SCRIPT_ERROR("Function \"getSoundCount()\" takes no parameter.");
 		return 0;
 	}
 }
