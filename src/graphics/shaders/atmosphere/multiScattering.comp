@@ -1,0 +1,110 @@
+#version 460
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../src/graphics/shaders/atmosphere/atmosphereFunctions.glsl"
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 64) in;
+
+layout(set = 0, binding = 2, rgba16f) uniform restrict writeonly image2D multiScatteringImage;
+
+shared vec3 multiScatteringAs1SharedMem[64];
+shared vec3 lSharedMem[64];
+
+void main() {
+    vec2 uv = gl_GlobalInvocationID.xy + 0.5;
+    uv /= vec2(32.0);
+
+    uv = vec2(fromSubUVToUnit(uv.x, 32.0), fromSubUVToUnit(uv.y, 32.0));
+
+    float cosSunZenithAngle = uv.x * 2.0 - 1.0;
+    vec3 sunDir = vec3(0.0, cosSunZenithAngle, sqrt(clamp(1.0 - (cosSunZenithAngle * cosSunZenithAngle), 0.0, 1.0)));
+    float viewHeight = bottomRadius + clamp(uv.y + planetRadiusOffset, 0.0, 1.0) * (topRadius - bottomRadius - planetRadiusOffset);
+
+    vec3 worldPos = vec3(0.0, viewHeight, 0.0);
+    vec3 worldDir = vec3(0.0, 1.0, 0.0);
+
+    const bool ground = true;
+    const float sampleCountIni = 20;
+    const float depthBufferValue = -1.0;
+    const bool variableSampleCount = false;
+    const bool mieRayPhase = false;
+
+    const float sphereSolidAngle = 4.0 * M_PI;
+    const float isotropicPhase = 1.0 / sphereSolidAngle;
+
+    const float sqrtSample = 8.0;
+    float i = 0.5 + float(gl_GlobalInvocationID.z / 8);
+    float j = 0.5 + float(gl_GlobalInvocationID.z - float((gl_GlobalInvocationID.z / 8) * 8));
+
+    float randA = i / sqrtSample;
+    float randB = j / sqrtSample;
+    float theta = 2.0 * M_PI * randA;
+    float phi = acos(1.0 - 2.0 * randB);
+    float cosPhi = cos(phi);
+    float sinPhi = sin(phi);
+    float cosTheta = cos(theta);
+    float sinTheta = sin(theta);
+    worldDir.x = cosTheta * sinPhi;
+    worldDir.y = sinTheta * sinPhi;
+    worldDir.z = cosPhi;
+    SingleScatteringResult result = integrateScatteredLuminance(vec2(0.0), mat4(0.0), worldPos, worldDir, sunDir, ground, sampleCountIni, depthBufferValue, variableSampleCount, mieRayPhase, 9000000.0);
+    
+    multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] = result.multiScatteringAs1 * sphereSolidAngle / (sqrtSample * sqrtSample);
+    lSharedMem[gl_GlobalInvocationID.z] = result.l * sphereSolidAngle / (sqrtSample * sqrtSample);
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 32) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 32];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 32];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 16) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 16];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 16];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 8) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 8];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 8];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 4) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 4];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 4];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 2) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 2];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 2];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z < 1) {
+        multiScatteringAs1SharedMem[gl_GlobalInvocationID.z] += multiScatteringAs1SharedMem[gl_GlobalInvocationID.z + 1];
+        lSharedMem[gl_GlobalInvocationID.z] += lSharedMem[gl_GlobalInvocationID.z + 1];
+    }
+
+    barrier();
+
+    if (gl_GlobalInvocationID.z > 0) {
+        return;
+    }
+
+    vec3 multiScatteringAs1 = multiScatteringAs1SharedMem[0] * isotropicPhase;
+    vec3 inScatteredLuminance = lSharedMem[0] * isotropicPhase;
+
+    const vec3 sumOfAllMultiScatteringEventsContribution = 1.0 / (1.0 - multiScatteringAs1);
+    vec3 l = inScatteredLuminance * sumOfAllMultiScatteringEventsContribution;
+
+    imageStore(multiScatteringImage, ivec2(gl_GlobalInvocationID.xy), vec4(l, 1.0));
+}

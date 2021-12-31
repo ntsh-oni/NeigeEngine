@@ -5,15 +5,16 @@
 #include "../../../graphics/resources/ShaderResources.h"
 
 void Atmosphere::init(Viewport fullscreenViewport) {
+	float defaultValue[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	ImageTools::loadColor(defaultValue, &dummyImage.image, VK_FORMAT_R8G8B8A8_UNORM, &dummyImage.mipmapLevels, &dummyImage.memoryInfo);
+	ImageTools::createImageView(&dummyImage.imageView, dummyImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageTools::transitionLayout(dummyImage.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
+
 	// Transmittance LUT
 	transmittanceViewport.init(TRANSMITTANCE_WIDTH, TRANSMITTANCE_HEIGHT);
 
 	ImageTools::createImage(&transmittanceImage.image, 1, TRANSMITTANCE_WIDTH, TRANSMITTANCE_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &transmittanceImage.memoryInfo);
 	ImageTools::createImageView(&transmittanceImage.imageView, transmittanceImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-
-	ImageTools::createImage(&dummyTransmittanceImage.image, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &dummyTransmittanceImage.memoryInfo);
-	ImageTools::createImageView(&dummyTransmittanceImage.imageView, dummyTransmittanceImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::transitionLayout(dummyTransmittanceImage.image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
 
 	{
 		std::vector<RenderPassAttachment> attachments;
@@ -21,7 +22,7 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 
 		std::vector<SubpassDependency> dependencies;
 		dependencies.push_back({ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT });
-		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
+		dependencies.push_back({ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT });
 
 		transmittanceRenderPass.init(attachments, dependencies);
 	}
@@ -44,10 +45,10 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	{
 		transmittanceDescriptorSet.init(&transmittanceGraphicsPipeline, 0);
 
-		VkDescriptorImageInfo dummyTransmittanceInfo = {};
-		dummyTransmittanceInfo.sampler = trilinearEdgeBlackSampler;
-		dummyTransmittanceInfo.imageView = dummyTransmittanceImage.imageView;
-		dummyTransmittanceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		VkDescriptorImageInfo dummyInfo = {};
+		dummyInfo.sampler = trilinearEdgeBlackSampler;
+		dummyInfo.imageView = dummyImage.imageView;
+		dummyInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
@@ -59,12 +60,95 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		dummyTransmittanceWriteDescriptorSet.dstArrayElement = 0;
 		dummyTransmittanceWriteDescriptorSet.descriptorCount = 1;
 		dummyTransmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyTransmittanceWriteDescriptorSet.pImageInfo = &dummyTransmittanceInfo;
+		dummyTransmittanceWriteDescriptorSet.pImageInfo = &dummyInfo;
 		dummyTransmittanceWriteDescriptorSet.pBufferInfo = nullptr;
 		dummyTransmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
 		writesDescriptorSet.push_back(dummyTransmittanceWriteDescriptorSet);
 
+		VkWriteDescriptorSet dummyMultiScatteringWriteDescriptorSet = {};
+		dummyMultiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		dummyMultiScatteringWriteDescriptorSet.pNext = nullptr;
+		dummyMultiScatteringWriteDescriptorSet.dstSet = transmittanceDescriptorSet.descriptorSet;
+		dummyMultiScatteringWriteDescriptorSet.dstBinding = 1;
+		dummyMultiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		dummyMultiScatteringWriteDescriptorSet.descriptorCount = 1;
+		dummyMultiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		dummyMultiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
+		dummyMultiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		dummyMultiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(dummyMultiScatteringWriteDescriptorSet);
+
 		transmittanceDescriptorSet.update(writesDescriptorSet);
+	}
+
+	// Multi scattering
+	ImageTools::createImage(&multiScatteringImage.image, 1, MULTI_SCATTERING_WIDTH, MULTI_SCATTERING_HEIGHT, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &multiScatteringImage.memoryInfo);
+	ImageTools::createImageView(&multiScatteringImage.imageView, multiScatteringImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_ASPECT_COLOR_BIT);
+	ImageTools::transitionLayout(multiScatteringImage.image, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+
+	multiScatteringComputePipeline.computeShaderPath = "../src/graphics/shaders/atmosphere/multiScattering.comp";
+	multiScatteringComputePipeline.init();
+
+	{
+		multiScatteringDescriptorSet.init(&multiScatteringComputePipeline, 0);
+
+		VkDescriptorImageInfo transmittanceInfo = {};
+		transmittanceInfo.sampler = trilinearEdgeBlackSampler;
+		transmittanceInfo.imageView = transmittanceImage.imageView;
+		transmittanceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		VkDescriptorImageInfo dummyInfo = {};
+		dummyInfo.sampler = trilinearEdgeBlackSampler;
+		dummyInfo.imageView = dummyImage.imageView;
+		dummyInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		VkDescriptorImageInfo multiScatteringInfo = {};
+		multiScatteringInfo.sampler = VK_NULL_HANDLE;
+		multiScatteringInfo.imageView = multiScatteringImage.imageView;
+		multiScatteringInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+
+		VkWriteDescriptorSet transmittanceWriteDescriptorSet = {};
+		transmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		transmittanceWriteDescriptorSet.pNext = nullptr;
+		transmittanceWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
+		transmittanceWriteDescriptorSet.dstBinding = 0;
+		transmittanceWriteDescriptorSet.dstArrayElement = 0;
+		transmittanceWriteDescriptorSet.descriptorCount = 1;
+		transmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		transmittanceWriteDescriptorSet.pImageInfo = &transmittanceInfo;
+		transmittanceWriteDescriptorSet.pBufferInfo = nullptr;
+		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
+
+		VkWriteDescriptorSet dummyMultiScatteringWriteDescriptorSet = {};
+		dummyMultiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		dummyMultiScatteringWriteDescriptorSet.pNext = nullptr;
+		dummyMultiScatteringWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
+		dummyMultiScatteringWriteDescriptorSet.dstBinding = 1;
+		dummyMultiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		dummyMultiScatteringWriteDescriptorSet.descriptorCount = 1;
+		dummyMultiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		dummyMultiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
+		dummyMultiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		dummyMultiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(dummyMultiScatteringWriteDescriptorSet);
+
+		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
+		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		multiScatteringWriteDescriptorSet.pNext = nullptr;
+		multiScatteringWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
+		multiScatteringWriteDescriptorSet.dstBinding = 2;
+		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		multiScatteringWriteDescriptorSet.descriptorCount = 1;
+		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
+		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+
+		multiScatteringDescriptorSet.update(writesDescriptorSet);
 	}
 	
 	// Sky view
@@ -108,6 +192,11 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		transmittanceInfo.imageView = transmittanceImage.imageView;
 		transmittanceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+		VkDescriptorImageInfo multiScatteringInfo = {};
+		multiScatteringInfo.sampler = trilinearEdgeBlackSampler;
+		multiScatteringInfo.imageView = multiScatteringImage.imageView;
+		multiScatteringInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
 		VkDescriptorBufferInfo cameraInfo = {};
 		cameraInfo.buffer = cameraBuffers.at(i).buffer;
 		cameraInfo.offset = 0;
@@ -128,11 +217,24 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
 		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
 
+		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
+		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		multiScatteringWriteDescriptorSet.pNext = nullptr;
+		multiScatteringWriteDescriptorSet.dstSet = skyViewDescriptorSets[i].descriptorSet;
+		multiScatteringWriteDescriptorSet.dstBinding = 1;
+		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		multiScatteringWriteDescriptorSet.descriptorCount = 1;
+		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
+		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+
 		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
 		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		cameraWriteDescriptorSet.pNext = nullptr;
 		cameraWriteDescriptorSet.dstSet = skyViewDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 1;
+		cameraWriteDescriptorSet.dstBinding = 2;
 		cameraWriteDescriptorSet.dstArrayElement = 0;
 		cameraWriteDescriptorSet.descriptorCount = 1;
 		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -186,6 +288,11 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		transmittanceInfo.imageView = transmittanceImage.imageView;
 		transmittanceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+		VkDescriptorImageInfo multiScatteringInfo = {};
+		multiScatteringInfo.sampler = trilinearEdgeBlackSampler;
+		multiScatteringInfo.imageView = multiScatteringImage.imageView;
+		multiScatteringInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
 		VkDescriptorBufferInfo cameraInfo = {};
 		cameraInfo.buffer = cameraBuffers.at(i).buffer;
 		cameraInfo.offset = 0;
@@ -206,11 +313,24 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
 		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
 
+		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
+		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		multiScatteringWriteDescriptorSet.pNext = nullptr;
+		multiScatteringWriteDescriptorSet.dstSet = cameraVolumeDescriptorSets[i].descriptorSet;
+		multiScatteringWriteDescriptorSet.dstBinding = 1;
+		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		multiScatteringWriteDescriptorSet.descriptorCount = 1;
+		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
+		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+
 		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
 		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		cameraWriteDescriptorSet.pNext = nullptr;
 		cameraWriteDescriptorSet.dstSet = cameraVolumeDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 1;
+		cameraWriteDescriptorSet.dstBinding = 2;
 		cameraWriteDescriptorSet.dstArrayElement = 0;
 		cameraWriteDescriptorSet.descriptorCount = 1;
 		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -253,9 +373,11 @@ void Atmosphere::destroy() {
 	destroyResources();
 	transmittanceImage.destroy();
 	transmittanceGraphicsPipeline.destroy();
-	dummyTransmittanceImage.destroy();
+	dummyImage.destroy();
 	transmittanceFramebuffer.destroy();
 	transmittanceRenderPass.destroy();
+	multiScatteringImage.destroy();
+	multiScatteringComputePipeline.destroy();
 	skyViewImage.destroy();
 	skyViewGraphicsPipeline.destroy();
 	skyViewFramebuffer.destroy();
@@ -283,10 +405,10 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 	for (uint32_t i = 0; i < framesInFlight; i++) {
 		rayMarchingDescriptorSets[i].init(&rayMarchingGraphicsPipeline, 0);
 
-		VkDescriptorImageInfo dummyTransmittanceInfo = {};
-		dummyTransmittanceInfo.sampler = trilinearEdgeBlackSampler;
-		dummyTransmittanceInfo.imageView = dummyTransmittanceImage.imageView;
-		dummyTransmittanceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		VkDescriptorImageInfo dummyInfo = {};
+		dummyInfo.sampler = trilinearEdgeBlackSampler;
+		dummyInfo.imageView = dummyImage.imageView;
+		dummyInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		VkDescriptorImageInfo skyViewInfo = {};
 		skyViewInfo.sampler = trilinearEdgeBlackSampler;
@@ -310,24 +432,37 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 
 		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
 
-		VkWriteDescriptorSet dummyTransmittanceWriteDescriptorSet = {};
-		dummyTransmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		dummyTransmittanceWriteDescriptorSet.pNext = nullptr;
-		dummyTransmittanceWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		dummyTransmittanceWriteDescriptorSet.dstBinding = 0;
-		dummyTransmittanceWriteDescriptorSet.dstArrayElement = 0;
-		dummyTransmittanceWriteDescriptorSet.descriptorCount = 1;
-		dummyTransmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyTransmittanceWriteDescriptorSet.pImageInfo = &dummyTransmittanceInfo;
-		dummyTransmittanceWriteDescriptorSet.pBufferInfo = nullptr;
-		dummyTransmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(dummyTransmittanceWriteDescriptorSet);
+		VkWriteDescriptorSet dummyWriteDescriptorSet = {};
+		dummyWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		dummyWriteDescriptorSet.pNext = nullptr;
+		dummyWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
+		dummyWriteDescriptorSet.dstBinding = 0;
+		dummyWriteDescriptorSet.dstArrayElement = 0;
+		dummyWriteDescriptorSet.descriptorCount = 1;
+		dummyWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		dummyWriteDescriptorSet.pImageInfo = &dummyInfo;
+		dummyWriteDescriptorSet.pBufferInfo = nullptr;
+		dummyWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(dummyWriteDescriptorSet);
+
+		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
+		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		multiScatteringWriteDescriptorSet.pNext = nullptr;
+		multiScatteringWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
+		multiScatteringWriteDescriptorSet.dstBinding = 1;
+		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
+		multiScatteringWriteDescriptorSet.descriptorCount = 1;
+		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		multiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
+		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
+		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
+		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
 
 		VkWriteDescriptorSet skyViewWriteDescriptorSet = {};
 		skyViewWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		skyViewWriteDescriptorSet.pNext = nullptr;
 		skyViewWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		skyViewWriteDescriptorSet.dstBinding = 1;
+		skyViewWriteDescriptorSet.dstBinding = 2;
 		skyViewWriteDescriptorSet.dstArrayElement = 0;
 		skyViewWriteDescriptorSet.descriptorCount = 1;
 		skyViewWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -340,7 +475,7 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 		depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		depthPrepassWriteDescriptorSet.pNext = nullptr;
 		depthPrepassWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		depthPrepassWriteDescriptorSet.dstBinding = 2;
+		depthPrepassWriteDescriptorSet.dstBinding = 3;
 		depthPrepassWriteDescriptorSet.dstArrayElement = 0;
 		depthPrepassWriteDescriptorSet.descriptorCount = 1;
 		depthPrepassWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -353,7 +488,7 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 		cameraVolumeWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		cameraVolumeWriteDescriptorSet.pNext = nullptr;
 		cameraVolumeWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		cameraVolumeWriteDescriptorSet.dstBinding = 3;
+		cameraVolumeWriteDescriptorSet.dstBinding = 4;
 		cameraVolumeWriteDescriptorSet.dstArrayElement = 0;
 		cameraVolumeWriteDescriptorSet.descriptorCount = 1;
 		cameraVolumeWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -366,7 +501,7 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		cameraWriteDescriptorSet.pNext = nullptr;
 		cameraWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 4;
+		cameraWriteDescriptorSet.dstBinding = 5;
 		cameraWriteDescriptorSet.dstArrayElement = 0;
 		cameraWriteDescriptorSet.descriptorCount = 1;
 		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -392,6 +527,14 @@ void Atmosphere::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex)
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
 	transmittanceRenderPass.end(commandBuffer);
+
+	// Multi scattering
+	multiScatteringComputePipeline.bind(commandBuffer);
+	multiScatteringDescriptorSet.bind(commandBuffer, &multiScatteringComputePipeline, 0);
+
+	vkCmdDispatch(commandBuffer->commandBuffer, 32, 32, 1);
+
+	computeFragmentBarrier(commandBuffer);
 
 	// Sky view
 	skyViewRenderPass.begin(commandBuffer, skyViewFramebuffer.framebuffer, { SKY_VIEW_WIDTH, SKY_VIEW_HEIGHT });
@@ -422,4 +565,52 @@ void Atmosphere::draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex)
 	vkCmdDraw(commandBuffer->commandBuffer, 3, 1, 0, 0);
 
 	rayMarchingRenderPass.end(commandBuffer);
+
+	transitionToGeneralLayout(commandBuffer);
+}
+
+void Atmosphere::computeFragmentBarrier(CommandBuffer* commandBuffer) {
+	VkImageSubresourceRange imageSubresourceRange = {};
+	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageSubresourceRange.baseMipLevel = 0;
+	imageSubresourceRange.levelCount = 1;
+	imageSubresourceRange.baseArrayLayer = 0;
+	imageSubresourceRange.layerCount = 1;
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageMemoryBarrier.srcQueueFamilyIndex = physicalDevice.queueFamilyIndices.computeFamily.value();
+	imageMemoryBarrier.dstQueueFamilyIndex = physicalDevice.queueFamilyIndices.graphicsFamily.value();
+	imageMemoryBarrier.image = multiScatteringImage.image;
+	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
+
+	vkCmdPipelineBarrier(commandBuffer->commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+}
+
+void Atmosphere::transitionToGeneralLayout(CommandBuffer* commandBuffer) {
+	VkImageSubresourceRange imageSubresourceRange = {};
+	imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageSubresourceRange.baseMipLevel = 0;
+	imageSubresourceRange.levelCount = 1;
+	imageSubresourceRange.baseArrayLayer = 0;
+	imageSubresourceRange.layerCount = 1;
+
+	VkImageMemoryBarrier imageMemoryBarrier = {};
+	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageMemoryBarrier.pNext = nullptr;
+	imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+	imageMemoryBarrier.srcQueueFamilyIndex = physicalDevice.queueFamilyIndices.graphicsFamily.value();
+	imageMemoryBarrier.dstQueueFamilyIndex = physicalDevice.queueFamilyIndices.computeFamily.value();
+	imageMemoryBarrier.image = multiScatteringImage.image;
+	imageMemoryBarrier.subresourceRange = imageSubresourceRange;
+
+	vkCmdPipelineBarrier(commandBuffer->commandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
 }
