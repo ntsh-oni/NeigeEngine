@@ -3,13 +3,13 @@
 
 #include "../src/graphics/shaders/atmosphere/atmosphereFunctions.glsl"
 
-layout(set = 0, binding = 1) uniform sampler2D skyViewLUT;
+layout(set = 0, binding = 2) uniform sampler2D skyViewLUT;
 
-layout(set = 0, binding = 2) uniform sampler2D depthPrepass;
+layout(set = 0, binding = 3) uniform sampler2D depthPrepass;
 
-layout(set = 0, binding = 3) uniform sampler3D cameraVolume;
+layout(set = 0, binding = 4) uniform sampler3D cameraVolume;
 
-layout(set = 0, binding = 4) uniform Camera {
+layout(set = 0, binding = 5) uniform Camera {
 	mat4 view;
 	mat4 projection;
 	vec3 pos;

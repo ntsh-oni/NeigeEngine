@@ -21,14 +21,21 @@
 #define CAMERA_VOLUME_HEIGHT 32
 
 struct Atmosphere {
+	Image dummyImage;
+
 	// Transmittance
 	Image transmittanceImage;
 	Viewport transmittanceViewport;
-	Image dummyTransmittanceImage;
 	GraphicsPipeline transmittanceGraphicsPipeline;
 	DescriptorSet transmittanceDescriptorSet;
 	RenderPass transmittanceRenderPass;
 	Framebuffer transmittanceFramebuffer;
+
+	// Multi scattering
+	Image multiScatteringImage;
+	Viewport multiScatteringViewport;
+	ComputePipeline multiScatteringComputePipeline;
+	DescriptorSet multiScatteringDescriptorSet;
 
 	// Sky view
 	Image skyViewImage;
@@ -59,4 +66,6 @@ struct Atmosphere {
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
 	void draw(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex);
+	void computeFragmentBarrier(CommandBuffer* commandBuffer);
+	void transitionToGeneralLayout(CommandBuffer* commandBuffer);
 };

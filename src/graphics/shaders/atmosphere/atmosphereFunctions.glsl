@@ -1,6 +1,7 @@
 #include "../src/graphics/shaders/atmosphere/atmosphereResources.glsl"
 
 layout(set = 0, binding = 0) uniform sampler2D transmittanceLUT;
+layout(set = 0, binding = 1) uniform sampler2D multiScatteringLUT;
 
 float fromSubUVToUnit(float u, float resolution) {
     return (u - 0.5 / resolution) * (resolution / (resolution - 1.0));
@@ -178,6 +179,14 @@ vec3 getSunLuminance(vec3 worldPos, vec3 worldDir, float planetRadius, vec3 sunD
     return vec3(0.0); 
 }
 
+vec3 getMultiScattering(vec3 scattering, vec3 extinction, vec3 worldPos, float viewZenithCosAngle) {
+    vec2 msUV = clamp(vec2(viewZenithCosAngle * 0.5 + 0.5, (length(worldPos) - bottomRadius) / (topRadius - bottomRadius)), 0.0, 1.0);
+    msUV = vec2(fromUnitToSubUV(msUV.x, 32), fromUnitToSubUV(msUV.y, 32));
+
+    vec3 multiScatteringLuminance = texture(multiScatteringLUT, msUV).rgb;
+    return multiScatteringLuminance;
+}
+
 SingleScatteringResult integrateScatteredLuminance(vec2 uv, mat4 viewProj, vec3 worldPos, vec3 worldDir, vec3 sunDir, bool ground, float sampleCountIni, float depthBufferValue, bool variableSampleCount, bool mieRayPhase, float tMaxMax) {
     SingleScatteringResult result;
     result.l = vec3(0.0);
@@ -293,6 +302,7 @@ SingleScatteringResult integrateScatteredLuminance(vec2 uv, mat4 viewProj, vec3 
         float planetShadow = tPlanet >= 0.0 ? 0.0 : 1.0;
 
         vec3 multiScatteredLuminance = vec3(0.0);
+        multiScatteredLuminance = getMultiScattering(medium.scattering, medium.extinction, p, sunZenithCosAngle);
 
         float shadow = 1.0;
 

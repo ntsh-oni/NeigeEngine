@@ -3,7 +3,7 @@
 
 #include "../src/graphics/shaders/atmosphere/atmosphereFunctions.glsl"
 
-layout(set = 0, binding = 1) uniform Camera {
+layout(set = 0, binding = 2) uniform Camera {
 	mat4 view;
 	mat4 projection;
 	vec3 pos;
