@@ -45,7 +45,7 @@ vec3 importanceSamplingGGX(vec2 xi, vec3 normal, float roughness) {
 	return normalize(sampleVec);
 }
 
-float radicalInverseVanDerCorpus(uint bits) {
+float radicalInverseVanDerCorput(uint bits) {
 	bits = (bits << 16u) | (bits >> 16u);
 	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
 	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
@@ -56,7 +56,7 @@ float radicalInverseVanDerCorpus(uint bits) {
 }
 
 vec2 hammersley(uint i, uint N) {
-	return vec2(float(i) / float(N), radicalInverseVanDerCorpus(i));
+	return vec2(float(i) / float(N), radicalInverseVanDerCorput(i));
 }
 
 vec2 integrate(float NdotV, float roughness) {
