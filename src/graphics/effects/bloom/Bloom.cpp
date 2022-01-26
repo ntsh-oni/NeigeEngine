@@ -35,7 +35,7 @@ void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenVi
 	resizeGraphicsPipeline.renderPass = &blurRenderPass;
 	resizeGraphicsPipeline.viewport = &viewport;
 	resizeGraphicsPipeline.multiSample = false;
-	resizeGraphicsPipeline.backfaceCulling = false;
+	resizeGraphicsPipeline.frontFaceCCW = false;
 	resizeGraphicsPipeline.depthWrite = false;
 	resizeGraphicsPipeline.init();
 
@@ -46,7 +46,7 @@ void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenVi
 	blurGraphicsPipeline.renderPass = &blurRenderPass;
 	blurGraphicsPipeline.viewport = &blurViewport;
 	blurGraphicsPipeline.multiSample = false;
-	blurGraphicsPipeline.backfaceCulling = false;
+	blurGraphicsPipeline.frontFaceCCW = false;
 	blurGraphicsPipeline.depthWrite = false;
 	blurGraphicsPipeline.init();
 

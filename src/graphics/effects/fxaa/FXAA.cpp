@@ -23,7 +23,7 @@ void FXAA::init(Viewport fullscreenViewport) {
 	graphicsPipeline.renderPass = &renderPass;
 	graphicsPipeline.viewport = &viewport;
 	graphicsPipeline.multiSample = false;
-	graphicsPipeline.backfaceCulling = false;
+	graphicsPipeline.frontFaceCCW = false;
 	graphicsPipeline.depthWrite = false;
 	graphicsPipeline.init();
 

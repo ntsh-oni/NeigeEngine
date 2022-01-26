@@ -38,6 +38,7 @@ struct GraphicsPipeline {
 	bool depthWrite = true;
 	bool depthTest = true;
 	Compare depthCompare = Compare::LESS_OR_EQUAL;
+	bool frontFaceCCW = true;
 	bool backfaceCulling = true;
 	std::vector<int> externalSets;
 	std::vector<VkDescriptorSetLayout> externalDescriptorSetLayouts;

@@ -22,7 +22,6 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 	opaqueGraphicsPipeline.renderPass = &renderPass;
 	opaqueGraphicsPipeline.viewport = &viewport;
 	opaqueGraphicsPipeline.multiSample = false;
-	opaqueGraphicsPipeline.backfaceCulling = true;
 	opaqueGraphicsPipeline.init();
 
 	maskGraphicsPipeline.vertexShaderPath = "../src/graphics/shaders/depthprepass/depthPrepass.vert";
@@ -30,7 +29,6 @@ void DepthPrepass::init(Viewport fullscreenViewport) {
 	maskGraphicsPipeline.renderPass = &renderPass;
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;
-	maskGraphicsPipeline.backfaceCulling = true;
 	maskGraphicsPipeline.externalSets.push_back(1);
 	maskGraphicsPipeline.externalSets.push_back(2);
 	maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);

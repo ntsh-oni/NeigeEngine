@@ -283,7 +283,7 @@ void Renderer::init(const std::string& applicationName) {
 	alphaCompositingGraphicsPipeline.viewport = &fullscreenViewport;
 	alphaCompositingGraphicsPipeline.multiSample = false;
 	alphaCompositingGraphicsPipeline.depthCompare = Compare::LESS;
-	alphaCompositingGraphicsPipeline.backfaceCulling = false;
+	alphaCompositingGraphicsPipeline.frontFaceCCW = false;
 	alphaCompositingGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD });
 	alphaCompositingGraphicsPipeline.init();
 	graphicsPipelines.emplace("alphaCompositing", alphaCompositingGraphicsPipeline);
@@ -302,7 +302,7 @@ void Renderer::init(const std::string& applicationName) {
 	postGraphicsPipeline.viewport = &fullscreenViewport;
 	postGraphicsPipeline.multiSample = false;
 	postGraphicsPipeline.depthCompare = Compare::LESS;
-	postGraphicsPipeline.backfaceCulling = false;
+	postGraphicsPipeline.frontFaceCCW = false;
 	postGraphicsPipeline.init();
 	graphicsPipelines.emplace("post", postGraphicsPipeline);
 

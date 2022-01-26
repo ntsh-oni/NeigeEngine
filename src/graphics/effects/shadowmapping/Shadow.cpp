@@ -37,7 +37,7 @@ void Shadow::init() {
 	maskGraphicsPipeline.renderPass = &renderPass;
 	maskGraphicsPipeline.viewport = &viewport;
 	maskGraphicsPipeline.multiSample = false;
-	maskGraphicsPipeline.backfaceCulling = false;
+	maskGraphicsPipeline.frontFaceCCW = false;
 	maskGraphicsPipeline.externalSets.push_back(1);
 	maskGraphicsPipeline.externalSets.push_back(2);
 	maskGraphicsPipeline.externalDescriptorSetLayouts.push_back(materialsDescriptorSetLayout);
