@@ -58,7 +58,7 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	depthToPositionsGraphicsPipeline.renderPass = &depthToPositionsRenderPass;
 	depthToPositionsGraphicsPipeline.viewport = &viewport;
 	depthToPositionsGraphicsPipeline.multiSample = false;
-	depthToPositionsGraphicsPipeline.backfaceCulling = false;
+	depthToPositionsGraphicsPipeline.frontFaceCCW = false;
 	depthToPositionsGraphicsPipeline.depthWrite = false;
 	depthToPositionsGraphicsPipeline.init();
 	
@@ -67,7 +67,7 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	depthToNormalsGraphicsPipeline.renderPass = &depthToNormalsRenderPass;
 	depthToNormalsGraphicsPipeline.viewport = &viewport;
 	depthToNormalsGraphicsPipeline.multiSample = false;
-	depthToNormalsGraphicsPipeline.backfaceCulling = false;
+	depthToNormalsGraphicsPipeline.frontFaceCCW = false;
 	depthToNormalsGraphicsPipeline.depthWrite = false;
 	depthToNormalsGraphicsPipeline.init();
 
@@ -76,7 +76,7 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	ssaoGraphicsPipeline.renderPass = &ssaoRenderPass;
 	ssaoGraphicsPipeline.viewport = &viewport;
 	ssaoGraphicsPipeline.multiSample = false;
-	ssaoGraphicsPipeline.backfaceCulling = false;
+	ssaoGraphicsPipeline.frontFaceCCW = false;
 	ssaoGraphicsPipeline.depthWrite = false;
 	ssaoGraphicsPipeline.init();
 
@@ -85,7 +85,7 @@ void SSAO::init(int downscale, Viewport fullscreenViewport) {
 	ssaoBlurredGraphicsPipeline.renderPass = &ssaoBlurredRenderPass;
 	ssaoBlurredGraphicsPipeline.viewport = &viewport;
 	ssaoBlurredGraphicsPipeline.multiSample = false;
-	ssaoBlurredGraphicsPipeline.backfaceCulling = false;
+	ssaoBlurredGraphicsPipeline.frontFaceCCW = false;
 	ssaoBlurredGraphicsPipeline.depthWrite = false;
 	ssaoBlurredGraphicsPipeline.init();
 

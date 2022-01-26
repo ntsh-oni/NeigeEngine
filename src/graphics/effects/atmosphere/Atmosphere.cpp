@@ -32,7 +32,7 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	transmittanceGraphicsPipeline.renderPass = &transmittanceRenderPass;
 	transmittanceGraphicsPipeline.viewport = &transmittanceViewport;
 	transmittanceGraphicsPipeline.multiSample = false;
-	transmittanceGraphicsPipeline.backfaceCulling = false;
+	transmittanceGraphicsPipeline.frontFaceCCW = false;
 	transmittanceGraphicsPipeline.depthWrite = false;
 	transmittanceGraphicsPipeline.init();
 
@@ -173,7 +173,7 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	skyViewGraphicsPipeline.renderPass = &skyViewRenderPass;
 	skyViewGraphicsPipeline.viewport = &skyViewViewport;
 	skyViewGraphicsPipeline.multiSample = false;
-	skyViewGraphicsPipeline.backfaceCulling = false;
+	skyViewGraphicsPipeline.frontFaceCCW = false;
 	skyViewGraphicsPipeline.depthWrite = false;
 	skyViewGraphicsPipeline.init();
 
@@ -269,7 +269,7 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	cameraVolumeGraphicsPipeline.renderPass = &cameraVolumeRenderPass;
 	cameraVolumeGraphicsPipeline.viewport = &cameraVolumeViewport;
 	cameraVolumeGraphicsPipeline.multiSample = false;
-	cameraVolumeGraphicsPipeline.backfaceCulling = false;
+	cameraVolumeGraphicsPipeline.frontFaceCCW = false;
 	cameraVolumeGraphicsPipeline.depthWrite = false;
 	cameraVolumeGraphicsPipeline.init();
 
@@ -361,7 +361,7 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	rayMarchingGraphicsPipeline.renderPass = &rayMarchingRenderPass;
 	rayMarchingGraphicsPipeline.viewport = &rayMarchingViewport;
 	rayMarchingGraphicsPipeline.multiSample = false;
-	rayMarchingGraphicsPipeline.backfaceCulling = false;
+	rayMarchingGraphicsPipeline.frontFaceCCW = false;
 	rayMarchingGraphicsPipeline.depthWrite = false;
 	rayMarchingGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD });
 	rayMarchingGraphicsPipeline.init();

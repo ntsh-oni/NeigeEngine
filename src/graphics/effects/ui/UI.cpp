@@ -143,7 +143,7 @@ void UI::init(Viewport fullscreenViewport) {
 	spriteGraphicsPipeline.renderPass = &renderPass;
 	spriteGraphicsPipeline.viewport = &viewport;
 	spriteGraphicsPipeline.multiSample = false;
-	spriteGraphicsPipeline.backfaceCulling = false;
+	spriteGraphicsPipeline.frontFaceCCW = false;
 	spriteGraphicsPipeline.depthWrite = false;
 	spriteGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD });
 	spriteGraphicsPipeline.externalSets.push_back(1);
@@ -155,7 +155,7 @@ void UI::init(Viewport fullscreenViewport) {
 	textGraphicsPipeline.renderPass = &renderPass;
 	textGraphicsPipeline.viewport = &viewport;
 	textGraphicsPipeline.multiSample = false;
-	textGraphicsPipeline.backfaceCulling = false;
+	textGraphicsPipeline.frontFaceCCW = false;
 	textGraphicsPipeline.depthWrite = false;
 	textGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD });
 	textGraphicsPipeline.externalSets.push_back(1);
@@ -167,7 +167,7 @@ void UI::init(Viewport fullscreenViewport) {
 	rectangleGraphicsPipeline.renderPass = &renderPass;
 	rectangleGraphicsPipeline.viewport = &viewport;
 	rectangleGraphicsPipeline.multiSample = false;
-	rectangleGraphicsPipeline.backfaceCulling = false;
+	rectangleGraphicsPipeline.frontFaceCCW = false;
 	rectangleGraphicsPipeline.depthWrite = false;
 	rectangleGraphicsPipeline.blendings.push_back({ VK_TRUE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD });
 	rectangleGraphicsPipeline.init();

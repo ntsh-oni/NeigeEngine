@@ -507,7 +507,7 @@ void Envmap::createBRDFConvolution() {
 	brdfConvolutionGraphicsPipeline.renderPass = &brdfConvolutionRenderPass;
 	brdfConvolutionGraphicsPipeline.viewport = &brdfConvolutionViewport;
 	brdfConvolutionGraphicsPipeline.multiSample = false;
-	brdfConvolutionGraphicsPipeline.backfaceCulling = false;
+	brdfConvolutionGraphicsPipeline.frontFaceCCW = false;
 	brdfConvolutionGraphicsPipeline.init();
 
 	VkDeviceSize offset = 0;
