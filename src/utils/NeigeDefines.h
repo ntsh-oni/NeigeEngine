@@ -6,7 +6,7 @@
 	do { \
 		int64_t check = f; \
 		if (check) { \
-			std::cerr << "\033[1m\033[31mVULKAN ERROR :\033[39m\033[0m A Vulkan error has happened." << std::endl << "File: " << __FILE__ << std::endl << "Function: " << __FUNCTION__ << std::endl << "Line : " << __LINE__ << std::endl; \
+			std::cerr << "\033[1m\033[31mVULKAN ERROR :\033[39m\033[0m A Vulkan error has happened." << std::endl << "Error code: " << check << std::endl << "File: " << __FILE__ << std::endl << "Function: " << __FUNCTION__ << std::endl << "Line : " << __LINE__ << std::endl; \
 			exit(1); \
 		} \
 	} while (0)

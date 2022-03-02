@@ -1,7 +1,7 @@
 #pragma once
 #include "../../external/openal-soft/include/AL/al.h"
 #include "../../external/openal-soft/include/AL/alc.h"
-#include "../utils/NeigeDefines.h"
+#include "../../utils/NeigeDefines.h"
 #include <iostream>
 
 #define alCall(function, ...) alCallImpl(__FILE__, __LINE__, function, __VA_ARGS__)

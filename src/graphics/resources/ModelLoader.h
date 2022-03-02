@@ -1,7 +1,7 @@
 #pragma once
 #pragma warning(disable:4996)
 #include "../../graphics/resources/Image.h"
-#include "../NeigeDefines.h"
+#include "../../utils/NeigeDefines.h"
 #include "../../graphics/structs/ModelStructs.h"
 #include "../../graphics/structs/ShaderStructs.h"
 #include "../../physics/AABB.h"
@@ -9,7 +9,7 @@
 #include "../../../external/glm/glm/gtx/quaternion.hpp"
 #include "../../../external/glm/glm/gtx/string_cast.hpp"
 #include "../../external/cgltf/cgltf.h"
-#include "FileTools.h"
+#include "../../utils/resources/FileTools.h"
 #include "ImageTools.h"
 #include <vector>
 #include <numeric>

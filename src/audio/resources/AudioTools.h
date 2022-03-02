@@ -1,7 +1,7 @@
 #pragma once
 #include "../../external/openal-soft/include/AL/al.h"
-#include "../NeigeDefines.h"
-#include "FileTools.h"
+#include "../../utils/NeigeDefines.h"
+#include "../../utils/resources/FileTools.h"
 #include <cstdint>
 #include <fstream>
 #include <string>

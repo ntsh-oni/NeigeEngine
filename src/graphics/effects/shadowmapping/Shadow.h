@@ -7,8 +7,8 @@
 #include "../../resources/Image.h"
 #include "../../renderpasses/Framebuffer.h"
 #include "../../renderpasses/RenderPass.h"
-#include "../../../utils/resources/BufferTools.h"
-#include "../../../utils/resources/ImageTools.h"
+#include "../../resources/BufferTools.h"
+#include "../../resources/ImageTools.h"
 
 struct Shadow {
 	Viewport viewport;

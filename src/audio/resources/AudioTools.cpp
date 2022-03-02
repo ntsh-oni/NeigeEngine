@@ -1,6 +1,6 @@
 #include "AudioTools.h"
+#include "AudioChecks.h"
 #include "../../external/stb/stb_vorbis.c"
-#include "../AudioChecks.h"
 
 void AudioTools::load(const std::string& filePath, ALuint* buffer, ALuint* source) {
 	std::string extension = FileTools::extension(filePath);

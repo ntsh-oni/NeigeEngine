@@ -9,7 +9,7 @@
 #include "../../resources/UIResources.h"
 #include "../../structs/ShaderStructs.h"
 #include "../../structs/UIStructs.h"
-#include "../../../utils/resources/BufferTools.h"
+#include "../../resources/BufferTools.h"
 #include <string>
 #include <vector>
 

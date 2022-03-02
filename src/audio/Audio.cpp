@@ -1,6 +1,6 @@
 #include "Audio.h"
-#include "../utils/AudioChecks.h"
-#include "../utils/resources/AudioTools.h"
+#include "resources/AudioChecks.h"
+#include "resources/AudioTools.h"
 
 extern ECS ecs;
 

@@ -1,10 +1,10 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "../../utils/resources/ModelLoader.h"
+#include "../resources/ModelLoader.h"
 #include "../structs/ModelStructs.h"
 #include "../structs/ShaderStructs.h"
 #include "../commands/CommandBuffer.h"
-#include "../../utils/resources/BufferTools.h"
+#include "../resources/BufferTools.h"
 #include "../pipelines/GraphicsPipeline.h"
 #include "../../graphics/resources/Buffer.h"
 #include "../../physics/AABB.h"
