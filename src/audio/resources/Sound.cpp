@@ -1,5 +1,5 @@
 #include "Sound.h"
-#include "../../utils/AudioChecks.h"
+#include "AudioChecks.h"
 
 void Sound::update() {
 	if (isPlaying()) {

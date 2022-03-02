@@ -1,6 +1,6 @@
 #include "SSAO.h"
-#include "../../../utils/resources/BufferTools.h"
-#include "../../../utils/resources/ImageTools.h"
+#include "../../resources/BufferTools.h"
+#include "../../resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"

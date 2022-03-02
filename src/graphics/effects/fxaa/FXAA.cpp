@@ -1,5 +1,5 @@
 #include "FXAA.h"
-#include "../../../utils/resources/ImageTools.h"
+#include "../../resources/ImageTools.h"
 #include "../../../graphics/resources/RendererResources.h"
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"

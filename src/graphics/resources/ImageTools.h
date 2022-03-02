@@ -1,10 +1,10 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "../NeigeDefines.h"
+#include "../../utils/NeigeDefines.h"
 #include "../../graphics/structs/RendererStructs.h"
 #include "../../graphics/structs/UIStructs.h"
 #include "BufferTools.h"
-#include "FileTools.h"
+#include "../../utils/resources/FileTools.h"
 #include "../../graphics/resources/Buffer.h"
 #include "../../graphics/commands/CommandBuffer.h"
 #include "../../graphics/commands/CommandPool.h"

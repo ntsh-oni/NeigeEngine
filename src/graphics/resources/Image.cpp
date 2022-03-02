@@ -1,5 +1,5 @@
 #include "Image.h"
-#include "../../utils/resources/ImageTools.h"
+#include "ImageTools.h"
 #include "../resources/RendererResources.h"
 
 void Image::destroy() {

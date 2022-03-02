@@ -1,6 +1,6 @@
 #include "AudioScripting.h"
 #include "../utils/resources/FileTools.h"
-#include "../utils/resources/AudioTools.h"
+#include "../audio/resources/AudioTools.h"
 
 void AudioScripting::init() {
 	lua_register(L, "loadAudio", loadAudio);

@@ -47,8 +47,8 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(GAME_SOURCES src/Game.cpp)
 SET(GAME_HEADERS src/Game.h src/Scene.h)
 
-SET(AUDIO_RESOURCES_SOURCES src/audio/resources/Sound.cpp)
-SET(AUDIO_RESOURCES_HEADERS src/audio/resources/AudioResources.h src/audio/resources/Sound.h)
+SET(AUDIO_RESOURCES_SOURCES src/audio/resources/AudioTools.cpp src/audio/resources/Sound.cpp)
+SET(AUDIO_RESOURCES_HEADERS src/audio/resources/AudioChecks.h src/audio/resources/AudioResources.h src/audio/resources/AudioTools.h src/audio/resources/Sound.h)
 
 SET(AUDIO_SOURCES src/audio/Audio.cpp ${AUDIO_RESOURCES_SOURCES})
 SET(AUDIO_HEADERS src/audio/Audio.h ${AUDIO_RESOURCES_HEADERS})
@@ -67,9 +67,9 @@ SET(GRAPHICS_PIPELINES_SOURCES src/graphics/pipelines/ComputePipeline.cpp src/gr
 SET(GRAPHICS_PIPELINES_HEADERS src/graphics/pipelines/ComputePipeline.h src/graphics/pipelines/DescriptorPool.h src/graphics/pipelines/DescriptorSet.h src/graphics/pipelines/GraphicsPipeline.h src/graphics/pipelines/Shader.h src/graphics/pipelines/Viewport.h)
 SET(GRAPHICS_RENDERPASSES_SOURCES src/graphics/renderpasses/Framebuffer.cpp src/graphics/renderpasses/RenderPass.cpp src/graphics/renderpasses/RenderPassAttachment.cpp src/graphics/renderpasses/Swapchain.cpp)
 SET(GRAPHICS_RENDERPASSES_HEADERS src/graphics/renderpasses/Framebuffer.h src/graphics/renderpasses/RenderPass.h src/graphics/renderpasses/RenderPassAttachment.h src/graphics/renderpasses/Swapchain.h)
-SET(GRAPHICS_RESOURCES_SOURCES src/graphics/resources/Buffer.cpp src/graphics/resources/Image.cpp)
-SET(GRAPHICS_RESOURCES_HEADERS src/graphics/resources/Buffer.h src/graphics/resources/Image.h src/graphics/resources/RendererResources.h src/graphics/resources/Samplers.h src/graphics/resources/ShaderResources.h src/graphics/resources/UIResources.h)
-SET(GRAPHICS_STRUCTS_HEADERS src/graphics/structs/ModelStructs.h src/graphics/structs/RendererStructs.h src/graphics/structs/ShaderStructs.h  src/graphics/structs/UIStructs.h)
+SET(GRAPHICS_RESOURCES_SOURCES src/graphics/resources/Buffer.cpp src/graphics/resources/BufferTools.cpp src/graphics/resources/Image.cpp src/graphics/resources/ImageTools.cpp src/graphics/resources/ModelLoader.cpp)
+SET(GRAPHICS_RESOURCES_HEADERS src/graphics/resources/Buffer.h src/graphics/resources/BufferTools.h src/graphics/resources/Image.h src/graphics/resources/ImageTools.h src/graphics/resources/ModelLoader.h src/graphics/resources/RendererResources.h src/graphics/resources/Samplers.h src/graphics/resources/ShaderResources.h src/graphics/resources/UIResources.h)
+SET(GRAPHICS_STRUCTS_HEADERS src/graphics/structs/ModelStructs.h src/graphics/structs/RendererStructs.h src/graphics/structs/ShaderStructs.h src/graphics/structs/UIStructs.h)
 SET(GRAPHICS_SYNC_SOURCES src/graphics/sync/Fence.cpp src/graphics/sync/Semaphore.cpp)
 SET(GRAPHICS_SYNC_HEADERS src/graphics/sync/Fence.h src/graphics/sync/Semaphore.h)
 
@@ -85,10 +85,10 @@ SET(SCRIPTING_HEADERS ${SCRIPTING_RESOURCES_HEADERS} src/scripting/AudioScriptin
 
 SET(UTILS_MEMORYALLOCATOR_SOURCES src/utils/memoryallocator/MemoryAllocator.cpp)
 SET(UTILS_MEMORYALLOCATOR_HEADERS src/utils/memoryallocator/MemoryAllocator.h)
-SET(UTILS_RESOURCES_SOURCES src/utils/resources/AudioTools.cpp src/utils/resources/BufferTools.cpp src/utils/resources/FileTools.cpp src/utils/resources/ImageTools.cpp src/utils/resources/ModelLoader.cpp)
-SET(UTILS_RESOURCES_HEADERS src/utils/resources/AudioTools.h src/utils/resources/BufferTools.h src/utils/resources/FileTools.h src/utils/resources/ImageTools.h src/utils/resources/ModelLoader.h)
+SET(UTILS_RESOURCES_SOURCES src/utils/resources/FileTools.cpp)
+SET(UTILS_RESOURCES_HEADERS src/utils/resources/FileTools.h)
 SET(UTILS_SOURCES src/utils/NeigeVKTranslate.cpp src/utils/Parser.cpp ${UTILS_MEMORYALLOCATOR_SOURCES} ${UTILS_RESOURCES_SOURCES})
-SET(UTILS_HEADERS src/utils/AudioChecks.h src/utils/NeigeDefines.h src/utils/NeigeVKTranslate.h src/utils/Parser.h ${UTILS_MEMORYALLOCATOR_HEADERS} ${UTILS_RESOURCES_HEADERS})
+SET(UTILS_HEADERS src/utils/NeigeDefines.h src/utils/NeigeVKTranslate.h src/utils/Parser.h ${UTILS_MEMORYALLOCATOR_HEADERS} ${UTILS_RESOURCES_HEADERS})
 
 SET(WINDOW_SOURCES src/window/Surface.cpp src/window/Window.cpp)
 SET(WINDOW_HEADERS src/window/Surface.h src/window/WindowResources.h src/window/Window.h)

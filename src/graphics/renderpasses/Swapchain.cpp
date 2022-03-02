@@ -1,5 +1,5 @@
 #include "Swapchain.h"
-#include "../../utils/resources/ImageTools.h"
+#include "../resources/ImageTools.h"
 #include "../resources/RendererResources.h"
 #include "../../window/WindowResources.h"
 

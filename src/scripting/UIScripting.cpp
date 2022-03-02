@@ -1,7 +1,7 @@
 #include "UIScripting.h"
 #include "../graphics/resources/UIResources.h"
 #include "../utils/resources/FileTools.h"
-#include "../utils/resources/ImageTools.h"
+#include "../graphics/resources/ImageTools.h"
 
 void UIScripting::init() {
 	lua_register(L, "loadSprite", loadSprite);
