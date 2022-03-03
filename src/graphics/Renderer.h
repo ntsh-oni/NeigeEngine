@@ -62,8 +62,6 @@ struct Renderer : public System {
 	std::vector<CommandPool> renderingCommandPools;
 	std::vector<CommandBuffer> renderingCommandBuffers;
 
-	bool firstFrame = true;
-	uint32_t swapchainImage;
 	uint32_t currentFrame = 0;
 
 	// Scene

@@ -414,16 +414,13 @@ void Renderer::update() {
 
 	fences[currentFrame].wait();
 
-	VkResult result;
-	if (firstFrame) {
-		result = swapchain.acquireNextImage(&IAsemaphores[currentFrame], &swapchainImage);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			reloadOnResize();
-		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-			NEIGE_ERROR("Unable to acquire swapchain image.");
-		}
-		firstFrame = false;
+	uint32_t swapchainImage;
+	VkResult result = swapchain.acquireNextImage(&IAsemaphores[currentFrame], &swapchainImage);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		reloadOnResize();
+	}
+	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		NEIGE_ERROR("Unable to acquire swapchain image.");
 	}
 
 	updateData(currentFrame);
@@ -461,14 +458,6 @@ void Renderer::update() {
 	}
 	else if (result != VK_SUCCESS) {
 		NEIGE_ERROR("Unable to present image.");
-	}
-
-	result = swapchain.acquireNextImage(&IAsemaphores[currentFrame], &swapchainImage);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		reloadOnResize();
-	}
-	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		NEIGE_ERROR("Unable to acquire swapchain image.");
 	}
 
 	currentFrame = (currentFrame + 1) % framesInFlight;
