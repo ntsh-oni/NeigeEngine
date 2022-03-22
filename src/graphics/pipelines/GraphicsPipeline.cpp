@@ -359,7 +359,7 @@ void GraphicsPipeline::init() {
 	rasterizationCreateInfo.polygonMode = topology != Topology::WIREFRAME ? VK_POLYGON_MODE_FILL : VK_POLYGON_MODE_LINE;
 	rasterizationCreateInfo.cullMode = !backfaceCulling ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 	rasterizationCreateInfo.frontFace = frontFaceCCW ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
-	rasterizationCreateInfo.depthBiasClamp = VK_FALSE;
+	rasterizationCreateInfo.depthBiasEnable = VK_FALSE;
 	rasterizationCreateInfo.depthBiasConstantFactor = 0.0f;
 	rasterizationCreateInfo.depthBiasClamp = 0.0f;
 	rasterizationCreateInfo.depthBiasSlopeFactor = 0.0f;
