@@ -32,7 +32,7 @@ void Game::init() {
 	renderer->enableBloom = info.enableBloom;
 	renderer->bloomDownscale = info.bloomDownscale;
 	renderer->bloomThreshold = info.bloomThreshold;
-	renderer->bloomBlurSize = info.bloomBlurSize;
+	renderer->bloomBlurBigKernel = info.bloomBlurBigKernel;
 	renderer->enableSSAO = info.enableSSAO;
 	renderer->ssaoDownscale = info.ssaoDownscale;
 	renderer->enableFXAA = info.enableFXAA;

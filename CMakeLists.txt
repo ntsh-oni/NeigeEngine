@@ -22,8 +22,6 @@ add_subdirectory(external/luabuild)
 
 add_subdirectory(external/openal-soft)
 
-add_subdirectory(external/simdjson)
-
 IF (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
 	message(STATUS "Looking for Vulkan...")
 	find_package(Vulkan)
@@ -103,9 +101,10 @@ SET(ECS_SOURCES ${ECS_SYSTEMS_SOURCES})
 SET(ECS_HEADERS src/ecs/ECS.h ${ECS_COMPONENTS_HEADERS} ${ECS_SYSTEMS_HEADERS})
 
 SET(EXTERNAL_SOURCES external/spirv-reflect/spirv_reflect.c)
+SET(EXTERNAL_HEADERS external/json/single_include/nlohmann/json.hpp)
 
 SET(SOURCES ${GAME_SOURCES} ${AUDIO_SOURCES} ${GRAPHICS_SOURCES} ${PHYSICS_SOURCES} ${SCRIPTING_SOURCES} ${UTILS_SOURCES} ${WINDOW_SOURCES} ${INPUTS_SOURCES} ${ECS_SOURCES} ${EXTERNAL_SOURCES})
-SET(HEADERS ${GAME_HEADERS} ${AUDIO_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${SCRIPTING_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS})
+SET(HEADERS ${GAME_HEADERS} ${AUDIO_HEADERS} ${GRAPHICS_HEADERS} ${PHYSICS_HEADERS} ${SCRIPTING_HEADERS} ${UTILS_HEADERS} ${WINDOW_HEADERS} ${INPUTS_HEADERS} ${ECS_HEADERS} ${EXTERNAL_HEADERS})
 
 add_executable(${PROJECT_NAME} main.cpp ${SOURCES} ${HEADERS})
 
@@ -115,7 +114,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC external/lua)
 target_include_directories(${PROJECT_NAME} PUBLIC external/spirv-reflect)
 target_include_directories(${PROJECT_NAME} PUBLIC external/stb)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua OpenAL simdjson SPIRV Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PUBLIC glfw glslang lua OpenAL SPIRV Vulkan::Vulkan)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OpenAL> ${PROJECT_BINARY_DIR}

@@ -23,7 +23,7 @@ struct GameInfo {
 	bool enableBloom = false;
 	int bloomDownscale = 4;
 	float bloomThreshold = 1.5f;
-	int bloomBlurSize = 9;
+	bool bloomBlurBigKernel = true;
 	bool enableSSAO = false;
 	int ssaoDownscale = 3;
 	bool enableFXAA = false;
