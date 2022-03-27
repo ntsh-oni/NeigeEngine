@@ -1,5 +1,4 @@
 #pragma once
-#include "../../external/simdjson/singleheader/simdjson.h"
 #include "../ecs/ECS.h"
 #include "../ecs/components/Camera.h"
 #include "../ecs/components/Light.h"

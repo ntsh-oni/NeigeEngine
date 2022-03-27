@@ -2,7 +2,7 @@
 #include "../../../external/glm/glm/glm.hpp"
 
 struct RigidbodyComponent {
-	bool affectedByGravity;
+	bool affectedByGravity = false;
 };
 
 struct Rigidbody {

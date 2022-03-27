@@ -4,7 +4,7 @@ layout(set = 0, binding = 0) uniform sampler2D bloomSampler;
 
 layout(push_constant) uniform PushConstants {
 	int horizontalBlur;
-	int blurSize;
+	int blurBigKernel;
 } pC;
 
 layout(location = 0) in vec2 uv;
@@ -112,7 +112,7 @@ void main() {
 	
 	vec3 result = vec3(0.0);
 	if (pC.horizontalBlur == 1) {
-		if (pC.blurSize == 33) {
+		if (pC.blurBigKernel != 0) {
 			for (int i = 0; i < 33; i++) {
 				result += texture(bloomSampler, uv + vec2(texelSize.x * offsets_33[i], 0.0)).rgb * weights_33[i];
 			}
@@ -124,7 +124,7 @@ void main() {
 		}
 	}
 	else {
-		if (pC.blurSize == 33) {
+		if (pC.blurBigKernel != 0) {
 			for (int i = 0; i < 33; i++) {
 				result += texture(bloomSampler, uv + vec2(0.0, texelSize.y * offsets_33[i])).rgb * weights_33[i];
 			}

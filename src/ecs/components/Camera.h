@@ -6,9 +6,9 @@
 #include "../../physics/Frustum.h"
 
 struct CameraComponent {
-	float FOV;
-	float nearPlane;
-	float farPlane;
+	float FOV = 45.0f;
+	float nearPlane = 0.3f;
+	float farPlane = 200.0f;
 };
 
 struct Camera {

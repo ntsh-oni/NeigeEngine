@@ -1,4 +1,6 @@
 #include "Parser.h"
+#include "../../external/json/single_include/nlohmann/json.hpp"
+#include <fstream>
 
 GameInfo Parser::parseGameInfo(const std::string& filePath) {
 	GameInfo gameInfo = {};
@@ -8,86 +10,76 @@ GameInfo Parser::parseGameInfo(const std::string& filePath) {
 		return gameInfo;
 	}
 
-	simdjson::ondemand::parser parser;
-	auto json = simdjson::padded_string::load(filePath);
-	simdjson::ondemand::document document = parser.iterate(json);
+	std::ifstream file(filePath);
+	nlohmann::json j;
+	file >> j;
 
-	// Game name
-	std::string_view name;
-	auto error = document["game"]["name"].get(name);
-	
-	if (!error) {
-		gameInfo.name = name;
-	}
+	// Game
+	if (j.contains("game")) {
+		nlohmann::json gameJson = j["game"];
 
-	// Window width
-	int64_t windowWidth;
-	error = document["game"]["windowWidth"].get(windowWidth);
+		// Game name
+		if (gameJson.contains("name")) {
+			gameInfo.name = gameJson["name"];
+		}
 
-	if (!error) {
-		gameInfo.windowWidth = static_cast<uint32_t>(windowWidth);
-	}
+		// Window width
+		if (gameJson.contains("windowWidth")) {
+			gameInfo.windowWidth = gameJson["windowWidth"];
+		}
 
-
-	// Window height
-	int64_t windowHeight;
-	error = document["game"]["windowHeight"].get(windowHeight);
-
-	if (!error) {
-		gameInfo.windowHeight = static_cast<uint32_t>(windowHeight);
+		// Window height
+		if (gameJson.contains("windowHeight")) {
+			gameInfo.windowHeight = gameJson["windowHeight"];
+		}
 	}
 
 	// Graphics settings
-	// Bloom
-	bool enableBloom;
-	error = document["graphics"]["bloom"]["enable"].get(enableBloom);
+	if (j.contains("graphics")) {
+		nlohmann::json graphicsJson = j["graphics"];
 
-	if (!error) {
-		gameInfo.enableBloom = enableBloom;
-	}
+		// Bloom
+		if (graphicsJson.contains("bloom")) {
+			nlohmann::json bloomJson = graphicsJson["bloom"];
 
-	int64_t bloomDownscale;
-	error = document["graphics"]["bloom"]["downscale"].get(bloomDownscale);
+			if (bloomJson.contains("enable")) {
+				gameInfo.enableBloom = bloomJson["enable"];
+			}
 
-	if (!error) {
-		gameInfo.bloomDownscale = static_cast<int>(bloomDownscale);
-	}
+			if (bloomJson.contains("downscale")) {
+				gameInfo.bloomDownscale = bloomJson["downscale"];
+			}
 
-	double bloomThreshold;
-	error = document["graphics"]["bloom"]["threshold"].get(bloomThreshold);
+			if (bloomJson.contains("threshold")) {
+				gameInfo.bloomThreshold = bloomJson["threshold"];
+			}
 
-	if (!error) {
-		gameInfo.bloomThreshold = static_cast<float>(bloomThreshold);
-	}
+			if (bloomJson.contains("blurBigKernel")) {
+				gameInfo.bloomBlurBigKernel = bloomJson["blurBigKernel"];
+			}
+		}
 
-	int64_t bloomBlurSize;
-	error = document["graphics"]["bloom"]["blurSize"].get(bloomBlurSize);
+		// SSAO
+		if (graphicsJson.contains("ssao")) {
+			nlohmann::json ssaoJson = graphicsJson["ssao"];
 
-	if (!error) {
-		gameInfo.bloomBlurSize = static_cast<int>(bloomBlurSize);
-	}
+			if (ssaoJson.contains("enable")) {
+				gameInfo.enableSSAO = ssaoJson["enable"];
+			}
 
-	// SSAO
-	bool enableSSAO;
-	error = document["graphics"]["ssao"]["enable"].get(enableSSAO);
+			if (ssaoJson.contains("downscale")) {
+				gameInfo.ssaoDownscale = ssaoJson["downscale"];
+			}
+		}
 
-	if (!error) {
-		gameInfo.enableSSAO = enableSSAO;
-	}
+		// FXAA
+		if (graphicsJson.contains("fxaa")) {
+			nlohmann::json fxaaJson = graphicsJson["fxaa"];
 
-	int64_t ssaoDownscale;
-	error = document["graphics"]["ssao"]["downscale"].get(ssaoDownscale); 
-
-	if (!error) {
-		gameInfo.ssaoDownscale = static_cast<int>(ssaoDownscale);
-	}
-
-	// FXAA
-	bool enableFXAA;
-	error = document["graphics"]["fxaa"]["enable"].get(enableFXAA);
-
-	if (!error) {
-		gameInfo.enableFXAA = enableFXAA;
+			if (fxaaJson.contains("enable")) {
+				gameInfo.enableFXAA = fxaaJson["enable"];
+			}
+		}
 	}
 
 	return gameInfo;
@@ -101,354 +93,206 @@ Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 		return scene;
 	}
 
-	simdjson::ondemand::parser parser;
-	auto json = simdjson::padded_string::load(filePath);
-	simdjson::ondemand::document document = parser.iterate(json);
-
-	simdjson::error_code error;
+	std::ifstream file(filePath);
+	nlohmann::json j;
+	file >> j;
 
 	// Skybox
-	// Type
-	std::string_view skyboxType;
-	error = document["skybox"]["type"].get(skyboxType);
+	if (j.contains("skybox")) {
+		nlohmann::json skyboxJson = j["skybox"];
 
-	if (!error) {
-		if (skyboxType == "ENVMAP") {
-			scene.skyboxType = SkyboxType::ENVMAP;
-		}
-		else if (skyboxType == "ATMOSPHERE") {
-			scene.skyboxType = SkyboxType::ATMOSPHERE;
-		}
-		else {
-			NEIGE_WARNING("Skybox type \"" + std::string(skyboxType) + "\" is undefined (valid options: \"ATMOSPHERE\" or \"ENVMAP\".");
-			scene.skyboxType = SkyboxType::ATMOSPHERE;
-		}
-		
-		std::string_view envmapPath;
-		error = document["skybox"]["envmapPath"].get(envmapPath);
+		// Type
+		if (skyboxJson.contains("type")) {
+			std::string skyboxType = skyboxJson["type"];
 
-		if (!error) {
-			scene.envmapPath = envmapPath;
-		}
-		else {
-			scene.envmapPath = "";
-		}
-	}
-	else {
-		scene.skyboxType = SkyboxType::ATMOSPHERE;
-	}
-
-	bool foundTransform = false;
-
-	for (simdjson::ondemand::object entity : document["entities"]) {
-		Entity ecsEntity = ecs.createEntity();
-
-		foundTransform = false;
-		for (auto component : entity) {
-			std::string_view componentName = std::string_view(component.unescaped_key());
-			if (componentName == "camera") {
-				Camera camera = {};
-
-				// FOV
-				double fov;
-				error = component.value()["fov"].get(fov);
-
-				if (!error) {
-					camera.component.FOV = static_cast<float>(fov);
-				}
-				else {
-					camera.component.FOV = 45.0f;
-				}
-
-				// Near plane
-				double nearPlane;
-				error = component.value()["nearPlane"].get(nearPlane);
-
-				if (!error) {
-					camera.component.nearPlane = static_cast<float>(nearPlane);
-				}
-				else {
-					camera.component.nearPlane = 0.3f;
-				}
-
-				// Far plane
-				double farPlane;
-				error = component.value()["farPlane"].get(farPlane);
-
-				if (!error) {
-					camera.component.farPlane = static_cast<float>(farPlane);
-				}
-				else {
-					camera.component.farPlane = 200.0f;
-				}
-
-				ecs.addComponent(ecsEntity, camera);
+			if (skyboxType == "ENVMAP") {
+				scene.skyboxType = SkyboxType::ENVMAP;
 			}
-			else if (componentName == "light") {
-				Light light = {};
-
-				// Type
-				std::string_view type;
-				error = component.value()["type"].get(type);
-
-				if (!error) {
-					if (type == "DIRECTIONAL") {
-						light.component.type = LightType::DIRECTIONAL;
-					}
-					else if (type == "POINT") {
-						light.component.type = LightType::POINT;
-					}
-					else if (type == "SPOT") {
-						light.component.type = LightType::SPOT;
-					}
-					else {
-						NEIGE_ERROR("Light type " + std::string(type) + " is undefined (valid options: \"DIRECTIONAL\", \"POINT\" or \"SPOT\").");
-					}
-				}
-				else {
-					NEIGE_ERROR("Light type is missing (valid options: \"DIRECTIONAL\", \"POINT\" or \"SPOT\").");
-				}
-
-				// Color vector
-				float color[3];
-				simdjson::ondemand::array colorArray;
-				error = component.value()["color"].get(colorArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : colorArray) {
-						color[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						light.component.color = glm::vec3(color[0], color[1], color[2]);
-					}
-					else {
-						NEIGE_WARNING("Light color vector is missing " + std::to_string(3 - index) + " values.");
-						light.component.color = glm::vec3(1.0f, 1.0f, 1.0f);
-					}
-				}
-				else {
-					light.component.color = glm::vec3(1.0f, 1.0f, 1.0f);
-				}
-
-				// Cutoffs vector
-				if (light.component.type == LightType::SPOT) {
-					float cutoffs[2];
-					simdjson::ondemand::array cutoffsArray;
-					error = component.value()["cutoffs"].get(cutoffsArray);
-
-					if (!error) {
-						int index = 0;
-						for (auto value : cutoffsArray) {
-							cutoffs[index] = static_cast<float>(value.get_double());
-							index++;
-						}
-
-						if (index == 2) {
-							light.component.cutoffs = glm::vec2(cutoffs[0], cutoffs[1]);
-						}
-						else {
-							NEIGE_WARNING("Light cutoffs vector is missing " + std::to_string(2 - index) + " values.");
-							light.component.cutoffs = glm::vec2(10.0f, 20.0f);
-						}
-					}
-					else {
-						light.component.cutoffs = glm::vec2(1.0f, 1.0f);
-					}
-				}
-				else {
-					light.component.cutoffs = glm::vec2(0.0f);
-				}
-
-				ecs.addComponent(ecsEntity, light);
-			}
-			else if (componentName == "renderable") {
-				Renderable renderable = {};
-
-				// Model
-				std::string_view modelPath;
-				error = component.value()["modelPath"].get(modelPath);
-
-				if (!error) {
-					renderable.component.modelPath = modelPath;
-				}
-				else {
-					NEIGE_ERROR("Renderable model path is not specified.");
-				}
-
-				// Vertex shader
-				std::string_view vertexShaderPath;
-				error = component.value()["vertexShaderPath"].get(vertexShaderPath);
-
-				if (!error) {
-					renderable.component.vertexShaderPath = vertexShaderPath;
-				}
-				else {
-					NEIGE_ERROR("Renderable vertex shader path is not specified.");
-				}
-
-				// Fragment shader
-				std::string_view fragmentShaderPath;
-				error = component.value()["fragmentShaderPath"].get(fragmentShaderPath);
-
-				if (!error) {
-					renderable.component.fragmentShaderPath = fragmentShaderPath;
-				}
-				else {
-					NEIGE_ERROR("Renderable fragment shader path is not specified.");
-				}
-
-				// Tesselation control shader
-				std::string_view tesselationControlShaderPath;
-				error = component.value()["tesselationControlShaderPath"].get(tesselationControlShaderPath);
-
-				if (!error) {
-					renderable.component.tesselationControlShaderPath = tesselationControlShaderPath;
-				}
-				else {
-					renderable.component.tesselationControlShaderPath = "";
-				}
-
-				// Tesselation evaluation shader
-				std::string_view tesselationEvaluationShaderPath;
-				error = component.value()["tesselationEvaluationShaderPath"].get(tesselationEvaluationShaderPath);
-
-				if (!error) {
-					renderable.component.tesselationEvaluationShaderPath = tesselationEvaluationShaderPath;
-				}
-				else {
-					renderable.component.tesselationEvaluationShaderPath = "";
-				}
-
-				// Geometry shader
-				std::string_view geometryShaderPath;
-				error = component.value()["geometryShaderPath"].get(geometryShaderPath);
-
-				if (!error) {
-					renderable.component.geometryShaderPath = geometryShaderPath;
-				}
-				else {
-					renderable.component.geometryShaderPath = "";
-				}
-
-				ecs.addComponent(ecsEntity, renderable);
-			}
-			else if (componentName == "rigidbody") {
-				Rigidbody rigidbody = {};
-
-				// Affected by gravity
-				bool affectedByGravity;
-				error = component.value()["affectedByGravity"].get(affectedByGravity);
-
-				if (!error) {
-					rigidbody.component.affectedByGravity = affectedByGravity;
-				}
-				else {
-					rigidbody.component.affectedByGravity = false;
-				}
-
-				ecs.addComponent(ecsEntity, rigidbody);
-			}
-			else if (componentName == "script") {
-				Script script = {};
-
-				std::string_view scriptPath;
-				error = component.value()["scriptPath"].get(scriptPath);
-
-				if (!error) {
-					script.component.scriptPath = scriptPath;
-				}
-
-				ecs.addComponent(ecsEntity, script);
-			}
-			else if (componentName == "transform") {
-				Transform transform = {};
-
-				// Position vector
-				float position[3];
-				simdjson::ondemand::array positionArray;
-				error = component.value()["position"].get(positionArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : positionArray) {
-						position[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						transform.component.position = glm::vec3(position[0], position[1], position[2]);
-					}
-					else {
-						NEIGE_WARNING("Transform position vector is missing " + std::to_string(3 - index) + " values.");
-						transform.component.position = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					transform.component.position = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
-
-				// Rotation vector
-				float rotation[3];
-				simdjson::ondemand::array rotationArray;
-				error = component.value()["rotation"].get(rotationArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : rotationArray) {
-						rotation[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						transform.component.rotation = glm::vec3(rotation[0], rotation[1], rotation[2]);
-					}
-					else {
-						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
-						transform.component.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				else {
-					transform.component.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
-
-				// Scale vector
-				float scale[3];
-				simdjson::ondemand::array scaleArray;
-				error = component.value()["scale"].get(scaleArray);
-
-				if (!error) {
-					int index = 0;
-					for (auto value : scaleArray) {
-						scale[index] = static_cast<float>(value.get_double());
-						index++;
-					}
-
-					if (index == 3) {
-						transform.component.scale = glm::vec3(scale[0], scale[1], scale[2]);
-					}
-					else {
-						NEIGE_WARNING("Transform rotation vector is missing " + std::to_string(3 - index) + " values.");
-						transform.component.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-					}
-				}
-				else {
-					transform.component.scale = glm::vec3(1.0f, 1.0f, 1.0f);
-				}
-
-				ecs.addComponent(ecsEntity, transform);
-				foundTransform = true;
+			else if (skyboxType == "ATMOSPHERE") {
+				scene.skyboxType = SkyboxType::ATMOSPHERE;
 			}
 			else {
-				NEIGE_WARNING("Component \"" + std::string(componentName) + "\" is unknown.");
+				NEIGE_WARNING("Skybox type \"" + std::string(skyboxType) + "\" is undefined (valid options: \"ATMOSPHERE\" or \"ENVMAP\".");
+				scene.skyboxType = SkyboxType::ATMOSPHERE;
 			}
 		}
 
-		if (!foundTransform) {
+		std::string envmapPath = j["skybox"]["envmapPath"];
+		scene.envmapPath = envmapPath;
+	}
+
+	for (auto entity : j["entities"]) {
+		Entity ecsEntity = ecs.createEntity();
+		
+		if (entity.contains("camera")) {
+			nlohmann::json cameraJson = entity["camera"];
+
+			Camera camera = {};
+
+			// FOV
+			if (cameraJson.contains("fov")) {
+				camera.component.FOV = cameraJson["fov"];
+			}
+
+			// Near plane
+			if (cameraJson.contains("nearPlane")) {
+				camera.component.nearPlane = cameraJson["nearPlane"];
+			}
+
+			// Far plane
+			if (cameraJson.contains("farPlane")) {
+				camera.component.farPlane = cameraJson["farPlane"];
+			}
+
+			ecs.addComponent(ecsEntity, camera);
+		}
+		
+		if (entity.contains("light")) {
+			nlohmann::json lightJson = entity["light"];
+
+			Light light = {};
+
+			// Type
+			if (lightJson.contains("light")) {
+				std::string type = lightJson["type"];
+
+				if (type == "DIRECTIONAL") {
+					light.component.type = LightType::DIRECTIONAL;
+				}
+				else if (type == "POINT") {
+					light.component.type = LightType::POINT;
+				}
+				else if (type == "SPOT") {
+					light.component.type = LightType::SPOT;
+				}
+				else {
+					NEIGE_ERROR("Light type " + std::string(type) + " is undefined (valid options: \"DIRECTIONAL\", \"POINT\" or \"SPOT\").");
+				}
+			}
+
+			// Color vector
+			if (lightJson.contains("color")) {
+				float color[3];
+				color[0] = lightJson["color"][0];
+				color[1] = lightJson["color"][1];
+				color[2] = lightJson["color"][2];
+				light.component.color = glm::vec3(color[0], color[1], color[2]);
+			}
+
+			// Cutoffs vector
+			if (lightJson.contains("cutoffs")) {
+				if (light.component.type == LightType::SPOT) {
+					float cutoffs[2];
+					cutoffs[0] = lightJson["cutoffs"][0];
+					cutoffs[1] = lightJson["cutoffs"][1];
+					light.component.cutoffs = glm::vec2(cutoffs[0], cutoffs[1]);
+
+				}
+			}
+
+			ecs.addComponent(ecsEntity, light);
+		}
+		
+		if (entity.contains("renderable")) {
+			nlohmann::json renderableJson = entity["renderable"];
+
+			Renderable renderable = {};
+
+			// Model
+			if (renderableJson.contains("modelPath")) {
+				renderable.component.modelPath = renderableJson["modelPath"];
+			}
+
+			// Vertex shader
+			if (renderableJson.contains("vertexShaderPath")) {
+				renderable.component.vertexShaderPath = renderableJson["vertexShaderPath"];
+			}
+
+			// Fragment shader
+			if (renderableJson.contains("fragmentShaderPath")) {
+				renderable.component.fragmentShaderPath = renderableJson["fragmentShaderPath"];
+			}
+
+			// Tesselation control shader
+			if (renderableJson.contains("tesselationControlShaderPath")) {
+				renderable.component.tesselationControlShaderPath = renderableJson["tesselationControlShaderPath"];
+			}
+
+			// Tesselation evaluation shader
+			if (renderableJson.contains("tesselationEvaluationShaderPath")) {
+				renderable.component.tesselationEvaluationShaderPath = renderableJson["tesselationEvaluationShaderPath"];
+			}
+
+			// Geometry shader
+			if (renderableJson.contains("geometryShaderPath")) {
+				renderable.component.geometryShaderPath = renderableJson["geometryShaderPath"];
+			}
+
+			ecs.addComponent(ecsEntity, renderable);
+		}
+		
+		if (entity.contains("rigidbody")) {
+			nlohmann::json rigidbodyJson = entity["rigidbody"];
+
+			Rigidbody rigidbody = {};
+
+			// Affected by gravity
+			if (rigidbodyJson.contains("affectedByGravity")) {
+				rigidbody.component.affectedByGravity = rigidbodyJson["affectedByGravity"];
+			}
+
+			ecs.addComponent(ecsEntity, rigidbody);
+		}
+		
+		if (entity.contains("script")) {
+			nlohmann::json scriptJson = entity["script"];
+
+			Script script = {};
+
+			if (scriptJson.contains("scriptPath")) {
+				script.component.scriptPath = scriptJson["scriptPath"];
+			}
+
+			ecs.addComponent(ecsEntity, script);
+		}
+		
+		if (entity.contains("transform")) {
+			nlohmann::json transformJson = entity["transform"];
+
+			Transform transform = {};
+
+			// Position vector
+			if (transformJson.contains("position")) {
+				float position[3];
+				position[0] = transformJson["position"][0];
+				position[1] = transformJson["position"][1];
+				position[2] = transformJson["position"][2];
+				transform.component.position = glm::vec3(position[0], position[1], position[2]);
+			}
+
+			// Rotation vector
+			if (transformJson.contains("rotation")) {
+				float rotation[3];
+				rotation[0] = transformJson["rotation"][0];
+				rotation[1] = transformJson["rotation"][1];
+				rotation[2] = transformJson["rotation"][2];
+				transform.component.rotation = glm::vec3(rotation[0], rotation[1], rotation[2]);
+			}
+
+			// Scale vector
+			if (transformJson.contains("scale")) {
+				float scale[3];
+				scale[0] = transformJson["scale"][0];
+				scale[1] = transformJson["scale"][1];
+				scale[2] = transformJson["scale"][2];
+				transform.component.scale = glm::vec3(scale[0], scale[1], scale[2]);
+			}
+
+			ecs.addComponent(ecsEntity, transform);
+		}
+		else {
 			// Obligatory Transform component
-			ecs.addComponent(ecsEntity, Transform {
+			ecs.addComponent(ecsEntity, Transform{
 				glm::vec3(0.0f, 0.0f, 0.0f),
 				glm::vec3(0.0f, 0.0f, 0.0f),
 				glm::vec3(1.0f, 1.0f, 1.0f)

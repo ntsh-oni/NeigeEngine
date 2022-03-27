@@ -4,7 +4,7 @@
 #include "../../../graphics/resources/Samplers.h"
 #include "../../../graphics/resources/ShaderResources.h"
 
-void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenViewport) {
+void Bloom::init(int downscale, float threshold, bool bigKernel, Viewport fullscreenViewport) {
 	bloomDownscale = std::max(downscale, 1);
 	viewport.init(std::max(static_cast<uint32_t>(fullscreenViewport.viewport.width) / bloomDownscale, static_cast<uint32_t>(1)), std::max(static_cast<uint32_t>(fullscreenViewport.viewport.height) / bloomDownscale, static_cast<uint32_t>(1)));
 
@@ -51,7 +51,7 @@ void Bloom::init(int downscale, float threshold, int size, Viewport fullscreenVi
 	blurGraphicsPipeline.init();
 
 	bloomThreshold = threshold;
-	blurSize = size;
+	blurBigKernel = bigKernel;
 
 	createResources(fullscreenViewport);
 }
@@ -242,7 +242,7 @@ void Bloom::draw(CommandBuffer* commandBuffer) {
 		blurViewport.init(mipWidths[mipLevel], mipHeights[mipLevel]);
 
 		// Horizontal
-		int pushConstants[2] = { 1, blurSize };
+		int pushConstants[2] = { 1, blurBigKernel };
 
 		blurRenderPass.begin(commandBuffer, blurFramebuffers[mipLevel].framebuffer, { mipWidths[mipLevel], mipHeights[mipLevel] });
 		blurGraphicsPipeline.bind(commandBuffer);

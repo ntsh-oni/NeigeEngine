@@ -36,9 +36,9 @@ struct Bloom {
 	std::vector<Framebuffer> backBlurFramebuffers;
 	std::vector<VkImageView> blurImageViews;
 	std::vector<VkImageView> backBlurImageViews;
-	int blurSize = 9;
+	bool blurBigKernel = true;
 	
-	void init(int downscale, float threshold, int size, Viewport fullscreenViewport);
+	void init(int downscale, float threshold, bool bigKernel, Viewport fullscreenViewport);
 	void destroy();
 	void createResources(Viewport fullscreenViewport);
 	void destroyResources();
