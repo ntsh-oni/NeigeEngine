@@ -9,9 +9,9 @@
 - [GLFW](https://www.glfw.org/)
 - [GLM](https://github.com/g-truc/glm)
 - [Glslang](https://github.com/KhronosGroup/glslang)
+- [json](https://github.com/nlohmann/json)
 - [lua](https://github.com/lua/lua)
 - [OpenAL Soft](https://openal-soft.org/)
-- [simdjson](https://github.com/simdjson/simdjson)
 - [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
 - [stb](https://github.com/nothings/stb)
 ## Download
