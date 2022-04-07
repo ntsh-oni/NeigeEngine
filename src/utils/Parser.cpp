@@ -5,12 +5,16 @@
 GameInfo Parser::parseGameInfo(const std::string& filePath) {
 	GameInfo gameInfo = {};
 
-	if (!FileTools::exists(filePath)) {
-		NEIGE_WARNING("Could not find " + filePath + " to load game settings.");
-		return gameInfo;
+	std::ifstream file;
+	if (FileTools::exists(filePath)) {
+		file.open(filePath);
+	}
+	else {
+		NEIGE_WARNING("Could not find " + filePath + " to load game settings, loading the default settings.");
+
+		file.open("../default/game.json");
 	}
 
-	std::ifstream file(filePath);
 	nlohmann::json j;
 	file >> j;
 
@@ -88,12 +92,16 @@ GameInfo Parser::parseGameInfo(const std::string& filePath) {
 Scene Parser::parseScene(const std::string& filePath, ECS& ecs) {
 	Scene scene = {};
 
-	if (!FileTools::exists(filePath)) {
-		NEIGE_ERROR("Could not find " + filePath + " to load the scene.");
-		return scene;
+	std::ifstream file;
+	if (FileTools::exists(filePath)) {
+		file.open(filePath);
+	}
+	else {
+		NEIGE_WARNING("Could not find " + filePath + " to load the scene, loading the default scene.");
+
+		file.open("../default/scene0.json");
 	}
 
-	std::ifstream file(filePath);
 	nlohmann::json j;
 	file >> j;
 

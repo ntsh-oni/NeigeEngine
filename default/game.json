@@ -1,0 +1,22 @@
+{
+	"game": {
+		"name": "NeigeEngine Default Application",
+		"windowWidth": 1280,
+		"windowHeight": 720
+	},
+	"graphics": {
+		"ssao": {
+			"enable": true,
+			"downscale": 3
+		},
+		"bloom": {
+			"enable": true,
+			"downscale": 4,
+			"threshold": 1.5,
+			"blurBigKernel": true
+		},
+		"fxaa": {
+			"enable": true
+		}
+	}
+}
