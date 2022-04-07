@@ -1,0 +1,79 @@
+{
+	"skybox": {
+		"type": "ATMOSPHERE",
+		"envmapPath": ""
+	},
+	"entities": [
+		{
+			"camera": {
+				"fov": 45.0,
+				"nearPlane": 0.2,
+				"farPlane": 500.0
+			},
+			"transform": {
+				"position": [
+					0.0,
+					10.0,
+					0.0
+				],
+				"rotation": [
+					-1.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"script": {
+				"scriptPath": "../default/scripts/camera.lua"
+			}
+		},
+		{
+			"renderable": {
+				"modelPath": "../default/models/cube.gltf",
+				"vertexShaderPath": "../default/shaders/pbr.vert",
+				"fragmentShaderPath": "../default/shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					10.0,
+					10.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"script": {
+				"scriptPath": "../default/scripts/object.lua"
+			}
+		},
+		{
+			"light": {
+				"type": "DIRECTIONAL",
+				"color": [
+					1.0,
+					1.0,
+					1.0
+				]
+			},
+			"transform": {
+				"rotation": [
+					1.0,
+					-1.0,
+					0.0
+				]
+			}
+		}
+	]
+}
