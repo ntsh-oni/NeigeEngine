@@ -59,6 +59,30 @@
 			}
 		},
 		{
+			"renderable": {
+				"modelPath": "../default/models/plane.gltf",
+				"vertexShaderPath": "../default/shaders/pbr.vert",
+				"fragmentShaderPath": "../default/shaders/pbr.frag"
+			},
+			"transform": {
+				"position": [
+					0.0,
+					5.0,
+					0.0
+				],
+				"rotation": [
+					0.0,
+					0.0,
+					0.0
+				],
+				"scale": [
+					100.0,
+					100.0,
+					100.0
+				]
+			}
+		},
+		{
 			"light": {
 				"type": "DIRECTIONAL",
 				"color": [
