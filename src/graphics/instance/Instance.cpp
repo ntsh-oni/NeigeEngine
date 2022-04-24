@@ -13,7 +13,7 @@ void Instance::init(const std::string& applicationName, uint32_t engineVersion, 
 	// Application
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pNext = 0;
+	applicationInfo.pNext = nullptr;
 	applicationInfo.pApplicationName = applicationName.c_str();
 	applicationInfo.pEngineName = "NeigeEngine";
 	applicationInfo.engineVersion = engineVersion;
