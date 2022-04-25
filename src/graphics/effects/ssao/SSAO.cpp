@@ -168,35 +168,14 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			cameraInfo.offset = 0;
 			cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			depthToPositionsDescriptorSets[i].writesDescriptorSet.clear();
+			depthToPositionsDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet depthPrepassWriteDescriptorSet = {};
-			depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			depthPrepassWriteDescriptorSet.pNext = nullptr;
-			depthPrepassWriteDescriptorSet.dstSet = depthToPositionsDescriptorSets[i].descriptorSet;
-			depthPrepassWriteDescriptorSet.dstBinding = 0;
-			depthPrepassWriteDescriptorSet.dstArrayElement = 0;
-			depthPrepassWriteDescriptorSet.descriptorCount = 1;
-			depthPrepassWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			depthPrepassWriteDescriptorSet.pImageInfo = &depthPrepassInfo;
-			depthPrepassWriteDescriptorSet.pBufferInfo = nullptr;
-			depthPrepassWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(depthPrepassWriteDescriptorSet);
+			depthToPositionsDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &depthPrepassInfo);
 
-			VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-			cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			cameraWriteDescriptorSet.pNext = nullptr;
-			cameraWriteDescriptorSet.dstSet = depthToPositionsDescriptorSets[i].descriptorSet;
-			cameraWriteDescriptorSet.dstBinding = 1;
-			cameraWriteDescriptorSet.dstArrayElement = 0;
-			cameraWriteDescriptorSet.descriptorCount = 1;
-			cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			cameraWriteDescriptorSet.pImageInfo = nullptr;
-			cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-			cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+			depthToPositionsDescriptorSets[i].addWriteUniformBuffer(1, 1, &cameraInfo);
 
-			depthToPositionsDescriptorSets[i].update(writesDescriptorSet);
+			depthToPositionsDescriptorSets[i].update();
 		}
 	}
 
@@ -216,35 +195,14 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			cameraInfo.offset = 0;
 			cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			depthToNormalsDescriptorSets[i].writesDescriptorSet.clear();
+			depthToNormalsDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet depthPrepassWriteDescriptorSet = {};
-			depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			depthPrepassWriteDescriptorSet.pNext = nullptr;
-			depthPrepassWriteDescriptorSet.dstSet = depthToNormalsDescriptorSets[i].descriptorSet;
-			depthPrepassWriteDescriptorSet.dstBinding = 0;
-			depthPrepassWriteDescriptorSet.dstArrayElement = 0;
-			depthPrepassWriteDescriptorSet.descriptorCount = 1;
-			depthPrepassWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			depthPrepassWriteDescriptorSet.pImageInfo = &depthPrepassInfo;
-			depthPrepassWriteDescriptorSet.pBufferInfo = nullptr;
-			depthPrepassWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(depthPrepassWriteDescriptorSet);
+			depthToNormalsDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &depthPrepassInfo);
 
-			VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-			cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			cameraWriteDescriptorSet.pNext = nullptr;
-			cameraWriteDescriptorSet.dstSet = depthToNormalsDescriptorSets[i].descriptorSet;
-			cameraWriteDescriptorSet.dstBinding = 1;
-			cameraWriteDescriptorSet.dstArrayElement = 0;
-			cameraWriteDescriptorSet.descriptorCount = 1;
-			cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			cameraWriteDescriptorSet.pImageInfo = nullptr;
-			cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-			cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+			depthToNormalsDescriptorSets[i].addWriteUniformBuffer(1, 1, &cameraInfo);
 
-			depthToNormalsDescriptorSets[i].update(writesDescriptorSet);
+			depthToNormalsDescriptorSets[i].update();
 		}
 	}
 
@@ -279,74 +237,20 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 			cameraInfo.offset = 0;
 			cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			ssaoDescriptorSets[i].writesDescriptorSet.clear();
+			ssaoDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet positionWriteDescriptorSet = {};
-			positionWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			positionWriteDescriptorSet.pNext = nullptr;
-			positionWriteDescriptorSet.dstSet = ssaoDescriptorSets[i].descriptorSet;
-			positionWriteDescriptorSet.dstBinding = 0;
-			positionWriteDescriptorSet.dstArrayElement = 0;
-			positionWriteDescriptorSet.descriptorCount = 1;
-			positionWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			positionWriteDescriptorSet.pImageInfo = &positionInfo;
-			positionWriteDescriptorSet.pBufferInfo = nullptr;
-			positionWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(positionWriteDescriptorSet);
+			ssaoDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &positionInfo);
 
-			VkWriteDescriptorSet normalWriteDescriptorSet = {};
-			normalWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			normalWriteDescriptorSet.pNext = nullptr;
-			normalWriteDescriptorSet.dstSet = ssaoDescriptorSets[i].descriptorSet;
-			normalWriteDescriptorSet.dstBinding = 1;
-			normalWriteDescriptorSet.dstArrayElement = 0;
-			normalWriteDescriptorSet.descriptorCount = 1;
-			normalWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			normalWriteDescriptorSet.pImageInfo = &normalInfo;
-			normalWriteDescriptorSet.pBufferInfo = nullptr;
-			normalWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(normalWriteDescriptorSet);
+			ssaoDescriptorSets[i].addWriteCombinedImageSampler(1, 1, &normalInfo);
 
-			VkWriteDescriptorSet randomTextureWriteDescriptorSet = {};
-			randomTextureWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			randomTextureWriteDescriptorSet.pNext = nullptr;
-			randomTextureWriteDescriptorSet.dstSet = ssaoDescriptorSets[i].descriptorSet;
-			randomTextureWriteDescriptorSet.dstBinding = 2;
-			randomTextureWriteDescriptorSet.dstArrayElement = 0;
-			randomTextureWriteDescriptorSet.descriptorCount = 1;
-			randomTextureWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			randomTextureWriteDescriptorSet.pImageInfo = &randomTextureInfo;
-			randomTextureWriteDescriptorSet.pBufferInfo = nullptr;
-			randomTextureWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(randomTextureWriteDescriptorSet);
+			ssaoDescriptorSets[i].addWriteCombinedImageSampler(2, 1, &randomTextureInfo);
 
-			VkWriteDescriptorSet sampleKernelWriteDescriptorSet = {};
-			sampleKernelWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			sampleKernelWriteDescriptorSet.pNext = nullptr;
-			sampleKernelWriteDescriptorSet.dstSet = ssaoDescriptorSets[i].descriptorSet;
-			sampleKernelWriteDescriptorSet.dstBinding = 3;
-			sampleKernelWriteDescriptorSet.dstArrayElement = 0;
-			sampleKernelWriteDescriptorSet.descriptorCount = 1;
-			sampleKernelWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			sampleKernelWriteDescriptorSet.pImageInfo = nullptr;
-			sampleKernelWriteDescriptorSet.pBufferInfo = &sampleKernelInfo;
-			sampleKernelWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(sampleKernelWriteDescriptorSet);
+			ssaoDescriptorSets[i].addWriteUniformBuffer(3, 1, &sampleKernelInfo);
 
-			VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-			cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			cameraWriteDescriptorSet.pNext = nullptr;
-			cameraWriteDescriptorSet.dstSet = ssaoDescriptorSets[i].descriptorSet;
-			cameraWriteDescriptorSet.dstBinding = 4;
-			cameraWriteDescriptorSet.dstArrayElement = 0;
-			cameraWriteDescriptorSet.descriptorCount = 1;
-			cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			cameraWriteDescriptorSet.pImageInfo = nullptr;
-			cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-			cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+			ssaoDescriptorSets[i].addWriteUniformBuffer(4, 1, &cameraInfo);
 
-			ssaoDescriptorSets[i].update(writesDescriptorSet);
+			ssaoDescriptorSets[i].update();
 		}
 	}
 
@@ -358,22 +262,12 @@ void SSAO::createResources(Viewport fullscreenViewport) {
 		ssaoInfo.imageView = ssaoImage.imageView;
 		ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		ssaoBlurredDescriptorSet.writesDescriptorSet.clear();
+		ssaoBlurredDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
-		ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		ssaoWriteDescriptorSet.pNext = nullptr;
-		ssaoWriteDescriptorSet.dstSet = ssaoBlurredDescriptorSet.descriptorSet;
-		ssaoWriteDescriptorSet.dstBinding = 0;
-		ssaoWriteDescriptorSet.dstArrayElement = 0;
-		ssaoWriteDescriptorSet.descriptorCount = 1;
-		ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
-		ssaoWriteDescriptorSet.pBufferInfo = nullptr;
-		ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
+		ssaoBlurredDescriptorSet.addWriteCombinedImageSampler(0, 1, &ssaoInfo);
 
-		ssaoBlurredDescriptorSet.update(writesDescriptorSet);
+		ssaoBlurredDescriptorSet.update();
 	}
 }
 

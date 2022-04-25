@@ -759,22 +759,12 @@ void Renderer::loadObject(Entity object) {
 		perCulledDrawInfo.offset = 0;
 		perCulledDrawInfo.range = objectRenderable.model->opaqueDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
-		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawCulledWriteDescriptorSet.pNext = nullptr;
-		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawCulledWriteDescriptorSet.dstBinding = 0;
-		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
-		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
-		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
-		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perCulledDrawInfo);
 
-		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+		objectRenderable.opaqueCulledDrawIndirectInfoDescriptorSet.update();
 
 		objectRenderable.opaqueFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -814,22 +804,12 @@ void Renderer::loadObject(Entity object) {
 		perCulledDrawInfo.offset = 0;
 		perCulledDrawInfo.range = objectRenderable.model->maskDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
-		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawCulledWriteDescriptorSet.pNext = nullptr;
-		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawCulledWriteDescriptorSet.dstBinding = 0;
-		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
-		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
-		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
-		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perCulledDrawInfo);
 
-		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+		objectRenderable.maskCulledDrawIndirectInfoDescriptorSet.update();
 
 		objectRenderable.maskFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -869,22 +849,12 @@ void Renderer::loadObject(Entity object) {
 		perCulledDrawInfo.offset = 0;
 		perCulledDrawInfo.range = objectRenderable.model->blendDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawCulledWritesDescriptorSet;
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet perDrawCulledWriteDescriptorSet = {};
-		perDrawCulledWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawCulledWriteDescriptorSet.pNext = nullptr;
-		perDrawCulledWriteDescriptorSet.dstSet = objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawCulledWriteDescriptorSet.dstBinding = 0;
-		perDrawCulledWriteDescriptorSet.dstArrayElement = 0;
-		perDrawCulledWriteDescriptorSet.descriptorCount = 1;
-		perDrawCulledWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawCulledWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawCulledWriteDescriptorSet.pBufferInfo = &perCulledDrawInfo;
-		perDrawCulledWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawCulledWritesDescriptorSet.push_back(perDrawCulledWriteDescriptorSet);
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perCulledDrawInfo);
 
-		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.update(perDrawCulledWritesDescriptorSet);
+		objectRenderable.blendCulledDrawIndirectInfoDescriptorSet.update();
 
 		objectRenderable.blendFrustumCullingDescriptorSets.resize(framesInFlight);
 		for (uint32_t i = 0; i < framesInFlight; i++) {
@@ -1504,35 +1474,14 @@ void Renderer::updateMaterialDescriptorSet(uint32_t frameInFlightIndex) {
 		materialsInfos.push_back(materialInfo);
 	}
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	materialsDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+	materialsDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-	VkWriteDescriptorSet textureWriteDescriptorSet = {};
-	textureWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	textureWriteDescriptorSet.pNext = nullptr;
-	textureWriteDescriptorSet.dstSet = materialsDescriptorSets[frameInFlightIndex].descriptorSet;
-	textureWriteDescriptorSet.dstBinding = 0;
-	textureWriteDescriptorSet.dstArrayElement = 0;
-	textureWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(textures.size());
-	textureWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	textureWriteDescriptorSet.pImageInfo = textureInfos.data();
-	textureWriteDescriptorSet.pBufferInfo = nullptr;
-	textureWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(textureWriteDescriptorSet);
+	materialsDescriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(0, static_cast<uint32_t>(textureInfos.size()), textureInfos.data());
 
-	VkWriteDescriptorSet materialWriteDescriptorSet = {};
-	materialWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	materialWriteDescriptorSet.pNext = nullptr;
-	materialWriteDescriptorSet.dstSet = materialsDescriptorSets[frameInFlightIndex].descriptorSet;
-	materialWriteDescriptorSet.dstBinding = 1;
-	materialWriteDescriptorSet.dstArrayElement = 0;
-	materialWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(materials.size());
-	materialWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	materialWriteDescriptorSet.pImageInfo = nullptr;
-	materialWriteDescriptorSet.pBufferInfo = materialsInfos.data();
-	materialWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(materialWriteDescriptorSet);
+	materialsDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(1, static_cast<uint32_t>(materialsInfos.size()), materialsInfos.data());
 
-	materialsDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	materialsDescriptorSets[frameInFlightIndex].update();
 }
 
 void Renderer::createAlphaCompositingDescriptorSet() {
@@ -1548,35 +1497,14 @@ void Renderer::createAlphaCompositingDescriptorSet() {
 	revealageInfo.imageView = blendRevealageImage.imageView;
 	revealageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	alphaCompositingDescriptorSet.writesDescriptorSet.clear();
+	alphaCompositingDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-	VkWriteDescriptorSet accumulationWriteDescriptorSet = {};
-	accumulationWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	accumulationWriteDescriptorSet.pNext = nullptr;
-	accumulationWriteDescriptorSet.dstSet = alphaCompositingDescriptorSet.descriptorSet;
-	accumulationWriteDescriptorSet.dstBinding = 0;
-	accumulationWriteDescriptorSet.dstArrayElement = 0;
-	accumulationWriteDescriptorSet.descriptorCount = 1;
-	accumulationWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	accumulationWriteDescriptorSet.pImageInfo = &accumulationInfo;
-	accumulationWriteDescriptorSet.pBufferInfo = nullptr;
-	accumulationWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(accumulationWriteDescriptorSet);
+	alphaCompositingDescriptorSet.addWriteCombinedImageSampler(0, 1, &accumulationInfo);
 
-	VkWriteDescriptorSet revealageWriteDescriptorSet = {};
-	revealageWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	revealageWriteDescriptorSet.pNext = nullptr;
-	revealageWriteDescriptorSet.dstSet = alphaCompositingDescriptorSet.descriptorSet;
-	revealageWriteDescriptorSet.dstBinding = 1;
-	revealageWriteDescriptorSet.dstArrayElement = 0;
-	revealageWriteDescriptorSet.descriptorCount = 1;
-	revealageWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	revealageWriteDescriptorSet.pImageInfo = &revealageInfo;
-	revealageWriteDescriptorSet.pBufferInfo = nullptr;
-	revealageWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(revealageWriteDescriptorSet);
+	alphaCompositingDescriptorSet.addWriteCombinedImageSampler(1, 1, &revealageInfo);
 
-	alphaCompositingDescriptorSet.update(writesDescriptorSet);
+	alphaCompositingDescriptorSet.update();
 }
 
 void Renderer::createPostProcessDescriptorSet() {
@@ -1598,48 +1526,16 @@ void Renderer::createPostProcessDescriptorSet() {
 	ssaoInfo.imageView = enableSSAO ? ssao.ssaoBlurredImage.imageView : defaultPostProcessEffectImage.imageView;
 	ssaoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	postDescriptorSet.writesDescriptorSet.clear();
+	postDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-	VkWriteDescriptorSet sceneWriteDescriptorSet = {};
-	sceneWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	sceneWriteDescriptorSet.pNext = nullptr;
-	sceneWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	sceneWriteDescriptorSet.dstBinding = 0;
-	sceneWriteDescriptorSet.dstArrayElement = 0;
-	sceneWriteDescriptorSet.descriptorCount = 1;
-	sceneWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	sceneWriteDescriptorSet.pImageInfo = &sceneInfo;
-	sceneWriteDescriptorSet.pBufferInfo = nullptr;
-	sceneWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(sceneWriteDescriptorSet);
+	postDescriptorSet.addWriteCombinedImageSampler(0, 1, &sceneInfo);
 
-	VkWriteDescriptorSet ssaoWriteDescriptorSet = {};
-	ssaoWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	ssaoWriteDescriptorSet.pNext = nullptr;
-	ssaoWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	ssaoWriteDescriptorSet.dstBinding = 1;
-	ssaoWriteDescriptorSet.dstArrayElement = 0;
-	ssaoWriteDescriptorSet.descriptorCount = 1;
-	ssaoWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	ssaoWriteDescriptorSet.pImageInfo = &ssaoInfo;
-	ssaoWriteDescriptorSet.pBufferInfo = nullptr;
-	ssaoWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(ssaoWriteDescriptorSet);
+	postDescriptorSet.addWriteCombinedImageSampler(1, 1, &ssaoInfo);
 
-	VkWriteDescriptorSet bloomWriteDescriptorSet = {};
-	bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	bloomWriteDescriptorSet.pNext = nullptr;
-	bloomWriteDescriptorSet.dstSet = postDescriptorSet.descriptorSet;
-	bloomWriteDescriptorSet.dstBinding = 2;
-	bloomWriteDescriptorSet.dstArrayElement = 0;
-	bloomWriteDescriptorSet.descriptorCount = 1;
-	bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
-	bloomWriteDescriptorSet.pBufferInfo = nullptr;
-	bloomWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(bloomWriteDescriptorSet);
+	postDescriptorSet.addWriteCombinedImageSampler(2, 1, &bloomInfo);
 
-	postDescriptorSet.update(writesDescriptorSet);
+	postDescriptorSet.update();
 }
 
 void Renderer::reloadOnResize() {

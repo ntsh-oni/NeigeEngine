@@ -77,35 +77,14 @@ void Envmap::init(std::string filePath, Viewport* fullscreenViewport, RenderPass
 		skyboxInfo.imageView = envmap.skyboxImage.imageView;
 		skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		skyboxDescriptorSets[i].writesDescriptorSet.clear();
+		skyboxDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 0;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		skyboxDescriptorSets[i].addWriteUniformBuffer(0, 1, &cameraInfo);
 
-		VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
-		skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		skyboxWriteDescriptorSet.pNext = nullptr;
-		skyboxWriteDescriptorSet.dstSet = skyboxDescriptorSets[i].descriptorSet;
-		skyboxWriteDescriptorSet.dstBinding = 1;
-		skyboxWriteDescriptorSet.dstArrayElement = 0;
-		skyboxWriteDescriptorSet.descriptorCount = 1;
-		skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
-		skyboxWriteDescriptorSet.pBufferInfo = nullptr;
-		skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
+		skyboxDescriptorSets[i].addWriteCombinedImageSampler(1, 1, &skyboxInfo);
 
-		skyboxDescriptorSets[i].update(writesDescriptorSet);
+		skyboxDescriptorSets[i].update();
 	}
 
 	// Cleanup
@@ -170,22 +149,12 @@ void Envmap::equiRectangleToCubemap() {
 	skyboxInfo.imageView = envmapImage.image != VK_NULL_HANDLE ? envmapImage.imageView : defaultSkybox.imageView;
 	skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	equiRecToCubemapDescriptorSet.writesDescriptorSet.clear();
+	equiRecToCubemapDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-	VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
-	skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	skyboxWriteDescriptorSet.pNext = nullptr;
-	skyboxWriteDescriptorSet.dstSet = equiRecToCubemapDescriptorSet.descriptorSet;
-	skyboxWriteDescriptorSet.dstBinding = 0;
-	skyboxWriteDescriptorSet.dstArrayElement = 0;
-	skyboxWriteDescriptorSet.descriptorCount = 1;
-	skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
-	skyboxWriteDescriptorSet.pBufferInfo = nullptr;
-	skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
+	equiRecToCubemapDescriptorSet.addWriteCombinedImageSampler(0, 1, &skyboxInfo);
 
-	equiRecToCubemapDescriptorSet.update(writesDescriptorSet);
+	equiRecToCubemapDescriptorSet.update();
 
 	glm::mat4 projection = Camera::createPerspectiveProjection(90.0f, ENVMAP_WIDTH / static_cast<float>(ENVMAP_HEIGHT), 0.1f, 2.0f, true);
 	std::array<glm::mat4, 6> views = { Camera::createLookAtView(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0)),
@@ -278,22 +247,12 @@ void Envmap::createDiffuseIradiance() {
 	skyboxInfo.imageView = skyboxImage.image != VK_NULL_HANDLE ? skyboxImage.imageView : defaultSkybox.imageView;
 	skyboxInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	convolveDescriptorSet.writesDescriptorSet.clear();
+	convolveDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-	VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
-	skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	skyboxWriteDescriptorSet.pNext = nullptr;
-	skyboxWriteDescriptorSet.dstSet = convolveDescriptorSet.descriptorSet;
-	skyboxWriteDescriptorSet.dstBinding = 0;
-	skyboxWriteDescriptorSet.dstArrayElement = 0;
-	skyboxWriteDescriptorSet.descriptorCount = 1;
-	skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
-	skyboxWriteDescriptorSet.pBufferInfo = nullptr;
-	skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
+	convolveDescriptorSet.addWriteCombinedImageSampler(0, 1, &skyboxInfo);
 
-	convolveDescriptorSet.update(writesDescriptorSet);
+	convolveDescriptorSet.update();
 
 	glm::mat4 projection = Camera::createPerspectiveProjection(90.0f, CONVOLVE_WIDTH / static_cast<float>(CONVOLVE_HEIGHT), 0.1f, 2.0f, true);
 	std::array<glm::mat4, 6> views = { Camera::createLookAtView(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0)),
@@ -400,35 +359,15 @@ void Envmap::createPrefilter() {
 		roughnessInfo.offset = 0;
 		roughnessInfo.range = sizeof(float);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		prefilterDescriptorSet.writesDescriptorSet.clear();
+		prefilterDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet skyboxWriteDescriptorSet = {};
-		skyboxWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		skyboxWriteDescriptorSet.pNext = nullptr;
-		skyboxWriteDescriptorSet.dstSet = prefilterDescriptorSet.descriptorSet;
-		skyboxWriteDescriptorSet.dstBinding = 0;
-		skyboxWriteDescriptorSet.dstArrayElement = 0;
-		skyboxWriteDescriptorSet.descriptorCount = 1;
-		skyboxWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		skyboxWriteDescriptorSet.pImageInfo = &skyboxInfo;
-		skyboxWriteDescriptorSet.pBufferInfo = nullptr;
-		skyboxWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(skyboxWriteDescriptorSet);
+		prefilterDescriptorSet.addWriteCombinedImageSampler(0, 1, &skyboxInfo);
 
-		VkWriteDescriptorSet roughnessWriteDescriptorSet = {};
-		roughnessWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		roughnessWriteDescriptorSet.pNext = nullptr;
-		roughnessWriteDescriptorSet.dstSet = prefilterDescriptorSet.descriptorSet;
-		roughnessWriteDescriptorSet.dstBinding = 1;
-		roughnessWriteDescriptorSet.dstArrayElement = 0;
-		roughnessWriteDescriptorSet.descriptorCount = 1;
-		roughnessWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		roughnessWriteDescriptorSet.pImageInfo = nullptr;
-		roughnessWriteDescriptorSet.pBufferInfo = &roughnessInfo;
-		roughnessWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(roughnessWriteDescriptorSet);
 
-		prefilterDescriptorSet.update(writesDescriptorSet);
+		prefilterDescriptorSet.addWriteUniformBuffer(1, 1, &roughnessInfo);
+
+		prefilterDescriptorSet.update();
 
 		glm::mat4 projection = Camera::createPerspectiveProjection(90.0f, mipWidth / static_cast<float>(mipHeight), 0.1f, 2.0f, true);
 		std::array<glm::mat4, 6> views = { Camera::createLookAtView(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0)),

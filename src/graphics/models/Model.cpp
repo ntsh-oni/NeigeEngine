@@ -226,48 +226,16 @@ void Model::init(std::string filePath) {
 			inFrustumInfo.offset = 0;
 			inFrustumInfo.range = 6 * 4 * sizeof(float);
 
-			std::vector<VkWriteDescriptorSet> frustumCullingWritesDescriptorSet;
+			opaqueFrustumCullingDescriptorSet.writesDescriptorSet.clear();
+			opaqueFrustumCullingDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet inDrawIndirectWriteDescriptorSet = {};
-			inDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inDrawIndirectWriteDescriptorSet.pNext = nullptr;
-			inDrawIndirectWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSet.descriptorSet;
-			inDrawIndirectWriteDescriptorSet.dstBinding = 0;
-			inDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-			inDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-			inDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-			inDrawIndirectWriteDescriptorSet.pBufferInfo = &inDrawIndirectInfo;
-			inDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inDrawIndirectWriteDescriptorSet);
+			opaqueFrustumCullingDescriptorSet.addWriteStorageBuffer(0, 1, &inDrawIndirectInfo);
 
-			VkWriteDescriptorSet inPerDrawWriteDescriptorSet = {};
-			inPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inPerDrawWriteDescriptorSet.pNext = nullptr;
-			inPerDrawWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSet.descriptorSet;
-			inPerDrawWriteDescriptorSet.dstBinding = 1;
-			inPerDrawWriteDescriptorSet.dstArrayElement = 0;
-			inPerDrawWriteDescriptorSet.descriptorCount = 1;
-			inPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-			inPerDrawWriteDescriptorSet.pBufferInfo = &inPerDrawInfo;
-			inPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inPerDrawWriteDescriptorSet);
+			opaqueFrustumCullingDescriptorSet.addWriteStorageBuffer(1, 1, &inPerDrawInfo);
 
-			VkWriteDescriptorSet inAABBWriteDescriptorSet = {};
-			inAABBWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inAABBWriteDescriptorSet.pNext = nullptr;
-			inAABBWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSet.descriptorSet;
-			inAABBWriteDescriptorSet.dstBinding = 2;
-			inAABBWriteDescriptorSet.dstArrayElement = 0;
-			inAABBWriteDescriptorSet.descriptorCount = 1;
-			inAABBWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inAABBWriteDescriptorSet.pImageInfo = nullptr;
-			inAABBWriteDescriptorSet.pBufferInfo = &inAABBInfo;
-			inAABBWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inAABBWriteDescriptorSet);
+			opaqueFrustumCullingDescriptorSet.addWriteStorageBuffer(2, 1, &inAABBInfo);
 
-			opaqueFrustumCullingDescriptorSet.update(frustumCullingWritesDescriptorSet);
+			opaqueFrustumCullingDescriptorSet.update();
 		}
 
 		// Base resources
@@ -276,22 +244,12 @@ void Model::init(std::string filePath) {
 		perDrawInfo.offset = 0;
 		perDrawInfo.range = opaqueDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawWritesDescriptorSet;
+		opaqueDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		opaqueDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
-		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawWriteDescriptorSet.pNext = nullptr;
-		perDrawWriteDescriptorSet.dstSet = opaqueDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawWriteDescriptorSet.dstBinding = 0;
-		perDrawWriteDescriptorSet.dstArrayElement = 0;
-		perDrawWriteDescriptorSet.descriptorCount = 1;
-		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
-		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawWritesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+		opaqueDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perDrawInfo);
 		
-		opaqueDrawIndirectInfoDescriptorSet.update(perDrawWritesDescriptorSet);
+		opaqueDrawIndirectInfoDescriptorSet.update();
 	}
 
 	if (gotMaskPrimitives) {
@@ -328,46 +286,16 @@ void Model::init(std::string filePath) {
 
 			std::vector<VkWriteDescriptorSet> frustumCullingWritesDescriptorSet;
 
-			VkWriteDescriptorSet inDrawIndirectWriteDescriptorSet = {};
-			inDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inDrawIndirectWriteDescriptorSet.pNext = nullptr;
-			inDrawIndirectWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSet.descriptorSet;
-			inDrawIndirectWriteDescriptorSet.dstBinding = 0;
-			inDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-			inDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-			inDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-			inDrawIndirectWriteDescriptorSet.pBufferInfo = &inDrawIndirectInfo;
-			inDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inDrawIndirectWriteDescriptorSet);
+			maskFrustumCullingDescriptorSet.writesDescriptorSet.clear();
+			maskFrustumCullingDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet inPerDrawWriteDescriptorSet = {};
-			inPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inPerDrawWriteDescriptorSet.pNext = nullptr;
-			inPerDrawWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSet.descriptorSet;
-			inPerDrawWriteDescriptorSet.dstBinding = 1;
-			inPerDrawWriteDescriptorSet.dstArrayElement = 0;
-			inPerDrawWriteDescriptorSet.descriptorCount = 1;
-			inPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-			inPerDrawWriteDescriptorSet.pBufferInfo = &inPerDrawInfo;
-			inPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inPerDrawWriteDescriptorSet);
+			maskFrustumCullingDescriptorSet.addWriteStorageBuffer(0, 1, &inDrawIndirectInfo);
 
-			VkWriteDescriptorSet inAABBWriteDescriptorSet = {};
-			inAABBWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inAABBWriteDescriptorSet.pNext = nullptr;
-			inAABBWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSet.descriptorSet;
-			inAABBWriteDescriptorSet.dstBinding = 2;
-			inAABBWriteDescriptorSet.dstArrayElement = 0;
-			inAABBWriteDescriptorSet.descriptorCount = 1;
-			inAABBWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inAABBWriteDescriptorSet.pImageInfo = nullptr;
-			inAABBWriteDescriptorSet.pBufferInfo = &inAABBInfo;
-			inAABBWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inAABBWriteDescriptorSet);
+			maskFrustumCullingDescriptorSet.addWriteStorageBuffer(1, 1, &inPerDrawInfo);
 
-			maskFrustumCullingDescriptorSet.update(frustumCullingWritesDescriptorSet);
+			maskFrustumCullingDescriptorSet.addWriteStorageBuffer(2, 1, &inAABBInfo);
+
+			maskFrustumCullingDescriptorSet.update();
 		}
 
 		// Base resources
@@ -376,22 +304,12 @@ void Model::init(std::string filePath) {
 		perDrawInfo.offset = 0;
 		perDrawInfo.range = maskDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawWritesDescriptorSet;
-		
-		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
-		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawWriteDescriptorSet.pNext = nullptr;
-		perDrawWriteDescriptorSet.dstSet = maskDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawWriteDescriptorSet.dstBinding = 0;
-		perDrawWriteDescriptorSet.dstArrayElement = 0;
-		perDrawWriteDescriptorSet.descriptorCount = 1;
-		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
-		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawWritesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+		maskDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		maskDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		maskDrawIndirectInfoDescriptorSet.update(perDrawWritesDescriptorSet);
+		maskDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perDrawInfo);
+
+		maskDrawIndirectInfoDescriptorSet.update();
 	}
 
 	if (gotBlendPrimitives) {
@@ -426,48 +344,16 @@ void Model::init(std::string filePath) {
 			inFrustumInfo.offset = 0;
 			inFrustumInfo.range = 6 * 4 * sizeof(float);
 
-			std::vector<VkWriteDescriptorSet> frustumCullingWritesDescriptorSet;
+			blendFrustumCullingDescriptorSet.writesDescriptorSet.clear();
+			blendFrustumCullingDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet inDrawIndirectWriteDescriptorSet = {};
-			inDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inDrawIndirectWriteDescriptorSet.pNext = nullptr;
-			inDrawIndirectWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSet.descriptorSet;
-			inDrawIndirectWriteDescriptorSet.dstBinding = 0;
-			inDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-			inDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-			inDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-			inDrawIndirectWriteDescriptorSet.pBufferInfo = &inDrawIndirectInfo;
-			inDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inDrawIndirectWriteDescriptorSet);
+			blendFrustumCullingDescriptorSet.addWriteStorageBuffer(0, 1, &inDrawIndirectInfo);
 
-			VkWriteDescriptorSet inPerDrawWriteDescriptorSet = {};
-			inPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inPerDrawWriteDescriptorSet.pNext = nullptr;
-			inPerDrawWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSet.descriptorSet;
-			inPerDrawWriteDescriptorSet.dstBinding = 1;
-			inPerDrawWriteDescriptorSet.dstArrayElement = 0;
-			inPerDrawWriteDescriptorSet.descriptorCount = 1;
-			inPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-			inPerDrawWriteDescriptorSet.pBufferInfo = &inPerDrawInfo;
-			inPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inPerDrawWriteDescriptorSet);
+			blendFrustumCullingDescriptorSet.addWriteStorageBuffer(1, 1, &inPerDrawInfo);
 
-			VkWriteDescriptorSet inAABBWriteDescriptorSet = {};
-			inAABBWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			inAABBWriteDescriptorSet.pNext = nullptr;
-			inAABBWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSet.descriptorSet;
-			inAABBWriteDescriptorSet.dstBinding = 2;
-			inAABBWriteDescriptorSet.dstArrayElement = 0;
-			inAABBWriteDescriptorSet.descriptorCount = 1;
-			inAABBWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-			inAABBWriteDescriptorSet.pImageInfo = nullptr;
-			inAABBWriteDescriptorSet.pBufferInfo = &inAABBInfo;
-			inAABBWriteDescriptorSet.pTexelBufferView = nullptr;
-			frustumCullingWritesDescriptorSet.push_back(inAABBWriteDescriptorSet);
+			blendFrustumCullingDescriptorSet.addWriteStorageBuffer(2, 1, &inAABBInfo);
 
-			blendFrustumCullingDescriptorSet.update(frustumCullingWritesDescriptorSet);
+			blendFrustumCullingDescriptorSet.update();
 		}
 
 		// Base resources
@@ -476,22 +362,12 @@ void Model::init(std::string filePath) {
 		perDrawInfo.offset = 0;
 		perDrawInfo.range = blendDrawCount * sizeof(PerDraw);
 
-		std::vector<VkWriteDescriptorSet> perDrawWritesDescriptorSet;
+		blendDrawIndirectInfoDescriptorSet.writesDescriptorSet.clear();
+		blendDrawIndirectInfoDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet perDrawWriteDescriptorSet = {};
-		perDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		perDrawWriteDescriptorSet.pNext = nullptr;
-		perDrawWriteDescriptorSet.dstSet = blendDrawIndirectInfoDescriptorSet.descriptorSet;
-		perDrawWriteDescriptorSet.dstBinding = 0;
-		perDrawWriteDescriptorSet.dstArrayElement = 0;
-		perDrawWriteDescriptorSet.descriptorCount = 1;
-		perDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		perDrawWriteDescriptorSet.pImageInfo = nullptr;
-		perDrawWriteDescriptorSet.pBufferInfo = &perDrawInfo;
-		perDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		perDrawWritesDescriptorSet.push_back(perDrawWriteDescriptorSet);
+		blendDrawIndirectInfoDescriptorSet.addWriteStorageBuffer(0, 1, &perDrawInfo);
 
-		blendDrawIndirectInfoDescriptorSet.update(perDrawWritesDescriptorSet);
+		blendDrawIndirectInfoDescriptorSet.update();
 	}
 }
 

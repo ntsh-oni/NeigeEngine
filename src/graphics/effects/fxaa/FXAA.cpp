@@ -61,22 +61,12 @@ void FXAA::createResources(Viewport fullscreenViewport) {
 		postInfo.imageView = postProcessImage.imageView;
 		postInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		descriptorSet.writesDescriptorSet.clear();
+		descriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet postWriteDescriptorSet = {};
-		postWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		postWriteDescriptorSet.pNext = nullptr;
-		postWriteDescriptorSet.dstSet = descriptorSet.descriptorSet;
-		postWriteDescriptorSet.dstBinding = 0;
-		postWriteDescriptorSet.dstArrayElement = 0;
-		postWriteDescriptorSet.descriptorCount = 1;
-		postWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		postWriteDescriptorSet.pImageInfo = &postInfo;
-		postWriteDescriptorSet.pBufferInfo = nullptr;
-		postWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(postWriteDescriptorSet);
+		descriptorSet.addWriteCombinedImageSampler(0, 1, &postInfo);
 
-		descriptorSet.update(writesDescriptorSet);
+		descriptorSet.update();
 	}
 }
 

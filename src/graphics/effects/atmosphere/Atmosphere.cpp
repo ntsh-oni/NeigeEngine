@@ -50,35 +50,14 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		dummyInfo.imageView = dummyImage.imageView;
 		dummyInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		transmittanceDescriptorSet.writesDescriptorSet.clear();
+		transmittanceDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet dummyTransmittanceWriteDescriptorSet = {};
-		dummyTransmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		dummyTransmittanceWriteDescriptorSet.pNext = nullptr;
-		dummyTransmittanceWriteDescriptorSet.dstSet = transmittanceDescriptorSet.descriptorSet;
-		dummyTransmittanceWriteDescriptorSet.dstBinding = 0;
-		dummyTransmittanceWriteDescriptorSet.dstArrayElement = 0;
-		dummyTransmittanceWriteDescriptorSet.descriptorCount = 1;
-		dummyTransmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyTransmittanceWriteDescriptorSet.pImageInfo = &dummyInfo;
-		dummyTransmittanceWriteDescriptorSet.pBufferInfo = nullptr;
-		dummyTransmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(dummyTransmittanceWriteDescriptorSet);
+		transmittanceDescriptorSet.addWriteCombinedImageSampler(0, 1, &dummyInfo);
 
-		VkWriteDescriptorSet dummyMultiScatteringWriteDescriptorSet = {};
-		dummyMultiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		dummyMultiScatteringWriteDescriptorSet.pNext = nullptr;
-		dummyMultiScatteringWriteDescriptorSet.dstSet = transmittanceDescriptorSet.descriptorSet;
-		dummyMultiScatteringWriteDescriptorSet.dstBinding = 1;
-		dummyMultiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		dummyMultiScatteringWriteDescriptorSet.descriptorCount = 1;
-		dummyMultiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyMultiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
-		dummyMultiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		dummyMultiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(dummyMultiScatteringWriteDescriptorSet);
+		transmittanceDescriptorSet.addWriteCombinedImageSampler(1, 1, &dummyInfo);
 
-		transmittanceDescriptorSet.update(writesDescriptorSet);
+		transmittanceDescriptorSet.update();
 	}
 
 	// Multi scattering
@@ -107,48 +86,16 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		multiScatteringInfo.imageView = multiScatteringImage.imageView;
 		multiScatteringInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		multiScatteringDescriptorSet.writesDescriptorSet.clear();
+		multiScatteringDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet transmittanceWriteDescriptorSet = {};
-		transmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		transmittanceWriteDescriptorSet.pNext = nullptr;
-		transmittanceWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
-		transmittanceWriteDescriptorSet.dstBinding = 0;
-		transmittanceWriteDescriptorSet.dstArrayElement = 0;
-		transmittanceWriteDescriptorSet.descriptorCount = 1;
-		transmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		transmittanceWriteDescriptorSet.pImageInfo = &transmittanceInfo;
-		transmittanceWriteDescriptorSet.pBufferInfo = nullptr;
-		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
+		multiScatteringDescriptorSet.addWriteCombinedImageSampler(0, 1, &transmittanceInfo);
 
-		VkWriteDescriptorSet dummyMultiScatteringWriteDescriptorSet = {};
-		dummyMultiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		dummyMultiScatteringWriteDescriptorSet.pNext = nullptr;
-		dummyMultiScatteringWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
-		dummyMultiScatteringWriteDescriptorSet.dstBinding = 1;
-		dummyMultiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		dummyMultiScatteringWriteDescriptorSet.descriptorCount = 1;
-		dummyMultiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyMultiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
-		dummyMultiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		dummyMultiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(dummyMultiScatteringWriteDescriptorSet);
+		multiScatteringDescriptorSet.addWriteCombinedImageSampler(1, 1, &dummyInfo);
 
-		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
-		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		multiScatteringWriteDescriptorSet.pNext = nullptr;
-		multiScatteringWriteDescriptorSet.dstSet = multiScatteringDescriptorSet.descriptorSet;
-		multiScatteringWriteDescriptorSet.dstBinding = 2;
-		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		multiScatteringWriteDescriptorSet.descriptorCount = 1;
-		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
-		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+		multiScatteringDescriptorSet.addWriteStorageImage(2, 1, &multiScatteringInfo);
 
-		multiScatteringDescriptorSet.update(writesDescriptorSet);
+		multiScatteringDescriptorSet.update();
 	}
 	
 	// Sky view
@@ -202,48 +149,16 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		skyViewDescriptorSets[i].writesDescriptorSet.clear();
+		skyViewDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet transmittanceWriteDescriptorSet = {};
-		transmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		transmittanceWriteDescriptorSet.pNext = nullptr;
-		transmittanceWriteDescriptorSet.dstSet = skyViewDescriptorSets[i].descriptorSet;
-		transmittanceWriteDescriptorSet.dstBinding = 0;
-		transmittanceWriteDescriptorSet.dstArrayElement = 0;
-		transmittanceWriteDescriptorSet.descriptorCount = 1;
-		transmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		transmittanceWriteDescriptorSet.pImageInfo = &transmittanceInfo;
-		transmittanceWriteDescriptorSet.pBufferInfo = nullptr;
-		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
+		skyViewDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &transmittanceInfo);
 
-		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
-		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		multiScatteringWriteDescriptorSet.pNext = nullptr;
-		multiScatteringWriteDescriptorSet.dstSet = skyViewDescriptorSets[i].descriptorSet;
-		multiScatteringWriteDescriptorSet.dstBinding = 1;
-		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		multiScatteringWriteDescriptorSet.descriptorCount = 1;
-		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
-		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+		skyViewDescriptorSets[i].addWriteCombinedImageSampler(1, 1, &multiScatteringInfo);
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = skyViewDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 2;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		skyViewDescriptorSets[i].addWriteUniformBuffer(2, 1, &cameraInfo);
 
-		skyViewDescriptorSets[i].update(writesDescriptorSet);
+		skyViewDescriptorSets[i].update();
 	}
 
 	// Camera volume
@@ -298,48 +213,16 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		cameraVolumeDescriptorSets[i].writesDescriptorSet.clear();
+		cameraVolumeDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet transmittanceWriteDescriptorSet = {};
-		transmittanceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		transmittanceWriteDescriptorSet.pNext = nullptr;
-		transmittanceWriteDescriptorSet.dstSet = cameraVolumeDescriptorSets[i].descriptorSet;
-		transmittanceWriteDescriptorSet.dstBinding = 0;
-		transmittanceWriteDescriptorSet.dstArrayElement = 0;
-		transmittanceWriteDescriptorSet.descriptorCount = 1;
-		transmittanceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		transmittanceWriteDescriptorSet.pImageInfo = &transmittanceInfo;
-		transmittanceWriteDescriptorSet.pBufferInfo = nullptr;
-		transmittanceWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(transmittanceWriteDescriptorSet);
+		cameraVolumeDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &transmittanceInfo);
 
-		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
-		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		multiScatteringWriteDescriptorSet.pNext = nullptr;
-		multiScatteringWriteDescriptorSet.dstSet = cameraVolumeDescriptorSets[i].descriptorSet;
-		multiScatteringWriteDescriptorSet.dstBinding = 1;
-		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		multiScatteringWriteDescriptorSet.descriptorCount = 1;
-		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		multiScatteringWriteDescriptorSet.pImageInfo = &multiScatteringInfo;
-		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+		cameraVolumeDescriptorSets[i].addWriteCombinedImageSampler(1, 1, &multiScatteringInfo);
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = cameraVolumeDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 2;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		cameraVolumeDescriptorSets[i].addWriteUniformBuffer(2, 1, &cameraInfo);
 
-		cameraVolumeDescriptorSets[i].update(writesDescriptorSet);
+		cameraVolumeDescriptorSets[i].update();
 	}
 	
 	// Ray marching
@@ -430,87 +313,22 @@ void Atmosphere::createResources(Viewport fullscreenViewport) {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		rayMarchingDescriptorSets[i].writesDescriptorSet.clear();
+		rayMarchingDescriptorSets[i].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet dummyWriteDescriptorSet = {};
-		dummyWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		dummyWriteDescriptorSet.pNext = nullptr;
-		dummyWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		dummyWriteDescriptorSet.dstBinding = 0;
-		dummyWriteDescriptorSet.dstArrayElement = 0;
-		dummyWriteDescriptorSet.descriptorCount = 1;
-		dummyWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		dummyWriteDescriptorSet.pImageInfo = &dummyInfo;
-		dummyWriteDescriptorSet.pBufferInfo = nullptr;
-		dummyWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(dummyWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteCombinedImageSampler(0, 1, &dummyInfo);
 
-		VkWriteDescriptorSet multiScatteringWriteDescriptorSet = {};
-		multiScatteringWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		multiScatteringWriteDescriptorSet.pNext = nullptr;
-		multiScatteringWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		multiScatteringWriteDescriptorSet.dstBinding = 1;
-		multiScatteringWriteDescriptorSet.dstArrayElement = 0;
-		multiScatteringWriteDescriptorSet.descriptorCount = 1;
-		multiScatteringWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		multiScatteringWriteDescriptorSet.pImageInfo = &dummyInfo;
-		multiScatteringWriteDescriptorSet.pBufferInfo = nullptr;
-		multiScatteringWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(multiScatteringWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteCombinedImageSampler(1, 1, &dummyInfo);
 
-		VkWriteDescriptorSet skyViewWriteDescriptorSet = {};
-		skyViewWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		skyViewWriteDescriptorSet.pNext = nullptr;
-		skyViewWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		skyViewWriteDescriptorSet.dstBinding = 2;
-		skyViewWriteDescriptorSet.dstArrayElement = 0;
-		skyViewWriteDescriptorSet.descriptorCount = 1;
-		skyViewWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		skyViewWriteDescriptorSet.pImageInfo = &skyViewInfo;
-		skyViewWriteDescriptorSet.pBufferInfo = nullptr;
-		skyViewWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(skyViewWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteCombinedImageSampler(2, 1, &skyViewInfo);
 
-		VkWriteDescriptorSet depthPrepassWriteDescriptorSet = {};
-		depthPrepassWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		depthPrepassWriteDescriptorSet.pNext = nullptr;
-		depthPrepassWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		depthPrepassWriteDescriptorSet.dstBinding = 3;
-		depthPrepassWriteDescriptorSet.dstArrayElement = 0;
-		depthPrepassWriteDescriptorSet.descriptorCount = 1;
-		depthPrepassWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		depthPrepassWriteDescriptorSet.pImageInfo = &depthPrepassInfo;
-		depthPrepassWriteDescriptorSet.pBufferInfo = nullptr;
-		depthPrepassWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(depthPrepassWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteCombinedImageSampler(3, 1, &depthPrepassInfo);
 
-		VkWriteDescriptorSet cameraVolumeWriteDescriptorSet = {};
-		cameraVolumeWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraVolumeWriteDescriptorSet.pNext = nullptr;
-		cameraVolumeWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		cameraVolumeWriteDescriptorSet.dstBinding = 4;
-		cameraVolumeWriteDescriptorSet.dstArrayElement = 0;
-		cameraVolumeWriteDescriptorSet.descriptorCount = 1;
-		cameraVolumeWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		cameraVolumeWriteDescriptorSet.pImageInfo = &cameraVolumeInfo;
-		cameraVolumeWriteDescriptorSet.pBufferInfo = nullptr;
-		cameraVolumeWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraVolumeWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteCombinedImageSampler(4, 1, &cameraVolumeInfo);
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = rayMarchingDescriptorSets[i].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 5;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		rayMarchingDescriptorSets[i].addWriteUniformBuffer(5, 1, &cameraInfo);
 
-		rayMarchingDescriptorSets[i].update(writesDescriptorSet);
+		rayMarchingDescriptorSets[i].update();
 	}
 }
 
