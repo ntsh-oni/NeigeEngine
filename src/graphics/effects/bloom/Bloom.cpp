@@ -122,22 +122,12 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 		thresholdInfo.imageView = sceneImage.imageView;
 		thresholdInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		resizeDescriptorSet.writesDescriptorSet.clear();
+		resizeDescriptorSet.writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet thresholdWriteDescriptorSet = {};
-		thresholdWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		thresholdWriteDescriptorSet.pNext = nullptr;
-		thresholdWriteDescriptorSet.dstSet = resizeDescriptorSet.descriptorSet;
-		thresholdWriteDescriptorSet.dstBinding = 0;
-		thresholdWriteDescriptorSet.dstArrayElement = 0;
-		thresholdWriteDescriptorSet.descriptorCount = 1;
-		thresholdWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		thresholdWriteDescriptorSet.pImageInfo = &thresholdInfo;
-		thresholdWriteDescriptorSet.pBufferInfo = nullptr;
-		thresholdWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(thresholdWriteDescriptorSet);
+		resizeDescriptorSet.addWriteCombinedImageSampler(0, 1, &thresholdInfo);
 
-		resizeDescriptorSet.update(writesDescriptorSet);
+		resizeDescriptorSet.update();
 	}
 
 	blurDescriptorSets.resize(mipLevels);
@@ -153,22 +143,12 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 			bloomInfo.imageView = mipLevel == 0 ? bloomLod0ImageView : backBlurImageViews[mipLevel - 1];
 			bloomInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			blurDescriptorSets[mipLevel].writesDescriptorSet.clear();
+			blurDescriptorSets[mipLevel].writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet bloomWriteDescriptorSet = {};
-			bloomWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			bloomWriteDescriptorSet.pNext = nullptr;
-			bloomWriteDescriptorSet.dstSet = blurDescriptorSets[mipLevel].descriptorSet;
-			bloomWriteDescriptorSet.dstBinding = 0;
-			bloomWriteDescriptorSet.dstArrayElement = 0;
-			bloomWriteDescriptorSet.descriptorCount = 1;
-			bloomWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			bloomWriteDescriptorSet.pImageInfo = &bloomInfo;
-			bloomWriteDescriptorSet.pBufferInfo = nullptr;
-			bloomWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(bloomWriteDescriptorSet);
+			blurDescriptorSets[mipLevel].addWriteCombinedImageSampler(0, 1, &bloomInfo);
 
-			blurDescriptorSets[mipLevel].update(writesDescriptorSet);
+			blurDescriptorSets[mipLevel].update();
 		}
 
 		{
@@ -179,22 +159,12 @@ void Bloom::createResources(Viewport fullscreenViewport) {
 			blurInfo.imageView = blurImageViews[mipLevel];
 			blurInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+			backBlurDescriptorSets[mipLevel].writesDescriptorSet.clear();
+			backBlurDescriptorSets[mipLevel].writesDescriptorSet.shrink_to_fit();
 
-			VkWriteDescriptorSet blurWriteDescriptorSet = {};
-			blurWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			blurWriteDescriptorSet.pNext = nullptr;
-			blurWriteDescriptorSet.dstSet = backBlurDescriptorSets[mipLevel].descriptorSet;
-			blurWriteDescriptorSet.dstBinding = 0;
-			blurWriteDescriptorSet.dstArrayElement = 0;
-			blurWriteDescriptorSet.descriptorCount = 1;
-			blurWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			blurWriteDescriptorSet.pImageInfo = &blurInfo;
-			blurWriteDescriptorSet.pBufferInfo = nullptr;
-			blurWriteDescriptorSet.pTexelBufferView = nullptr;
-			writesDescriptorSet.push_back(blurWriteDescriptorSet);
+			backBlurDescriptorSets[mipLevel].addWriteCombinedImageSampler(0, 1, &blurInfo);
 
-			backBlurDescriptorSets[mipLevel].update(writesDescriptorSet);
+			backBlurDescriptorSets[mipLevel].update();
 		}
 	}
 }

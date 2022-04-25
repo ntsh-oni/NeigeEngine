@@ -26,7 +26,7 @@ void DescriptorSet::init(ComputePipeline* associatedComputePipeline, uint32_t se
 	NEIGE_VK_CHECK(vkAllocateDescriptorSets(logicalDevice.device, &descriptorSetAllocateInfo, &descriptorSet));
 }
 
-void DescriptorSet::update(const std::vector<VkWriteDescriptorSet>& writesDescriptorSet) {
+void DescriptorSet::update() {
 	vkUpdateDescriptorSets(logicalDevice.device, static_cast<uint32_t>(writesDescriptorSet.size()), writesDescriptorSet.data(), 0, nullptr);
 }
 
@@ -41,4 +41,64 @@ void DescriptorSet::bind(CommandBuffer* commandBuffer, GraphicsPipeline* graphic
 
 void DescriptorSet::bind(CommandBuffer* commandBuffer, ComputePipeline* computePipeline, uint32_t set) {
 	vkCmdBindDescriptorSets(commandBuffer->commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline->pipelineLayout, set, 1, &descriptorSet, 0, nullptr);
+}
+
+void DescriptorSet::addWriteCombinedImageSampler(uint32_t dstBinding, uint32_t descriptorCount, VkDescriptorImageInfo* descriptorImageInfos) {
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = dstBinding;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = descriptorCount;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	writeDescriptorSet.pImageInfo = descriptorImageInfos;
+	writeDescriptorSet.pBufferInfo = nullptr;
+	writeDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(writeDescriptorSet);
+}
+
+void DescriptorSet::addWriteUniformBuffer(uint32_t dstBinding, uint32_t descriptorCount, VkDescriptorBufferInfo* descriptorBufferInfos) {
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = dstBinding;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = descriptorCount;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pImageInfo = nullptr;
+	writeDescriptorSet.pBufferInfo = descriptorBufferInfos;
+	writeDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(writeDescriptorSet);
+}
+
+void DescriptorSet::addWriteStorageBuffer(uint32_t dstBinding, uint32_t descriptorCount, VkDescriptorBufferInfo* descriptorBufferInfos) {
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = dstBinding;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = descriptorCount;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	writeDescriptorSet.pImageInfo = nullptr;
+	writeDescriptorSet.pBufferInfo = descriptorBufferInfos;
+	writeDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(writeDescriptorSet);
+}
+
+void DescriptorSet::addWriteStorageImage(uint32_t dstBinding, uint32_t descriptorCount, VkDescriptorImageInfo* descriptorImageInfos) {
+	VkWriteDescriptorSet writeDescriptorSet = {};
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.pNext = nullptr;
+	writeDescriptorSet.dstSet = descriptorSet;
+	writeDescriptorSet.dstBinding = dstBinding;
+	writeDescriptorSet.dstArrayElement = 0;
+	writeDescriptorSet.descriptorCount = descriptorCount;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	writeDescriptorSet.pImageInfo = descriptorImageInfos;
+	writeDescriptorSet.pBufferInfo = nullptr;
+	writeDescriptorSet.pTexelBufferView = nullptr;
+	writesDescriptorSet.push_back(writeDescriptorSet);
 }

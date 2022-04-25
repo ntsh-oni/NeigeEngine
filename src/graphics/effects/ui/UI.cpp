@@ -181,22 +181,11 @@ void UI::init(Viewport fullscreenViewport) {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		cameraDescriptorSet.writesDescriptorSet.clear();
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = cameraDescriptorSet.descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 0;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		cameraDescriptorSet.addWriteUniformBuffer(0, 1, &cameraInfo);
 
-		cameraDescriptorSet.update(writesDescriptorSet);
+		cameraDescriptorSet.update();
 	}
 
 	createResources(fullscreenViewport);
@@ -271,22 +260,11 @@ void UI::updateSpriteDescriptorSet(uint32_t frameInFlightIndex) {
 		spriteInfos.push_back(spriteImageInfo);
 	}
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	spritesDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
 
-	VkWriteDescriptorSet spriteWriteDescriptorSet = {};
-	spriteWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	spriteWriteDescriptorSet.pNext = nullptr;
-	spriteWriteDescriptorSet.dstSet = spritesDescriptorSets[frameInFlightIndex].descriptorSet;
-	spriteWriteDescriptorSet.dstBinding = 0;
-	spriteWriteDescriptorSet.dstArrayElement = 0;
-	spriteWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(spritesImages.size());
-	spriteWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	spriteWriteDescriptorSet.pImageInfo = spriteInfos.data();
-	spriteWriteDescriptorSet.pBufferInfo = nullptr;
-	spriteWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(spriteWriteDescriptorSet);
+	spritesDescriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(0, static_cast<uint32_t>(spriteInfos.size()), spriteInfos.data());
 
-	spritesDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	spritesDescriptorSets[frameInFlightIndex].update();
 }
 
 void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
@@ -300,22 +278,11 @@ void UI::updateFontDescriptorSet(uint32_t frameInFlightIndex) {
 		fontInfos.push_back(fontInfo);
 	}
 
-	std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+	fontsDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
 
-	VkWriteDescriptorSet fontWriteDescriptorSet = {};
-	fontWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	fontWriteDescriptorSet.pNext = nullptr;
-	fontWriteDescriptorSet.dstSet = fontsDescriptorSets[frameInFlightIndex].descriptorSet;
-	fontWriteDescriptorSet.dstBinding = 0;
-	fontWriteDescriptorSet.dstArrayElement = 0;
-	fontWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(fonts.size());
-	fontWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	fontWriteDescriptorSet.pImageInfo = fontInfos.data();
-	fontWriteDescriptorSet.pBufferInfo = nullptr;
-	fontWriteDescriptorSet.pTexelBufferView = nullptr;
-	writesDescriptorSet.push_back(fontWriteDescriptorSet);
+	fontsDescriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(0, static_cast<uint32_t>(fontInfos.size()), fontInfos.data());
 
-	fontsDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+	fontsDescriptorSets[frameInFlightIndex].update();
 }
 
 void UI::draw(CommandBuffer* commandBuffer, uint32_t framebufferIndex) {

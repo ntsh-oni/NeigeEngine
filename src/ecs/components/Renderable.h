@@ -80,8 +80,6 @@ struct Renderable {
 	void createEntityDescriptorSet(uint32_t frameInFlightIndex, GraphicsPipeline* graphicsPipeline) {
 		descriptorSets[frameInFlightIndex].init(graphicsPipeline, 0);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
-
 		VkDescriptorBufferInfo objectInfo = {};
 		VkDescriptorBufferInfo cameraInfo = {};
 		VkDescriptorBufferInfo shadowInfo = {};
@@ -93,6 +91,9 @@ struct Renderable {
 		std::vector<VkDescriptorImageInfo> spotShadowMapsInfos;
 		VkDescriptorBufferInfo timeInfo = {};
 
+		descriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		descriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
+
 		for (size_t i = 0; i < graphicsPipeline->sets[0].bindings.size(); i++) {
 			std::string bindingName = graphicsPipeline->sets[0].bindings[i].name;
 			if (bindingName == "object") {
@@ -100,133 +101,49 @@ struct Renderable {
 				objectInfo.offset = 0;
 				objectInfo.range = sizeof(ObjectUniformBufferObject);
 
-				VkWriteDescriptorSet objectWriteDescriptorSet = {};
-				objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				objectWriteDescriptorSet.pNext = nullptr;
-				objectWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				objectWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				objectWriteDescriptorSet.dstArrayElement = 0;
-				objectWriteDescriptorSet.descriptorCount = 1;
-				objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				objectWriteDescriptorSet.pImageInfo = nullptr;
-				objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-				objectWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(objectWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteUniformBuffer(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &objectInfo);
 			}
 			else if (bindingName == "camera") {
 				cameraInfo.buffer = cameraBuffers.at(frameInFlightIndex).buffer;
 				cameraInfo.offset = 0;
 				cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-				VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-				cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				cameraWriteDescriptorSet.pNext = nullptr;
-				cameraWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				cameraWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				cameraWriteDescriptorSet.dstArrayElement = 0;
-				cameraWriteDescriptorSet.descriptorCount = 1;
-				cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				cameraWriteDescriptorSet.pImageInfo = nullptr;
-				cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-				cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteUniformBuffer(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &cameraInfo);
 			}
 			else if (bindingName == "shadow") {
 				shadowInfo.buffer = shadow.buffers.at(frameInFlightIndex).buffer;
 				shadowInfo.offset = 0;
 				shadowInfo.range = sizeof(ShadowUniformBufferObject);
 
-				VkWriteDescriptorSet shadowWriteDescriptorSet = {};
-				shadowWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				shadowWriteDescriptorSet.pNext = nullptr;
-				shadowWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				shadowWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				shadowWriteDescriptorSet.dstArrayElement = 0;
-				shadowWriteDescriptorSet.descriptorCount = 1;
-				shadowWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				shadowWriteDescriptorSet.pImageInfo = nullptr;
-				shadowWriteDescriptorSet.pBufferInfo = &shadowInfo;
-				shadowWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(shadowWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteUniformBuffer(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &shadowInfo);
 			}
 			else if (bindingName == "lights") {
 				lightingInfo.buffer = lightingBuffers.at(frameInFlightIndex).buffer;
 				lightingInfo.offset = 0;
 				lightingInfo.range = sizeof(LightingUniformBufferObject);
 
-				VkWriteDescriptorSet lightingWriteDescriptorSet = {};
-				lightingWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				lightingWriteDescriptorSet.pNext = nullptr;
-				lightingWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				lightingWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				lightingWriteDescriptorSet.dstArrayElement = 0;
-				lightingWriteDescriptorSet.descriptorCount = 1;
-				lightingWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				lightingWriteDescriptorSet.pImageInfo = nullptr;
-				lightingWriteDescriptorSet.pBufferInfo = &lightingInfo;
-				lightingWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(lightingWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteUniformBuffer(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &lightingInfo);
 			}
 			else if (bindingName == "irradianceMap") {
 				irradianceInfo.sampler = trilinearEdgeBlackSampler;
 				irradianceInfo.imageView = envmap.diffuseIradianceImage.imageView;
 				irradianceInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				VkWriteDescriptorSet irradianceWriteDescriptorSet = {};
-				irradianceWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				irradianceWriteDescriptorSet.pNext = nullptr;
-				irradianceWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				irradianceWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				irradianceWriteDescriptorSet.dstArrayElement = 0;
-				irradianceWriteDescriptorSet.descriptorCount = 1;
-				irradianceWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				irradianceWriteDescriptorSet.pImageInfo = &irradianceInfo;
-				irradianceWriteDescriptorSet.pBufferInfo = nullptr;
-				irradianceWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(irradianceWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &irradianceInfo);
 			}
 			else if (bindingName == "prefilterMap") {
 				prefilterInfo.sampler = trilinearEdgeBlackSampler;
 				prefilterInfo.imageView = envmap.prefilterImage.imageView;
 				prefilterInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				VkWriteDescriptorSet prefilterWriteDescriptorSet = {};
-				prefilterWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				prefilterWriteDescriptorSet.pNext = nullptr;
-				prefilterWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				prefilterWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				prefilterWriteDescriptorSet.dstArrayElement = 0;
-				prefilterWriteDescriptorSet.descriptorCount = 1;
-				prefilterWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				prefilterWriteDescriptorSet.pImageInfo = &prefilterInfo;
-				prefilterWriteDescriptorSet.pBufferInfo = nullptr;
-				prefilterWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(prefilterWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &prefilterInfo);
 			}
 			else if (bindingName == "brdfLUT") {
 				brdfLUTInfo.sampler = trilinearEdgeBlackSampler;
 				brdfLUTInfo.imageView = envmap.brdfConvolutionImage.imageView;
 				brdfLUTInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				VkWriteDescriptorSet brdfLUTWriteDescriptorSet = {};
-				brdfLUTWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				brdfLUTWriteDescriptorSet.pNext = nullptr;
-				brdfLUTWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				brdfLUTWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				brdfLUTWriteDescriptorSet.dstArrayElement = 0;
-				brdfLUTWriteDescriptorSet.descriptorCount = 1;
-				brdfLUTWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				brdfLUTWriteDescriptorSet.pImageInfo = &brdfLUTInfo;
-				brdfLUTWriteDescriptorSet.pBufferInfo = nullptr;
-				brdfLUTWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(brdfLUTWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &brdfLUTInfo);
 			}
 			else if (bindingName == "directionalLightsShadowMaps") {
 				directionalShadowMapsInfos.resize(MAX_DIR_LIGHTS);
@@ -237,19 +154,7 @@ struct Renderable {
 					directionalShadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				}
 
-				VkWriteDescriptorSet directionalShadowMapsWriteDescriptorSet = {};
-				directionalShadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				directionalShadowMapsWriteDescriptorSet.pNext = nullptr;
-				directionalShadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				directionalShadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				directionalShadowMapsWriteDescriptorSet.dstArrayElement = 0;
-				directionalShadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(directionalShadowMapsInfos.size());
-				directionalShadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				directionalShadowMapsWriteDescriptorSet.pImageInfo = directionalShadowMapsInfos.data();
-				directionalShadowMapsWriteDescriptorSet.pBufferInfo = nullptr;
-				directionalShadowMapsWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(directionalShadowMapsWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(graphicsPipeline->sets[0].bindings[i].binding.binding, MAX_DIR_LIGHTS, directionalShadowMapsInfos.data());
 			}
 			else if (bindingName == "spotLightsShadowMaps") {
 				spotShadowMapsInfos.resize(MAX_SPOT_LIGHTS);
@@ -260,41 +165,17 @@ struct Renderable {
 					spotShadowMapsInfos[j].imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				}
 
-				VkWriteDescriptorSet spotShadowMapsWriteDescriptorSet = {};
-				spotShadowMapsWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				spotShadowMapsWriteDescriptorSet.pNext = nullptr;
-				spotShadowMapsWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				spotShadowMapsWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				spotShadowMapsWriteDescriptorSet.dstArrayElement = 0;
-				spotShadowMapsWriteDescriptorSet.descriptorCount = static_cast<uint32_t>(spotShadowMapsInfos.size());
-				spotShadowMapsWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				spotShadowMapsWriteDescriptorSet.pImageInfo = spotShadowMapsInfos.data();
-				spotShadowMapsWriteDescriptorSet.pBufferInfo = nullptr;
-				spotShadowMapsWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(spotShadowMapsWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteCombinedImageSampler(graphicsPipeline->sets[0].bindings[i].binding.binding, MAX_SPOT_LIGHTS, spotShadowMapsInfos.data());
 			}
 			else if (bindingName == "time") {
 				timeInfo.buffer = timeBuffers.at(frameInFlightIndex).buffer;
 				timeInfo.offset = 0;
 				timeInfo.range = sizeof(float);
 
-				VkWriteDescriptorSet timeWriteDescriptorSet = {};
-				timeWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				timeWriteDescriptorSet.pNext = nullptr;
-				timeWriteDescriptorSet.dstSet = descriptorSets.at(frameInFlightIndex).descriptorSet;
-				timeWriteDescriptorSet.dstBinding = graphicsPipeline->sets[0].bindings[i].binding.binding;
-				timeWriteDescriptorSet.dstArrayElement = 0;
-				timeWriteDescriptorSet.descriptorCount = 1;
-				timeWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				timeWriteDescriptorSet.pImageInfo = nullptr;
-				timeWriteDescriptorSet.pBufferInfo = &timeInfo;
-				timeWriteDescriptorSet.pTexelBufferView = nullptr;
-
-				writesDescriptorSet.push_back(timeWriteDescriptorSet);
+				descriptorSets[frameInFlightIndex].addWriteUniformBuffer(graphicsPipeline->sets[0].bindings[i].binding.binding, 1, &timeInfo);
 			}
 		}
-		descriptorSets.at(frameInFlightIndex).update(writesDescriptorSet);
+		descriptorSets.at(frameInFlightIndex).update();
 	}
 
 	void createOpaqueFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -325,74 +206,20 @@ struct Renderable {
 		outDrawCountInfo.offset = 0;
 		outDrawCountInfo.range = sizeof(uint32_t);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
-		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		inFrustumWriteDescriptorSet.pNext = nullptr;
-		inFrustumWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		inFrustumWriteDescriptorSet.dstBinding = 1;
-		inFrustumWriteDescriptorSet.dstArrayElement = 0;
-		inFrustumWriteDescriptorSet.descriptorCount = 1;
-		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
-		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
-		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &inFrustumInfo);
 
-		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
-		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
-		outDrawIndirectWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
-		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
-		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(2, 1, &outDrawIndirectInfo);
 
-		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
-		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outPerDrawWriteDescriptorSet.pNext = nullptr;
-		outPerDrawWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outPerDrawWriteDescriptorSet.dstBinding = 3;
-		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
-		outPerDrawWriteDescriptorSet.descriptorCount = 1;
-		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
-		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(3, 1, &outPerDrawInfo);
 
-		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
-		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawCountWriteDescriptorSet.pNext = nullptr;
-		outDrawCountWriteDescriptorSet.dstSet = opaqueFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawCountWriteDescriptorSet.dstBinding = 4;
-		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
-		outDrawCountWriteDescriptorSet.descriptorCount = 1;
-		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
-		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(4, 1, &outDrawCountInfo);
 
-		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		opaqueFrustumCullingDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createMaskFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -423,74 +250,20 @@ struct Renderable {
 		outDrawCountInfo.offset = 0;
 		outDrawCountInfo.range = sizeof(uint32_t);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
-		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		inFrustumWriteDescriptorSet.pNext = nullptr;
-		inFrustumWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		inFrustumWriteDescriptorSet.dstBinding = 1;
-		inFrustumWriteDescriptorSet.dstArrayElement = 0;
-		inFrustumWriteDescriptorSet.descriptorCount = 1;
-		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
-		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
-		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &inFrustumInfo);
 
-		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
-		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
-		outDrawIndirectWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
-		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
-		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(2, 1, &outDrawIndirectInfo);
 
-		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
-		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outPerDrawWriteDescriptorSet.pNext = nullptr;
-		outPerDrawWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outPerDrawWriteDescriptorSet.dstBinding = 3;
-		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
-		outPerDrawWriteDescriptorSet.descriptorCount = 1;
-		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
-		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(3, 1, &outPerDrawInfo);
 
-		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
-		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawCountWriteDescriptorSet.pNext = nullptr;
-		outDrawCountWriteDescriptorSet.dstSet = maskFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawCountWriteDescriptorSet.dstBinding = 4;
-		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
-		outDrawCountWriteDescriptorSet.descriptorCount = 1;
-		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
-		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(4, 1, &outDrawCountInfo);
 
-		maskFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		maskFrustumCullingDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createBlendFrustumCullingEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -521,74 +294,20 @@ struct Renderable {
 		outDrawCountInfo.offset = 0;
 		outDrawCountInfo.range = sizeof(uint32_t);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet inFrustumWriteDescriptorSet = {};
-		inFrustumWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		inFrustumWriteDescriptorSet.pNext = nullptr;
-		inFrustumWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		inFrustumWriteDescriptorSet.dstBinding = 1;
-		inFrustumWriteDescriptorSet.dstArrayElement = 0;
-		inFrustumWriteDescriptorSet.descriptorCount = 1;
-		inFrustumWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		inFrustumWriteDescriptorSet.pImageInfo = nullptr;
-		inFrustumWriteDescriptorSet.pBufferInfo = &inFrustumInfo;
-		inFrustumWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(inFrustumWriteDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &inFrustumInfo);
 
-		VkWriteDescriptorSet outDrawIndirectWriteDescriptorSet = {};
-		outDrawIndirectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawIndirectWriteDescriptorSet.pNext = nullptr;
-		outDrawIndirectWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawIndirectWriteDescriptorSet.dstBinding = 2;
-		outDrawIndirectWriteDescriptorSet.dstArrayElement = 0;
-		outDrawIndirectWriteDescriptorSet.descriptorCount = 1;
-		outDrawIndirectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawIndirectWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawIndirectWriteDescriptorSet.pBufferInfo = &outDrawIndirectInfo;
-		outDrawIndirectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawIndirectWriteDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(2, 1, &outDrawIndirectInfo);
 
-		VkWriteDescriptorSet outPerDrawWriteDescriptorSet = {};
-		outPerDrawWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outPerDrawWriteDescriptorSet.pNext = nullptr;
-		outPerDrawWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outPerDrawWriteDescriptorSet.dstBinding = 3;
-		outPerDrawWriteDescriptorSet.dstArrayElement = 0;
-		outPerDrawWriteDescriptorSet.descriptorCount = 1;
-		outPerDrawWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outPerDrawWriteDescriptorSet.pImageInfo = nullptr;
-		outPerDrawWriteDescriptorSet.pBufferInfo = &outPerDrawInfo;
-		outPerDrawWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outPerDrawWriteDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(3, 1, &outPerDrawInfo);
 
-		VkWriteDescriptorSet outDrawCountWriteDescriptorSet = {};
-		outDrawCountWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		outDrawCountWriteDescriptorSet.pNext = nullptr;
-		outDrawCountWriteDescriptorSet.dstSet = blendFrustumCullingDescriptorSets[frameInFlightIndex].descriptorSet;
-		outDrawCountWriteDescriptorSet.dstBinding = 4;
-		outDrawCountWriteDescriptorSet.dstArrayElement = 0;
-		outDrawCountWriteDescriptorSet.descriptorCount = 1;
-		outDrawCountWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		outDrawCountWriteDescriptorSet.pImageInfo = nullptr;
-		outDrawCountWriteDescriptorSet.pBufferInfo = &outDrawCountInfo;
-		outDrawCountWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(outDrawCountWriteDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].addWriteStorageBuffer(4, 1, &outDrawCountInfo);
 
-		blendFrustumCullingDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		blendFrustumCullingDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createDepthPrepassEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -604,35 +323,14 @@ struct Renderable {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		depthPrepassDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		depthPrepassDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = depthPrepassDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		depthPrepassDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = depthPrepassDescriptorSets[frameInFlightIndex].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 1;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		depthPrepassDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &cameraInfo);
 
-		depthPrepassDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		depthPrepassDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createDepthPrepassMaskEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -648,35 +346,14 @@ struct Renderable {
 		cameraInfo.offset = 0;
 		cameraInfo.range = sizeof(CameraUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		depthPrepassMaskDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		depthPrepassMaskDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = depthPrepassMaskDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		depthPrepassMaskDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet cameraWriteDescriptorSet = {};
-		cameraWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		cameraWriteDescriptorSet.pNext = nullptr;
-		cameraWriteDescriptorSet.dstSet = depthPrepassMaskDescriptorSets[frameInFlightIndex].descriptorSet;
-		cameraWriteDescriptorSet.dstBinding = 1;
-		cameraWriteDescriptorSet.dstArrayElement = 0;
-		cameraWriteDescriptorSet.descriptorCount = 1;
-		cameraWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		cameraWriteDescriptorSet.pImageInfo = nullptr;
-		cameraWriteDescriptorSet.pBufferInfo = &cameraInfo;
-		cameraWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(cameraWriteDescriptorSet);
+		depthPrepassMaskDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &cameraInfo);
 
-		depthPrepassMaskDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		depthPrepassMaskDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createShadowEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -692,35 +369,14 @@ struct Renderable {
 		shadowInfo.offset = 0;
 		shadowInfo.range = sizeof(ShadowUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		shadowDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		shadowDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = shadowDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		shadowDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet shadowWriteDescriptorSet = {};
-		shadowWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		shadowWriteDescriptorSet.pNext = nullptr;
-		shadowWriteDescriptorSet.dstSet = shadowDescriptorSets[frameInFlightIndex].descriptorSet;
-		shadowWriteDescriptorSet.dstBinding = 1;
-		shadowWriteDescriptorSet.dstArrayElement = 0;
-		shadowWriteDescriptorSet.descriptorCount = 1;
-		shadowWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		shadowWriteDescriptorSet.pImageInfo = nullptr;
-		shadowWriteDescriptorSet.pBufferInfo = &shadowInfo;
-		shadowWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(shadowWriteDescriptorSet);
+		shadowDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &shadowInfo);
 
-		shadowDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		shadowDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void createShadowMaskEntityDescriptorSet(uint32_t frameInFlightIndex) {
@@ -736,35 +392,14 @@ struct Renderable {
 		shadowInfo.offset = 0;
 		shadowInfo.range = sizeof(ShadowUniformBufferObject);
 
-		std::vector<VkWriteDescriptorSet> writesDescriptorSet;
+		shadowMaskDescriptorSets[frameInFlightIndex].writesDescriptorSet.clear();
+		shadowMaskDescriptorSets[frameInFlightIndex].writesDescriptorSet.shrink_to_fit();
 
-		VkWriteDescriptorSet objectWriteDescriptorSet = {};
-		objectWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		objectWriteDescriptorSet.pNext = nullptr;
-		objectWriteDescriptorSet.dstSet = shadowMaskDescriptorSets[frameInFlightIndex].descriptorSet;
-		objectWriteDescriptorSet.dstBinding = 0;
-		objectWriteDescriptorSet.dstArrayElement = 0;
-		objectWriteDescriptorSet.descriptorCount = 1;
-		objectWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		objectWriteDescriptorSet.pImageInfo = nullptr;
-		objectWriteDescriptorSet.pBufferInfo = &objectInfo;
-		objectWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(objectWriteDescriptorSet);
+		shadowMaskDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(0, 1, &objectInfo);
 
-		VkWriteDescriptorSet shadowWriteDescriptorSet = {};
-		shadowWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		shadowWriteDescriptorSet.pNext = nullptr;
-		shadowWriteDescriptorSet.dstSet = shadowMaskDescriptorSets[frameInFlightIndex].descriptorSet;
-		shadowWriteDescriptorSet.dstBinding = 1;
-		shadowWriteDescriptorSet.dstArrayElement = 0;
-		shadowWriteDescriptorSet.descriptorCount = 1;
-		shadowWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		shadowWriteDescriptorSet.pImageInfo = nullptr;
-		shadowWriteDescriptorSet.pBufferInfo = &shadowInfo;
-		shadowWriteDescriptorSet.pTexelBufferView = nullptr;
-		writesDescriptorSet.push_back(shadowWriteDescriptorSet);
+		shadowMaskDescriptorSets[frameInFlightIndex].addWriteUniformBuffer(1, 1, &shadowInfo);
 
-		shadowMaskDescriptorSets[frameInFlightIndex].update(writesDescriptorSet);
+		shadowMaskDescriptorSets[frameInFlightIndex].update();
 	}
 
 	void cullOpaque(CommandBuffer* commandBuffer, uint32_t frameInFlightIndex) {
