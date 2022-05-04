@@ -147,7 +147,7 @@ void ImageTools::loadImage(const std::string& filePath,
 
 	createImage(imageDestination, 1, width, height, *mipLevels, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, *mipLevels, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(uint8_t));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(uint8_t), VK_IMAGE_ASPECT_COLOR_BIT);
 	generateMipmaps(*imageDestination, format, width, height, *mipLevels, 1);
 
 	stagingBuffer.destroy();
@@ -181,7 +181,7 @@ void ImageTools::loadHDREnvmap(const std::string& filePath,
 
 	createImage(imageDestination, 1, width, height, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(float));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(float), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
 
 	stagingBuffer.destroy();
@@ -207,7 +207,7 @@ void ImageTools::loadColor(float* color,
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(uint8_t));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(uint8_t), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, *mipLevels, 1);
 
 	stagingBuffer.destroy();
@@ -230,7 +230,7 @@ void ImageTools::loadColorArray(float* colors,
 
 	createImage(imageDestination, 1, width, height, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(float));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, width, height, 1, sizeof(float), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, *mipLevels, 1);
 
 	stagingBuffer.destroy();
@@ -249,8 +249,24 @@ void ImageTools::loadColorForEnvmap(float* color,
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(float));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(float), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, *mipLevels, 1);
+
+	stagingBuffer.destroy();
+}
+
+void ImageTools::loadDepth(float depth,
+	VkImage* imageDestination,
+	VkFormat format,
+	MemoryInfo* memoryInfo) {
+	Buffer stagingBuffer;
+	BufferTools::createStagingBuffer(stagingBuffer.buffer, sizeof(float), &stagingBuffer.memoryInfo);
+	memcpy(reinterpret_cast<void*>(reinterpret_cast<char*>(stagingBuffer.memoryInfo.data) + stagingBuffer.memoryInfo.offset), &depth, sizeof(float));
+
+	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
+	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(float), VK_IMAGE_ASPECT_DEPTH_BIT);
+	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 1, 1);
 
 	stagingBuffer.destroy();
 }
@@ -270,7 +286,7 @@ void ImageTools::loadValue(float value,
 
 	createImage(imageDestination, 1, 1, 1, 1, VK_SAMPLE_COUNT_1_BIT, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memoryInfo);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(uint8_t));
+	BufferTools::copyToImage(stagingBuffer.buffer, *imageDestination, 1, 1, 1, sizeof(uint8_t), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(*imageDestination, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, *mipLevels, 1);
 
 	stagingBuffer.destroy();
@@ -296,11 +312,11 @@ void ImageTools::transitionLayout(VkImage image,
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.image = image;
-	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL) {
+	if (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM) {
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		if (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D16_UNORM_S8_UINT) {
-			imageMemoryBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-		}
+	}
+	else if (format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D16_UNORM_S8_UINT) {
+		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 	else {
 		imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -324,6 +340,12 @@ void ImageTools::transitionLayout(VkImage image,
 		dstPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		srcPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		dstPipelineStageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL) {
 		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		srcPipelineStageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -459,7 +481,7 @@ void ImageTools::loadSprite(const std::string& filePath, SpriteImage* spriteImag
 	createImage(&spriteImageDestination->image.image, 1, spriteImageDestination->width, spriteImageDestination->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &spriteImageDestination->image.memoryInfo);
 	ImageTools::createImageView(&spriteImageDestination->image.imageView, spriteImageDestination->image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(spriteImageDestination->image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, spriteImageDestination->image.image, spriteImageDestination->width, spriteImageDestination->height, 1, sizeof(uint8_t));
+	BufferTools::copyToImage(stagingBuffer.buffer, spriteImageDestination->image.image, spriteImageDestination->width, spriteImageDestination->height, 1, sizeof(uint8_t), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(spriteImageDestination->image.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
 
 	stagingBuffer.destroy();
@@ -490,7 +512,7 @@ void ImageTools::loadFont(const std::string& filePath,
 	createImage(&fontDestination->image.image, 1, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &fontDestination->image.memoryInfo);
 	createImageView(&fontDestination->image.imageView, fontDestination->image.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(fontDestination->image.image, VK_FORMAT_R8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, 1);
-	BufferTools::copyToImage(stagingBuffer.buffer, fontDestination->image.image, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, sizeof(uint8_t));
+	BufferTools::copyToImage(stagingBuffer.buffer, fontDestination->image.image, static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1, sizeof(uint8_t), VK_IMAGE_ASPECT_COLOR_BIT);
 	transitionLayout(fontDestination->image.image, VK_FORMAT_R8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
 
 	stagingBuffer.destroy();

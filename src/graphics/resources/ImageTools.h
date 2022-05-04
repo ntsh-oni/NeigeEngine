@@ -74,6 +74,10 @@ struct ImageTools {
 		VkFormat format,
 		uint32_t* mipLevels,
 		MemoryInfo* memoryInfo);
+	static void loadDepth(float depth,
+		VkImage* imageDestination,
+		VkFormat format,
+		MemoryInfo* memoryInfo);
 	static void loadValue(float value,
 		VkImage* imageDestination,
 		VkFormat format,
