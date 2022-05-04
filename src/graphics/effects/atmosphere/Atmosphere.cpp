@@ -8,7 +8,6 @@ void Atmosphere::init(Viewport fullscreenViewport) {
 	float defaultValue[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	ImageTools::loadColor(defaultValue, &dummyImage.image, VK_FORMAT_R8G8B8A8_UNORM, &dummyImage.mipmapLevels, &dummyImage.memoryInfo);
 	ImageTools::createImageView(&dummyImage.imageView, dummyImage.image, 0, 1, 0, 1, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	ImageTools::transitionLayout(dummyImage.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
 
 	// Transmittance LUT
 	transmittanceViewport.init(TRANSMITTANCE_WIDTH, TRANSMITTANCE_HEIGHT);

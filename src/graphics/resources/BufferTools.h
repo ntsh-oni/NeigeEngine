@@ -31,6 +31,7 @@ struct BufferTools {
 		uint32_t width,
 		uint32_t height,
 		uint32_t arrayLayers,
-		uint64_t stride);
+		uint64_t stride,
+		VkImageAspectFlags aspectFlags);
 };
 
