@@ -16,7 +16,7 @@
 - [stb](https://github.com/nothings/stb)
 ## Download
 ```txt
-git clone --recurse-submodules https://github.com/ZaOniRinku/NeigeEngine.git
+git clone --recurse-submodules https://github.com/ntsh-oni/NeigeEngine.git
 ```
 ## Build
 ```txt
